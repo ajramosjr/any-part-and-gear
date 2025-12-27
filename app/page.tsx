@@ -1,8 +1,8 @@
-import Header from "./components/Header";
+import header from "./components/header";
 export default function Home() {
   return (
     <>
-      <Header />
+      <header />
 
       <main style={{ padding: "40px", textAlign: "center" }}>
         <h1>Any-Part & Gear</h1>
