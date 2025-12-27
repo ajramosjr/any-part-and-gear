@@ -12,7 +12,7 @@ export default function Home() {
     </main>
   );
 }
-import Header from "./components/Header";
+import Header from "./Components/Header";
 
 export default function Home() {
   return (
