@@ -1,1 +1,22 @@
 
+export default function Header() {
+  return (
+    <header
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "16px 40px",
+        borderBottom: "1px solid #222",
+      }}
+    >
+      <img src="/logo.png" alt="Any Part & Gear" style={{ height: "48px" }} />
+
+      <nav style={{ display: "flex", gap: "20px" }}>
+        <a href="#">Browse Parts</a>
+        <a href="#">Sell / Trade</a>
+        <a href="#">Sign In</a>
+      </nav>
+    </header>
+  );
+}
