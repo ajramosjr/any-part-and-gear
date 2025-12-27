@@ -11,3 +11,9 @@ export default function Home() {
       <p style={{ fontSize: "18px", marginTop: "10px" }}>
         Buy • Sell • Trade Auto, Truck & Marine Parts
       </p>
+<img
+  src="/EXACT-FILENAME"
+  alt="Any-Part & Gear logo"
+  style={{ width: "220px" }}
+/>
+    
