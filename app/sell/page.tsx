@@ -1,3 +1,4 @@
+"use client";
 export default function SellPage() {
   return (
     <main style={{ padding: "40px", maxWidth: "600px" }}>
