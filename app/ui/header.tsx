@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Header() {
   return (
@@ -19,13 +19,13 @@ export default function Header() {
           width={48}
           height={48}
         />
-       <span style={{ fontWeight: 600 }}>Any-Part & Gear</span>
-    
+        <span style={{ fontWeight: 600 }}>Any-Part & Gear</span>
+      </Link>
 
       <nav style={{ display: "flex", gap: "20px" }}>
-        <Link href="/>Browse Parts</Link>
-        <Link href="/>Sell / Trade</Link>
-        <Link href="/>Sign In</Link>
+        <Link href="/browse">Browse Parts</Link>
+        <Link href="/sell">Sell / Trade</Link>
+        <Link href="/login">Sign In</Link>
       </nav>
     </header>
   );
