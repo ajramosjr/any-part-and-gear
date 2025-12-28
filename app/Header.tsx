@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Header() {
   return (
-    <header
+    <Header
       style={{
         display: "flex",
         alignItems: "center",
@@ -27,6 +27,6 @@ export default function Header() {
         <Link href="/sell">Sell / Trade</Link>
         <Link href="/login">Sign In</Link>
       </nav>
-    </header>
+    </Header>
   );
 }
