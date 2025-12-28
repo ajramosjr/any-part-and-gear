@@ -19,8 +19,8 @@ export default function Header() {
           width={48}
           height={48}
         />
-        <strong>Any-Part & Gear</strong>
-      </Link>
+       <span style={{ fontWeight: 600 }}>Any-Part & Gear</span>
+    
 
       <nav style={{ display: "flex", gap: "20px" }}>
         <Link href="/>Browse Parts</Link>
