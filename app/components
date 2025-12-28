@@ -17,6 +17,6 @@ export default function Header() {
         <a href="#">Sell / Trade</a>
         <a href="#">Sign In</a>
       </nav>
-    </header>
+    </Header>
   );
 }
