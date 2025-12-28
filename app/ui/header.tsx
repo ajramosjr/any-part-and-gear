@@ -23,9 +23,9 @@ export default function Header() {
       </Link>
 
       <nav style={{ display: "flex", gap: "20px" }}>
-        <Link href="#">Browse Parts</Link>
-        <Link href="#">Sell / Trade</Link>
-        <Link href="#">Sign In</Link>
+        <Link href="/>Browse Parts</Link>
+        <Link href="/>Sell / Trade</Link>
+        <Link href="/>Sign In</Link>
       </nav>
     </header>
   );
