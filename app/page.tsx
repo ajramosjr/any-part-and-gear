@@ -5,8 +5,10 @@ export default function Home() {
     <>
       <Header />
       <main style={{ padding: "40px" }}>
-        <h1>Any-Part & Gear</h1>
-        <p>Buy, sell, or trade vehicle parts.</p>
+        <h1>Welcome to Any-Part & Gear</h1>
+        <p>
+          Buy, sell, or trade car, truck, and boat parts — all in one place.
+        </p>
       </main>
     </>
   );
