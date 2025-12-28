@@ -32,3 +32,16 @@ export default function RootLayout({
     </html>
   );
 }
+// app/layout.tsx
+import Header from "./ui/header";
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        <Header />
+        {children}
+      </body>
+    </html>
+  );
+}
