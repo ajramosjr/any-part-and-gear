@@ -3,7 +3,7 @@ import Header from "./components/Header";
 export default function Home() {
   return (
     <>
-      <header />
+      <Header />
       <main style={{ padding: "40px" }}>
         <h1>Welcome to Any-Part & Gear</h1>
         <p>
