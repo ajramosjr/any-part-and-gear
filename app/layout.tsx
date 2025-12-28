@@ -32,6 +32,4 @@ export default function RootLayout({
     </html>
   );
 }
-// app/layout.tsx
-import Header from "./ui/header";
 
