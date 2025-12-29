@@ -16,8 +16,6 @@ export default function SellPage() {
     const { error } = await supabase.from("parts").insert([
       {
         title: formData.get("title"),
-        vehicle_type: formData.get("vehicle_type"),
-        trade: formData.get("trade_type") === "trade",
       },
     ]);
 
@@ -34,7 +32,6 @@ export default function SellPage() {
   return (
     <main style={{ padding: "40px", maxWidth: "600px" }}>
       <h1>Sell or Trade Parts</h1>
-      <p>List your parts for sale or trade with other users.</p>
 
       <form
         onSubmit={handleSubmit}
