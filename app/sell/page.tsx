@@ -41,6 +41,7 @@ async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     gap: "16px",
     marginTop: "24px",
   }}
+  >
 <input
   name="title"
   type="text"
