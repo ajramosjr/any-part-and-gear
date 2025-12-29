@@ -39,34 +39,17 @@ async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     display: "flex",
     flexDirection: "column",
     gap: "16px",
-    marginTop: "24px",
   }}
-  >
-<input
-  name="title"
-  type="text"
-  placeholder="Part name (e.g. 2018 F150 Headlight)"
-  required
-/>
+>
+  <input
+    name="title"
+    type="text"
+    placeholder="Part name (e.g. 2018 F150 Headlight)"
+    required
+  />
 
-  <select required style={{ padding: "12px" }}>
-    <option value="">Select vehicle type</option>
-    <option value="car">Car</option>
-    <option value="truck">Truck</option>
-    <option value="boat">Boat</option>
-    <option value="motorcycle">Motorcycle</option>
-  </select>
-
-  <select required style={{ padding: "12px" }}>
-    <option value="">Sell or Trade?</option>
-    <option value="sell">Sell</option>
-    <option value="trade">Trade</option>
-  </select>
-
-  <button type="submit" style={{ padding: "12px" }}>
-    Submit Listing
-  </button>
-</form>
+  <button type="submit">Submit</button>
+</form>  
     </main>
   );
 }<button type="submit" disabled={loading}>
