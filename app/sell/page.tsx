@@ -41,14 +41,12 @@ async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     gap: "16px",
     marginTop: "24px",
   }}
->
-  <input
-    name="part_name"
-    type="text"
-    placeholder="Part name (e.g. 2018 F150 Headlight)"
-    required
-    style={{ padding: "12px" }}
-  />
+<input
+  name="title"
+  type="text"
+  placeholder="Part name (e.g. 2018 F150 Headlight)"
+  required
+/>
 
   <select required style={{ padding: "12px" }}>
     <option value="">Select vehicle type</option>
