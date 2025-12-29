@@ -11,9 +11,9 @@ export default async function ListingsPage() {
     .from("listings")
     .select("*");
 
-  if (error) {
-    return <p>Error loading listings</p>;
-  }
+  if (!supabase) return;
+
+const { data } = await supabase.from("parts").select("*");
 
   return (
     <main style={{ padding: "40px" }}>
