@@ -10,10 +10,16 @@ export default function SellPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (searchParams.get("success") === "1") {
-      toast.success("✅ Part listed successfully!");
+    const success = searchParams.get("success");
+    const error = searchParams.get("error");
 
-      // Remove the query param so toast doesn't repeat
+    if (success) {
+      toast.success("✅ Part listed successfully!");
+      router.replace("/sell");
+    }
+
+    if (error) {
+      toast.error(decodeURIComponent(error));
       router.replace("/sell");
     }
   }, [searchParams, router]);
