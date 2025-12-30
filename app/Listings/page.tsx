@@ -1,4 +1,6 @@
 "use client";
+
+import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -6,30 +8,55 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default async function ListingsPage() {
-  const { data: listings, error } = await supabase
-    .from("listings")
-    .select("*");
+type Part = {
+  id: number;
+  title: string;
+  vehicle_type: string | null;
+  trade: boolean | null;
+};
 
-  if (!supabase) return;
+export default function ListingsPage() {
+  const [listings, setListings] = useState<Part[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-const { data } = await supabase
-  .from("parts")
-  .select("*");
+  useEffect(() => {
+    async function loadListings() {
+      const { data, error } = await supabase
+        .from("parts")
+        .select("*");
 
-const listings = data ?? [];
+      if (error) {
+        setError(error.message);
+      } else {
+        setListings(data ?? []);
+      }
+
+      setLoading(false);
+    }
+
+    loadListings();
+  }, []);
+
   return (
     <main style={{ padding: "40px" }}>
       <h1>Listings</h1>
 
-      {listings.length === 0 && <p>No listings found.</p>}
+      {loading && <p>Loading listings...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {!loading && listings.length === 0 && (
+        <p>No listings found.</p>
+      )}
 
       <ul style={{ marginTop: "24px" }}>
         {listings.map((item) => (
           <li key={item.id} style={{ marginBottom: "16px" }}>
-            <strong>{item.part_name}</strong>
-            <div>Vehicle: {item.vehicle_type}</div>
-            <div>Type: {item.listing_type}</div>
+            <strong>{item.title}</strong>
+            <div>Vehicle: {item.vehicle_type ?? "N/A"}</div>
+            <div>
+              Type: {item.trade ? "Trade" : "For Sale"}
+            </div>
           </li>
         ))}
       </ul>
