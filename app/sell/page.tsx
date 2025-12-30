@@ -1,26 +1,32 @@
 "use client";
 
-import { createPart } from "../actions/createPart";
+import { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { createPart } from "../actions/createPart";
 
 export default function SellPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (searchParams.get("success") === "1") {
+      toast.success("✅ Part listed successfully!");
+
+      // Remove the query param so toast doesn't repeat
+      router.replace("/sell");
+    }
+  }, [searchParams, router]);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
+    toast.loading("Submitting...", { id: "submit" });
 
-    const toastId = toast.loading("Submitting part...");
+    await createPart(formData);
 
-    const result = await createPart(formData);
-
-    toast.dismiss(toastId);
-
-    if (result?.error) {
-      toast.error(result.error);
-    } else {
-      toast.success("✅ Part listed successfully!");
-      e.currentTarget.reset();
-    }
+    toast.dismiss("submit");
   }
 
   return (
