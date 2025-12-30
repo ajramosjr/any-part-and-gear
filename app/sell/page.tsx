@@ -1,30 +1,26 @@
 "use client";
 
-import { useState } from "react";
 import { createPart } from "../actions/createPart";
+import toast from "react-hot-toast";
 
 export default function SellPage() {
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setLoading(true);
-    setMessage(null);
-    setError(null);
 
     const formData = new FormData(e.currentTarget);
+
+    const toastId = toast.loading("Submitting part...");
+
     const result = await createPart(formData);
 
+    toast.dismiss(toastId);
+
     if (result?.error) {
-      setError(result.error);
+      toast.error(result.error);
     } else {
-      setMessage("✅ Part listed successfully!");
+      toast.success("✅ Part listed successfully!");
       e.currentTarget.reset();
     }
-
-    setLoading(false);
   }
 
   return (
@@ -37,18 +33,12 @@ export default function SellPage() {
       >
         <input
           name="title"
-          type="text"
           placeholder="Part name (e.g. 2018 Ford Headlight)"
           required
         />
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Submitting..." : "Submit Part"}
-        </button>
+        <button type="submit">Submit Part</button>
       </form>
-
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
     </main>
   );
 }
