@@ -1,23 +1,20 @@
 "use server";
 
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabase } from "@/lib/supabase";
+import { redirect } from "next/navigation";
 
 export async function createPart(formData: FormData) {
   const title = formData.get("title") as string;
 
   if (!title) {
-    return { error: "Title is required" };
+    redirect("/sell?error=Title is required");
   }
 
   const { error } = await supabase.from("parts").insert([{ title }]);
 
-if (error) {
-  throw new Error(error.message);
-}
+  if (error) {
+    redirect(`/sell?error=${encodeURIComponent(error.message)}`);
+  }
 
-redirect("/sell?success=1");
+  redirect("/sell?success=1");
+}
