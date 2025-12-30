@@ -13,8 +13,11 @@ export default async function ListingsPage() {
 
   if (!supabase) return;
 
-const { data } = await supabase.from("parts").select("*");
+const { data } = await supabase
+  .from("parts")
+  .select("*");
 
+const listings = data ?? [];
   return (
     <main style={{ padding: "40px" }}>
       <h1>Listings</h1>
