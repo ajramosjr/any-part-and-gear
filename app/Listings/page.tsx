@@ -42,24 +42,22 @@ export default function ListingsPage() {
     <main style={{ padding: "40px" }}>
       <h1>Listings</h1>
 
-      {loading && <p>Loading listings...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {!loading && listings.length === 0 && (
-        <p>No listings found.</p>
-      )}
-
-      <ul style={{ marginTop: "24px" }}>
-        {listings.map((item) => (
-          <li key={item.id} style={{ marginBottom: "16px" }}>
-            <strong>{item.title}</strong>
-            <div>Vehicle: {item.vehicle_type ?? "N/A"}</div>
-            <div>
-              Type: {item.trade ? "Trade" : "For Sale"}
-            </div>
-          </li>
-        ))}
-      </ul>
+      
     </main>
+    {loading && <p>Loading listings...</p>}
+
+{!loading && listings.length === 0 && (
+  <p>No listings found.</p>
+)}
+
+<ul style={{ marginTop: "24px" }}>
+  {listings.map((item) => (
+    <li key={item.id} style={{ marginBottom: "16px" }}>
+      <strong>{item.title}</strong>
+      <div>Vehicle: {item.vehicle_type ?? "N/A"}</div>
+      <div>Type: {item.trade ? "Trade" : "For Sale"}</div>
+    </li>
+  ))}
+</ul>
   );
 }
