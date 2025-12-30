@@ -1,7 +1,12 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export async function createPart(formData: FormData) {
   const title = formData.get("title") as string;
@@ -15,8 +20,9 @@ export async function createPart(formData: FormData) {
   ]);
 
   if (error) {
+    console.error("Supabase insert error:", error);
     throw new Error(error.message);
   }
 
-  redirect("/"); // or wherever you want after submit
+  redirect("/");
 }
