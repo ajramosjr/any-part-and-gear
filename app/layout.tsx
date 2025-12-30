@@ -1,15 +1,12 @@
+"use client";
 import { Toaster } from "react-hot-toast";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
         {children}
-        <Toaster position="top-right" />
+        <Toaster />
       </body>
     </html>
   );
