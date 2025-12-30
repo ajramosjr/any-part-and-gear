@@ -16,10 +16,8 @@ export async function createPart(formData: FormData) {
 
   const { error } = await supabase.from("parts").insert([{ title }]);
 
-  if (error) {
-    console.error(error);
-    return { error: error.message };
-  }
-
-  return { success: true };
+if (error) {
+  throw new Error(error.message);
 }
+
+redirect("/sell?success=1");
