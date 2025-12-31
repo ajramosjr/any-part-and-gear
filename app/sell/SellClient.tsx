@@ -15,9 +15,7 @@ export default function SellClient() {
         maxWidth: "400px",
       }}
     >
-      <p style={{ color: "red", fontWeight: "bold" }}>
-        🔥 SELL CLIENT IS RENDERING
-      </p>
+      
 
       <input
         value={title}
