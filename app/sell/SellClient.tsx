@@ -15,31 +15,18 @@ export default function SellClient() {
         maxWidth: "400px",
       }}
     >
+      <p style={{ color: "red", fontWeight: "bold" }}>
+        🔥 SELL CLIENT IS RENDERING
+      </p>
+
       <input
-        placeholder="Part title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        style={{
-          padding: "10px",
-          borderRadius: "6px",
-          border: "1px solid #444",
-          background: "#111",
-          color: "#fff",
-        }}
+        placeholder="Part title"
+        style={{ padding: "8px" }}
       />
 
-      <button
-        type="submit"
-        style={{
-          padding: "10px",
-          borderRadius: "6px",
-          background: "#22c55e",
-          color: "#000",
-          fontWeight: "bold",
-        }}
-      >
-        Submit
-      </button>
+      <button type="submit">Submit</button>
     </form>
   );
 }
