@@ -6,9 +6,7 @@ export default function SellPage() {
       <h1>Sell a Part</h1>
 
       {/* DEBUG — THIS MUST SHOW */}
-      <p style={{ color: "lime", fontWeight: "bold" }}>
-        SELL PAGE IS RENDERING
-      </p>
+      
 
       <SellClient />
     </main>
