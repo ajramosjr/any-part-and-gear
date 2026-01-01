@@ -9,7 +9,8 @@ export default function SellPage() {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 const category = formData.get("category") as string;
-
+const [price, setPrice] = useState("");
+  
 await supabase.from("parts").insert({
   title,
   description,
