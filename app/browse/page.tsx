@@ -19,7 +19,10 @@ export default function BrowsePage() {
     if (query) {
       request = request.ilike("title", `%${query}%`);
     }
-
+    
+if (category) {
+  query = query.eq("category", category);
+}
     const { data, error } = await request;
 
     if (!error && data) {
