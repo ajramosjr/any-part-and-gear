@@ -1,5 +1,4 @@
-import { Toaster } from "react-hot-toast";
-import "./globals.css";
+import ToasterClient from "@/app/ui/toaster-client";
 
 export default function RootLayout({
   children,
@@ -9,7 +8,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Toaster position="top-center" reverseOrder={false} />
+        <ToasterClient />
         {children}
       </body>
     </html>
