@@ -37,57 +37,55 @@ export default function SellPage() {
 >
   <h1>Sell a Part</h1>
 
-  <form onSubmit={handleSubmit}>
-    {/* TITLE INPUT */}
-    <input
-      type="text"
-      placeholder="Part title"
-      value={title}
-      onChange={(e) => setTitle(e.target.value)}
-      required
-      style={{
-        width: "100%",
-        padding: "12px",
-        marginBottom: "12px",
-        backgroundColor: "#111",
-        color: "white",
-        border: "1px solid #555",
-        borderRadius: "6px",
-      }}
-    />
+  <form onSubmit={handleSubmit} style={{ marginTop: "20px" }}>
+  <input
+    type="text"
+    placeholder="Part title"
+    value={title}
+    onChange={(e) => setTitle(e.target.value)}
+    required
+    style={{
+      width: "100%",
+      padding: "12px",
+      marginBottom: "12px",
+      backgroundColor: "#ffffff",
+      color: "#000000",
+      border: "1px solid #ccc",
+      borderRadius: "6px",
+      fontSize: "16px",
+    }}
+  />
 
-    {/* DESCRIPTION INPUT */}
-    <textarea
-      placeholder="Description"
-      value={description}
-      onChange={(e) => setDescription(e.target.value)}
-      style={{
-        width: "100%",
-        padding: "12px",
-        marginBottom: "12px",
-        backgroundColor: "#111",
-        color: "white",
-        border: "1px solid #555",
-        borderRadius: "6px",
-      }}
-    />
+  <textarea
+    placeholder="Description"
+    value={description}
+    onChange={(e) => setDescription(e.target.value)}
+    style={{
+      width: "100%",
+      padding: "12px",
+      marginBottom: "12px",
+      backgroundColor: "#ffffff",
+      color: "#000000",
+      border: "1px solid #ccc",
+      borderRadius: "6px",
+      fontSize: "16px",
+    }}
+  />
 
-    {/* SUBMIT BUTTON */}
-    <button
-      type="submit"
-      style={{
-        padding: "12px",
-        width: "100%",
-        backgroundColor: "#2563eb",
-        color: "white",
-        border: "none",
-        borderRadius: "6px",
-        cursor: "pointer",
-      }}
-    >
-      Submit
-    </button>
-  </form>
-
-  {message && <p style={{ marginTop: "12px" }}>{message}</p>}
-</main>
+  <button
+    type="submit"
+    style={{
+      width: "100%",
+      padding: "12px",
+      backgroundColor: "#22c55e",
+      color: "#000000",
+      fontWeight: "bold",
+      border: "none",
+      borderRadius: "6px",
+      cursor: "pointer",
+      fontSize: "16px",
+    }}
+  >
+    Submit
+  </button>
+</form>
