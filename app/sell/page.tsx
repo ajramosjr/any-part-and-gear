@@ -49,22 +49,19 @@ export default function SellPage() {
           gap: "16px",
         }}
       >
-        {/* TITLE */}
         <input
           type="text"
           placeholder="Part title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          required
         />
 
-        {/* ✅ DESCRIPTION (THIS WAS MISSING) */}
+        {/* 🔥 THIS IS THE DESCRIPTION FIELD */}
         <textarea
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={5}
-          required
         />
 
         <button type="submit" disabled={loading}>
