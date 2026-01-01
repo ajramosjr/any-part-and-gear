@@ -86,6 +86,14 @@ await supabase.from("parts").insert({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
+      
+    <input
+  type="number"
+  placeholder="Price (USD)"
+  value={price}
+  onChange={(e) => setPrice(e.target.value)}
+  step="0.01"
+/>  
 
         {/* 🔥 THIS IS THE DESCRIPTION FIELD */}
         <textarea
