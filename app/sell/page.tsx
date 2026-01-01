@@ -12,10 +12,7 @@ export default function SellPage() {
     e.preventDefault();
 
     const { error } = await supabase.from("parts").insert([
-      {
-        title,
-        description,
-      },
+      { title, description },
     ]);
 
     if (error) {
@@ -28,35 +25,30 @@ export default function SellPage() {
   }
 
   return (
-  <main>
-    <style>{
-    <h1>Sell a Part</h1>
+    <main style={{ padding: "40px" }}>
+      <h1>Sell a Part</h1>
 
-<form
-  onSubmit={handleSubmit}
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    maxWidth: "500px",
-  }}
->
-  <input
-    type="text"
-    placeholder="Part title"
-    value={title}
-    onChange={(e) => setTitle(e.target.value)}
-    required
-  />
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+      >
+        <input
+          placeholder="Part title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
 
-  <textarea
-    placeholder="Description"
-    value={description}
-    onChange={(e) => setDescription(e.target.value)}
-    rows={4}
-  />
+        <textarea
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
 
-  <button type="submit">Submit</button>
-</form>
+        <button type="submit">Submit</button>
+      </form>
 
-{message && <p>{message}</p>}
+      {message && <p>{message}</p>}
+    </main>
+  );
+}
