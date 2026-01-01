@@ -3,9 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 
 export async function createPart(formData: FormData) {
   const title = formData.get("title") as string;
+  const description = formData.get("description") as string;
 
-  if (!title) {
-    redirect("/sell?error=Title%20is%20required");
+  // Validation
+  if (!title || !description) {
+    redirect("/sell?error=All%20fields%20are%20required");
   }
 
   const supabase = createClient(
@@ -13,9 +15,10 @@ export async function createPart(formData: FormData) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const { error } = await supabase
-    .from("parts")
-    .insert({ title });
+  const { error } = await supabase.from("parts").insert({
+    title,
+    description,
+  });
 
   if (error) {
     redirect(`/sell?error=${encodeURIComponent(error.message)}`);
