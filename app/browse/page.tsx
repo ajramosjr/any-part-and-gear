@@ -82,8 +82,7 @@ if (category) {
   <img
     src={part.image_url}
     alt={part.title}
-    className="w-full max-w-xs rounded"
-  />
+ <input className="w-full max-w-xs rounded" />  
     <select onChange={(e) => setCategory(e.target.value)}>
   <option value="">All</option>
   <option value="engine">Engine</option>
