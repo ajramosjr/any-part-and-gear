@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import toast from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 
 export default function SellPage() {
   const [title, setTitle] = useState("");
@@ -11,6 +11,15 @@ export default function SellPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // 🔎 DEBUG CHECK (IMPORTANT)
+    console.log("Submitting:", { title, description });
+
+    if (!description.trim()) {
+      toast.error("Description is empty");
+      return;
+    }
+
     setLoading(true);
 
     const { error } = await supabase.from("parts").insert([
@@ -33,6 +42,8 @@ export default function SellPage() {
 
   return (
     <main style={{ padding: 40, maxWidth: 500 }}>
+      <Toaster position="top-right" />
+
       <h1>Sell a Part</h1>
 
       <form onSubmit={handleSubmit}>
@@ -49,10 +60,11 @@ export default function SellPage() {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Description"
           required
+          rows={4}
           style={{ width: "100%", marginBottom: 10 }}
         />
 
-        <button disabled={loading}>
+        <button type="submit" disabled={loading}>
           {loading ? "Submitting..." : "Submit"}
         </button>
       </form>
