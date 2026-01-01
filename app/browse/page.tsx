@@ -75,6 +75,13 @@ export default function BrowsePage() {
           </li>
         ))}
       </ul>
+      {part.image_url && (
+  <img
+    src={part.image_url}
+    alt={part.title}
+    className="w-full max-w-xs rounded"
+  />
+)}
     </main>
   );
 }
