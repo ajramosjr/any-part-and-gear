@@ -1,66 +1,42 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useState } from 'react'
 
 export default function SellPage() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [message, setMessage] = useState("");
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    const { error } = await supabase.from("parts").insert([
-      { title, description },
-    ]);
-
-    if (error) {
-      setMessage("❌ Error listing part");
-    } else {
-      setMessage("✅ Part listed successfully!");
-      setTitle("");
-      setDescription("");
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log({ title, description })
   }
 
   return (
-      <h1>Sell a Part</h1>
-<main
-  style={{
-    background: "#ffffff",
-    color: "#000000",
-    minHeight: "100vh",
-    padding: "40px",
-  }}
->
-      <form
-  onSubmit={handleSubmit}
-  className="bg-gray-100 p-6 rounded-lg flex flex-col gap-4 max-w-md"
->
-<input
-  type="text"
-  placeholder="Part title"
-  value={title}
-  onChange={(e) => setTitle(e.target.value)}
-  required
-  className="w-full bg-white text-black border border-gray-300 p-3 rounded-md"
-/>
-  ...
-/>
+    <div className="min-h-screen bg-black text-white p-6">
+      <h1 className="text-xl mb-4">Sell a Part</h1>
 
-<textarea
-  placeholder="Description"
-  value={description}
-  onChange={(e) => setDescription(e.target.value)}
-  rows={4}
-  className="w-full bg-white text-black border border-gray-300 p-3 rounded-md"
-/> 
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
+        <input
+          type="text"
+          placeholder="Part title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="bg-white text-black p-3 rounded"
+        />
 
-        <button type="submit">Submit</button>
+        {/* 👇 THIS IS THE MISSING PIECE */}
+        <textarea
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={4}
+          className="bg-white text-black p-3 rounded"
+        />
+
+        <button type="submit" className="border p-3 rounded">
+          Submit
+        </button>
       </form>
-
-      {message && <p>{message}</p>}
-    </main>
-  );
+    </div>
+  )
 }
