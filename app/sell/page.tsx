@@ -6,10 +6,9 @@ import { toast } from "react-hot-toast";
 
 export default function SellPage() {
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
-const category = formData.get("category") as string;
+const [description, setDescription] = useState("");
 const [price, setPrice] = useState("");
+const [category, setCategory] = useState("");
   
 await supabase.from("parts").insert({
   title,
@@ -50,50 +49,66 @@ await supabase.from("parts").insert({
     <main style={{ padding: "40px", maxWidth: "600px" }}>
       <h1>Sell a Part</h1>
 
-      <form
-        <select name="category" className="border p-2 w-full">
-  <option value="">Select category</option>
-  <option value="engine">Engine</option>
-  <option value="brakes">Brakes</option>
-  <option value="suspension">Suspension</option>
-  <option value="electrical">Electrical</option>
-</select>
-        
-        <input
-  name="price"
-  type="number"
-  step="0.01"
-  placeholder="Price (USD)"
-  className="border p-2 w-full"
-  required
-/>
-      <input
-  type="file"
-  name="image"
-  accept="image/*"
-  className="w-full"
-/>
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "16px",
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Part title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-      
-    <input
-  type="number"
-  placeholder="Price (USD)"
-  value={price}
-  onChange={(e) => setPrice(e.target.value)}
-  step="0.01"
-/>  
+<form
+  onSubmit={handleSubmit}
+  style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+>
+  {/* Category */}
+  <select
+    value={category}
+    onChange={(e) => setCategory(e.target.value)}
+    className="border p-2 w-full"
+    required
+  >
+    <option value="">Select category</option>
+    <option value="engine">Engine</option>
+    <option value="brakes">Brakes</option>
+    <option value="suspension">Suspension</option>
+    <option value="electrical">Electrical</option>
+  </select>
+
+  {/* Title */}
+  <input
+    type="text"
+    placeholder="Part title"
+    value={title}
+    onChange={(e) => setTitle(e.target.value)}
+    className="border p-2 w-full"
+    required
+  />
+
+  {/* Price */}
+  <input
+    type="number"
+    step="0.01"
+    placeholder="Price (USD)"
+    value={price}
+    onChange={(e) => setPrice(e.target.value)}
+    className="border p-2 w-full"
+    required
+  />
+
+  {/* Description */}
+  <textarea
+    placeholder="Description"
+    value={description}
+    onChange={(e) => setDescription(e.target.value)}
+    rows={5}
+    className="border p-2 w-full"
+    required
+  />
+
+  {/* Image */}
+  <input
+    type="file"
+    accept="image/*"
+    className="w-full"
+  />
+
+  <button type="submit">
+    Submit
+  </button>
+</form>
 
         {/* 🔥 THIS IS THE DESCRIPTION FIELD */}
         <textarea
