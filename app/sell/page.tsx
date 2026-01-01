@@ -35,9 +35,9 @@ export default function SellPage() {
   }}
 >
       <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-      >
+  onSubmit={handleSubmit}
+  className="bg-gray-100 p-6 rounded-lg flex flex-col gap-4 max-w-md"
+>
 <input
   type="text"
   placeholder="Part title"
