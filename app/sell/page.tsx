@@ -2,74 +2,69 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
 export default function SellPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
-if (!description.trim()) {
-  toast.error("Description is empty");
-  setLoading(false);
-  return;
-}
-async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
-  setLoading(true);
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
 
-  console.log("Submitting:", { title, description });
+    if (!title.trim() || !description.trim()) {
+      toast.error("Title and description are required");
+      return;
+    }
 
-  if (!title.trim()) {
-    toast.error("Title is required");
+    setLoading(true);
+
+    const { error } = await supabase.from("parts").insert([
+      {
+        title,
+        description,
+      },
+    ]);
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Part listed successfully!");
+      setTitle("");
+      setDescription("");
+    }
+
     setLoading(false);
-    return;
   }
-
-  if (!description.trim()) {
-    toast.error("Description is empty");
-    setLoading(false);
-    return;
-  }
-
-  const { error } = await supabase.from("parts").insert([
-    { title, description },
-  ]);
-
-  setLoading(false);
-
-  if (error) {
-    console.error(error);
-    toast.error("Failed to list part");
-  } else {
-    toast.success("Part listed successfully");
-    setTitle("");
-    setDescription("");
-  }
-}  
 
   return (
-    <main style={{ padding: 40, maxWidth: 500 }}>
-      <Toaster position="top-right" />
-
+    <main style={{ padding: "40px", maxWidth: "600px" }}>
       <h1>Sell a Part</h1>
 
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
+        }}
+      >
+        {/* TITLE */}
         <input
+          type="text"
+          placeholder="Part title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Part title"
           required
-          style={{ width: "100%", marginBottom: 10 }}
         />
 
+        {/* ✅ DESCRIPTION (THIS WAS MISSING) */}
         <textarea
+          placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Description"
+          rows={5}
           required
-          rows={4}
-          style={{ width: "100%", marginBottom: 10 }}
         />
 
         <button type="submit" disabled={loading}>
