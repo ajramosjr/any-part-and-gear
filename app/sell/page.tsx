@@ -39,21 +39,35 @@ export default function SellPage() {
         style={{ display: "flex", flexDirection: "column", gap: "12px" }}
       >
         <input
+  type="text"
+  placeholder="Part title"
+  value={title}
+  onChange={(e) => setTitle(e.target.value)}
+  required
   style={{
-    background: "#fff",
-    color: "#000",
+    background: "#ffffff",
+    color: "#000000",
     border: "1px solid #ccc",
     padding: "10px",
     borderRadius: "6px",
   }}
+/>
   ...
 />
 
         <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+  placeholder="Description"
+  value={description}
+  onChange={(e) => setDescription(e.target.value)}
+  rows={4}
+  style={{
+    background: "#ffffff",
+    color: "#000000",
+    border: "1px solid #ccc",
+    padding: "10px",
+    borderRadius: "6px",
+  }}
+/>
 
         <button type="submit">Submit</button>
       </form>
