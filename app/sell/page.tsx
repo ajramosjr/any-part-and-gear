@@ -3,51 +3,72 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-export default function Page() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+export default function SellPage() {
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    const formData = new FormData(e.currentTarget);
+
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
 
     const { error } = await supabase.from("parts").insert([
-      { title, description }
+      {
+        title,
+        description,
+      },
     ]);
 
     if (error) {
       setMessage("❌ " + error.message);
     } else {
       setMessage("✅ Part listed successfully!");
-      setTitle("");
-      setDescription("");
+      e.currentTarget.reset();
     }
+
+    setLoading(false);
   }
 
   return (
-    <main style={{ padding: 40 }}>
+    <main style={{ padding: "40px", maxWidth: "600px", margin: "0 auto" }}>
       <h1>Sell a Part</h1>
 
-      <form onSubmit={handleSubmit} style={{ maxWidth: 400 }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
+          marginTop: "20px",
+        }}
+      >
         <input
+          name="title"
+          type="text"
           placeholder="Part title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          style={{ display: "block", width: "100%", marginBottom: 12 }}
+          required
+          style={{ padding: "10px" }}
         />
 
         <textarea
+          name="description"
           placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           rows={4}
-          style={{ display: "block", width: "100%", marginBottom: 12 }}
+          required
+          style={{ padding: "10px" }}
         />
 
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Submitting..." : "Submit"}
+        </button>
       </form>
 
-      {message && <p>{message}</p>}
+      {message && <p style={{ marginTop: "16px" }}>{message}</p>}
     </main>
   );
 }
