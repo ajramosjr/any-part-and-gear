@@ -28,33 +28,24 @@ export default function SellPage() {
   }
 
   return (
-<main
-  style={{
-    padding: "40px",
-    maxWidth: "500px",
-    margin: "0 auto",
-  }}
->
-  <h1>Sell a Part</h1>
+return (
+  <main>
+    <style>{`
+      input, textarea {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 1px solid #ccc !important;
+      }
 
-  <form onSubmit={handleSubmit} style={{ marginTop: "20px" }}>
-  <input
-    type="text"
-    placeholder="Part title"
-    value={title}
-    onChange={(e) => setTitle(e.target.value)}
-    required
-    style={{
-      width: "100%",
-      padding: "12px",
-      marginBottom: "12px",
-      backgroundColor: "#ffffff",
-      color: "#000000",
-      border: "1px solid #ccc",
-      borderRadius: "6px",
-      fontSize: "16px",
-    }}
-  />
+      button {
+        background-color: #22c55e !important;
+        color: #000000 !important;
+      }
+
+      ::placeholder {
+        color: #666666 !important;
+      }
+    `}</style>
 
   <textarea
     placeholder="Description"
