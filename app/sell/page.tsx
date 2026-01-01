@@ -9,36 +9,44 @@ export default function SellPage() {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+if (!description.trim()) {
+  toast.error("Description is empty");
+  setLoading(false);
+  return;
+}
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
+  setLoading(true);
 
-    // 🔎 DEBUG CHECK (IMPORTANT)
-    console.log("Submitting:", { title, description });
+  console.log("Submitting:", { title, description });
 
-    if (!description.trim()) {
-      toast.error("Description is empty");
-      return;
-    }
-
-    setLoading(true);
-
-    const { error } = await supabase.from("parts").insert([
-      {
-        title,
-        description,
-      },
-    ]);
-
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("✅ Part listed successfully!");
-      setTitle("");
-      setDescription("");
-    }
-
+  if (!title.trim()) {
+    toast.error("Title is required");
     setLoading(false);
+    return;
   }
+
+  if (!description.trim()) {
+    toast.error("Description is empty");
+    setLoading(false);
+    return;
+  }
+
+  const { error } = await supabase.from("parts").insert([
+    { title, description },
+  ]);
+
+  setLoading(false);
+
+  if (error) {
+    console.error(error);
+    toast.error("Failed to list part");
+  } else {
+    toast.success("Part listed successfully");
+    setTitle("");
+    setDescription("");
+  }
+}  
 
   return (
     <main style={{ padding: 40, maxWidth: 500 }}>
