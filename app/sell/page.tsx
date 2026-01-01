@@ -8,7 +8,15 @@ export default function SellPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
+const category = formData.get("category") as string;
 
+await supabase.from("parts").insert({
+  title,
+  description,
+  price,
+  image_url,
+  category,
+});
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
