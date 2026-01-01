@@ -38,36 +38,24 @@ export default function SellPage() {
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: "12px" }}
       >
-        <input
+<input
   type="text"
   placeholder="Part title"
   value={title}
   onChange={(e) => setTitle(e.target.value)}
   required
-  style={{
-    background: "#ffffff",
-    color: "#000000",
-    border: "1px solid #ccc",
-    padding: "10px",
-    borderRadius: "6px",
-  }}
+  className="w-full bg-white text-black border border-gray-300 p-3 rounded-md"
 />
   ...
 />
 
-        <textarea
+<textarea
   placeholder="Description"
   value={description}
   onChange={(e) => setDescription(e.target.value)}
   rows={4}
-  style={{
-    background: "#ffffff",
-    color: "#000000",
-    border: "1px solid #ccc",
-    padding: "10px",
-    borderRadius: "6px",
-  }}
-/>
+  className="w-full bg-white text-black border border-gray-300 p-3 rounded-md"
+/> 
 
         <button type="submit">Submit</button>
       </form>
