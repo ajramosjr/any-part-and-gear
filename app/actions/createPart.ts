@@ -1,13 +1,10 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
 export async function createPart(formData: FormData) {
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
+  const price = Number(formData.get("price"));
 
-  // Validation
-  if (!title || !description) {
-    redirect("/sell?error=All%20fields%20are%20required");
+  if (!title || !price) {
+    redirect("/sell?error=Missing required fields");
   }
 
   const supabase = createClient(
@@ -18,11 +15,12 @@ export async function createPart(formData: FormData) {
   const { error } = await supabase.from("parts").insert({
     title,
     description,
+    price,
   });
 
   if (error) {
     redirect(`/sell?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect("/sell?success=1");
+  redirect("/browse");
 }
