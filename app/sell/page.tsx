@@ -25,19 +25,29 @@ export default function SellPage() {
   }
 
   return (
-    <main style={{ padding: "40px" }}>
       <h1>Sell a Part</h1>
-
+<main
+  style={{
+    background: "#ffffff",
+    color: "#000000",
+    minHeight: "100vh",
+    padding: "40px",
+  }}
+>
       <form
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: "12px" }}
       >
         <input
-          placeholder="Part title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+  style={{
+    background: "#fff",
+    color: "#000",
+    border: "1px solid #ccc",
+    padding: "10px",
+    borderRadius: "6px",
+  }}
+  ...
+/>
 
         <textarea
           placeholder="Description"
