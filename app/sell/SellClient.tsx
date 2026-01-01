@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 
 export default function SellClient() {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -45,6 +46,18 @@ export default function SellClient() {
         required
         style={{ padding: "8px" }}
       />
+      <textarea
+  placeholder="Description"
+  value={description}
+  onChange={(e) => setDescription(e.target.value)}
+  rows={5}
+  style={{
+    padding: 12,
+    borderRadius: 6,
+    border: "1px solid #ccc",
+    color: "#000",
+  }}
+/>
 
       <button disabled={loading}>
         {loading ? "Submitting..." : "Submit"}
