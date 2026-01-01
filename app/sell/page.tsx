@@ -42,6 +42,14 @@ export default function SellPage() {
       <h1>Sell a Part</h1>
 
       <form
+        <input
+  name="price"
+  type="number"
+  step="0.01"
+  placeholder="Price (USD)"
+  className="border p-2 w-full"
+  required
+/>
         onSubmit={handleSubmit}
         style={{
           display: "flex",
