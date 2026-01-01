@@ -50,6 +50,12 @@ export default function SellPage() {
   className="border p-2 w-full"
   required
 />
+      <input
+  type="file"
+  name="image"
+  accept="image/*"
+  className="w-full"
+/>
         onSubmit={handleSubmit}
         style={{
           display: "flex",
