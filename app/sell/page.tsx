@@ -28,55 +28,35 @@ export default function SellPage() {
   }
 
   return (
-return (
   <main>
-    <style>{`
-      input, textarea {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        border: 1px solid #ccc !important;
-      }
+    <style>{
+    <h1>Sell a Part</h1>
 
-      button {
-        background-color: #22c55e !important;
-        color: #000000 !important;
-      }
-
-      ::placeholder {
-        color: #666666 !important;
-      }
-    `}</style>
+<form
+  onSubmit={handleSubmit}
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+    maxWidth: "500px",
+  }}
+>
+  <input
+    type="text"
+    placeholder="Part title"
+    value={title}
+    onChange={(e) => setTitle(e.target.value)}
+    required
+  />
 
   <textarea
     placeholder="Description"
     value={description}
     onChange={(e) => setDescription(e.target.value)}
-    style={{
-      width: "100%",
-      padding: "12px",
-      marginBottom: "12px",
-      backgroundColor: "#ffffff",
-      color: "#000000",
-      border: "1px solid #ccc",
-      borderRadius: "6px",
-      fontSize: "16px",
-    }}
+    rows={4}
   />
 
-  <button
-    type="submit"
-    style={{
-      width: "100%",
-      padding: "12px",
-      backgroundColor: "#22c55e",
-      color: "#000000",
-      fontWeight: "bold",
-      border: "none",
-      borderRadius: "6px",
-      cursor: "pointer",
-      fontSize: "16px",
-    }}
-  >
-    Submit
-  </button>
+  <button type="submit">Submit</button>
 </form>
+
+{message && <p>{message}</p>}
