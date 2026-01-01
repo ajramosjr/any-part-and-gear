@@ -32,11 +32,12 @@ if (image && image.size > 0) {
     .getPublicUrl(fileName).data.publicUrl;
 }
   
-  const { error } = await supabase.from("parts").insert({
-    title,
-    description,
-    price,
-  });
+  await supabase.from("parts").insert({
+  title,
+  description,
+  price,
+  image_url,
+});
 
   if (error) {
     redirect(`/sell?error=${encodeURIComponent(error.message)}`);
