@@ -28,68 +28,66 @@ export default function SellPage() {
   }
 
   return (
-  <main
-    style={{
-      padding: "40px",
-      maxWidth: "500px",
-      margin: "0 auto",
-      color: "white",
-    }}
-  >
-    <h1 style={{ fontSize: "24px", marginBottom: "20px" }}>
-      Sell a Part
-    </h1>
+<main
+  style={{
+    padding: "40px",
+    maxWidth: "500px",
+    margin: "0 auto",
+  }}
+>
+  <h1>Sell a Part</h1>
 
-    <form onSubmit={handleSubmit}>
-      <div style={{ marginBottom: "15px" }}>
-        <label>Part title</label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          style={{
-            width: "100%",
-            padding: "10px",
-            background: "#111",
-            color: "white",
-            border: "1px solid #444",
-            borderRadius: "6px",
-          }}
-        />
-      </div>
+  <form onSubmit={handleSubmit}>
+    {/* TITLE INPUT */}
+    <input
+      type="text"
+      placeholder="Part title"
+      value={title}
+      onChange={(e) => setTitle(e.target.value)}
+      required
+      style={{
+        width: "100%",
+        padding: "12px",
+        marginBottom: "12px",
+        backgroundColor: "#111",
+        color: "white",
+        border: "1px solid #555",
+        borderRadius: "6px",
+      }}
+    />
 
-      <div style={{ marginBottom: "15px" }}>
-        <label>Description</label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "10px",
-            background: "#111",
-            color: "white",
-            border: "1px solid #444",
-            borderRadius: "6px",
-            minHeight: "100px",
-          }}
-        />
-      </div>
+    {/* DESCRIPTION INPUT */}
+    <textarea
+      placeholder="Description"
+      value={description}
+      onChange={(e) => setDescription(e.target.value)}
+      style={{
+        width: "100%",
+        padding: "12px",
+        marginBottom: "12px",
+        backgroundColor: "#111",
+        color: "white",
+        border: "1px solid #555",
+        borderRadius: "6px",
+      }}
+    />
 
-      <button
-        type="submit"
-        style={{
-          padding: "10px 16px",
-          background: "#2563eb",
-          color: "white",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer",
-        }}
-      >
-        Submit
-      </button>
-    </form>
+    {/* SUBMIT BUTTON */}
+    <button
+      type="submit"
+      style={{
+        padding: "12px",
+        width: "100%",
+        backgroundColor: "#2563eb",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+      }}
+    >
+      Submit
+    </button>
+  </form>
 
-    {message && <p style={{ marginTop: "15px" }}>{message}</p>}
-  </main>
-);
+  {message && <p style={{ marginTop: "12px" }}>{message}</p>}
+</main>
