@@ -28,33 +28,68 @@ export default function SellPage() {
   }
 
   return (
-    <main style={{ padding: "40px", maxWidth: "500px" }}>
-      <h1>Sell a Part</h1>
+  <main
+    style={{
+      padding: "40px",
+      maxWidth: "500px",
+      margin: "0 auto",
+      color: "white",
+    }}
+  >
+    <h1 style={{ fontSize: "24px", marginBottom: "20px" }}>
+      Sell a Part
+    </h1>
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "15px" }}>
-          <label>Part Title</label>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            style={{ width: "100%", padding: "8px" }}
-          />
-        </div>
+    <form onSubmit={handleSubmit}>
+      <div style={{ marginBottom: "15px" }}>
+        <label>Part title</label>
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          style={{
+            width: "100%",
+            padding: "10px",
+            background: "#111",
+            color: "white",
+            border: "1px solid #444",
+            borderRadius: "6px",
+          }}
+        />
+      </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label>Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            style={{ width: "100%", padding: "8px" }}
-          />
-        </div>
+      <div style={{ marginBottom: "15px" }}>
+        <label>Description</label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "10px",
+            background: "#111",
+            color: "white",
+            border: "1px solid #444",
+            borderRadius: "6px",
+            minHeight: "100px",
+          }}
+        />
+      </div>
 
-        <button type="submit">Submit</button>
-      </form>
+      <button
+        type="submit"
+        style={{
+          padding: "10px 16px",
+          background: "#2563eb",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          cursor: "pointer",
+        }}
+      >
+        Submit
+      </button>
+    </form>
 
-      {message && <p>{message}</p>}
-    </main>
-  );
-}
+    {message && <p style={{ marginTop: "15px" }}>{message}</p>}
+  </main>
+);
