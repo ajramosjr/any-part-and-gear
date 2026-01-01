@@ -70,6 +70,7 @@ export default function BrowsePage() {
             }}
           >
             <strong>{part.title}</strong>
+            <p className="text-sm text-gray-600">${part.price}</p>
             {part.description && <p>{part.description}</p>}
           </li>
         ))}
