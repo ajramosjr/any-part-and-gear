@@ -2,20 +2,16 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import toast from "react-hot-toast";
 
 export default function SellPage() {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
-
-    const formData = new FormData(e.currentTarget);
-
-    const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
 
     const { error } = await supabase.from("parts").insert([
       {
@@ -25,50 +21,41 @@ export default function SellPage() {
     ]);
 
     if (error) {
-      setMessage("❌ " + error.message);
+      toast.error(error.message);
     } else {
-      setMessage("✅ Part listed successfully!");
-      e.currentTarget.reset();
+      toast.success("✅ Part listed successfully!");
+      setTitle("");
+      setDescription("");
     }
 
     setLoading(false);
   }
 
   return (
-    <main style={{ padding: "40px", maxWidth: "600px", margin: "0 auto" }}>
+    <main style={{ padding: 40, maxWidth: 500 }}>
       <h1>Sell a Part</h1>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "16px",
-          marginTop: "20px",
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <input
-          name="title"
-          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           placeholder="Part title"
           required
-          style={{ padding: "10px" }}
+          style={{ width: "100%", marginBottom: 10 }}
         />
 
         <textarea
-          name="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           placeholder="Description"
-          rows={4}
           required
-          style={{ padding: "10px" }}
+          style={{ width: "100%", marginBottom: 10 }}
         />
 
-        <button type="submit" disabled={loading}>
+        <button disabled={loading}>
           {loading ? "Submitting..." : "Submit"}
         </button>
       </form>
-
-      {message && <p style={{ marginTop: "16px" }}>{message}</p>}
     </main>
   );
 }
