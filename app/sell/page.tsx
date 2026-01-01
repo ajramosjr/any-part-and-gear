@@ -42,6 +42,14 @@ export default function SellPage() {
       <h1>Sell a Part</h1>
 
       <form
+        <select name="category" className="border p-2 w-full">
+  <option value="">Select category</option>
+  <option value="engine">Engine</option>
+  <option value="brakes">Brakes</option>
+  <option value="suspension">Suspension</option>
+  <option value="electrical">Electrical</option>
+</select>
+        
         <input
   name="price"
   type="number"
