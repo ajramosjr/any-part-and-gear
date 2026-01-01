@@ -1,3 +1,4 @@
+import "./globals.css";
 import ToasterClient from "@/app/ui/toaster-client";
 
 export default function RootLayout({
