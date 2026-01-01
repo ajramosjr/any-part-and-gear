@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Toaster, toast } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function SellPage() {
   const [title, setTitle] = useState("");
