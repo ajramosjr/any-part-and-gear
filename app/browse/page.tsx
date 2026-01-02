@@ -80,9 +80,14 @@ if (category) {
       </ul>
       {part.image_url && (
   <img
-    src={part.image_url}
-    alt={part.title}
- <input className="w-full max-w-xs rounded" />  
+  src={part.image_url}
+  alt={part.title}
+/>
+
+<input
+  className="w-full max-w-xs rounded"
+  placeholder="Search parts..."
+/>
     <select onChange={(e) => setCategory(e.target.value)}>
   <option value="">All</option>
   <option value="engine">Engine</option>
