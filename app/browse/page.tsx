@@ -87,8 +87,10 @@ if (category) {
 <input
   className="w-full max-w-xs rounded"
   placeholder="Search parts..."
-/>
-    <select onChange={(e) => setCategory(e.target.value)}>
+/>    
+      
+<input
+   <select onChange={(e) => setCategory(e.target.value)}>
   <option value="">All</option>
   <option value="engine">Engine</option>
   <option value="brakes">Brakes</option>
