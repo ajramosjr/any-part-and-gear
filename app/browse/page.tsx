@@ -84,10 +84,15 @@ if (category) {
   alt={part.title}
 />
 
+<img
+  src={part.image_url}
+  alt={part.title}
+/>
+
 <input
-  className="w-full max-w-xs rounded"
+  className="w-full max-w-xs rounded border p-2"
   placeholder="Search parts..."
-/>    
+/>
       
 <input
    <select onChange={(e) => setCategory(e.target.value)}>
