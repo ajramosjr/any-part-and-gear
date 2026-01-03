@@ -1,11 +1,18 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
+
 export async function createPart(formData: FormData) {
-  const title = formData.get("title") as string;
-  const description = formData.get("description") as string;
+  const title = formData.get("title")?.toString();
   const price = Number(formData.get("price"));
 
   if (!title || !price) {
     redirect("/sell?error=Missing required fields");
   }
+
+  // rest of your logic…
+}
 
   const supabase = createClient(
     process.env.SUPABASE_URL!,
