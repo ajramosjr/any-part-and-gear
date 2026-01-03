@@ -42,13 +42,15 @@ export default function BrowsePage() {
           )
           .map((part) => (
             <div
-              key={part.id}
-              style={{
-                border: "1px solid #444",
-                padding: "16px",
-                marginBottom: "12px",
-              }}
-            >
+  key={part.id}
+  onClick={() => window.location.href = `/parts/${part.id}`}
+  style={{
+    border: "1px solid #444",
+    padding: "16px",
+    marginBottom: "12px",
+    cursor: "pointer",
+  }}
+>
              <h3>{part.title}</h3>
 
 {part.price !== null && (
