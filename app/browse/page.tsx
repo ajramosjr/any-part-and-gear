@@ -10,14 +10,22 @@ export default function BrowsePage() {
 
   useEffect(() => {
     async function fetchParts() {
-      const { data } = await supabase.from("parts").select("*");
-      setParts(data || []);
+      const { data, error } = await supabase
+        .from("parts")
+        .select("id, title, image_url");
+
+      if (error) {
+        console.error(error);
+      } else {
+        setParts(data || []);
+      }
     }
+
     fetchParts();
   }, []);
 
   return (
-    <main style={{ padding: "40px" }}>
+    <main style={{ padding: 40 }}>
       <h1>Browse Parts</h1>
 
       <input
@@ -25,43 +33,35 @@ export default function BrowsePage() {
         placeholder="Search parts..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        style={{
-          padding: "10px",
-          marginBottom: "20px",
-          width: "100%",
-          maxWidth: "300px",
-          display: "block",
-        }}
+        style={{ padding: 10, marginBottom: 20 }}
       />
 
-      <div>
-        {parts
-          .filter((part) =>
-            part.title?.toLowerCase().includes(search.toLowerCase())
-          )
-          .map((part) => (
-            <Link href={`/browse/${part.id}`} key={part.id}>
-              <div
-                style={{
-                  border: "1px solid #444",
-                  padding: "16px",
-                  marginBottom: "12px",
-                  cursor: "pointer",
-                }}
-              >
-                <h3>{part.title}</h3>
+      {parts
+        .filter((part) =>
+          part.title?.toLowerCase().includes(search.toLowerCase())
+        )
+        .map((part) => (
+          <Link href={`/browse/${part.id}`} key={part.id}>
+            <div
+              style={{
+                border: "1px solid #444",
+                padding: 16,
+                marginBottom: 12,
+                cursor: "pointer",
+              }}
+            >
+              <h3>{part.title}</h3>
 
-                {part.image_url && (
-                  <img
-                    src={part.image_url}
-                    alt={part.title}
-                    style={{ maxWidth: "200px" }}
-                  />
-                )}
-              </div>
-            </Link>
-          ))}
-      </div>
+              {part.image_url && (
+                <img
+                  src={part.image_url}
+                  alt={part.title}
+                  style={{ maxWidth: 200 }}
+                />
+              )}
+            </div>
+          </Link>
+        ))}
     </main>
   );
 }
