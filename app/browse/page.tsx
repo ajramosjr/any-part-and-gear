@@ -49,14 +49,21 @@ export default function BrowsePage() {
                 marginBottom: "12px",
               }}
             >
-              <h3>{part.title}</h3>
-              {part.image_url && (
-                <img
-                  src={part.image_url}
-                  alt={part.title}
-                  style={{ maxWidth: "200px" }}
-                />
-              )}
+             <h3>{part.title}</h3>
+
+{part.price !== null && (
+  <p style={{ color: "#4ade80", marginTop: "4px" }}>
+    ${Number(part.price).toFixed(2)}
+  </p>
+)}
+
+{part.image_url && (
+  <img
+    src={part.image_url}
+    alt={part.title}
+    style={{ maxWidth: "200px", marginTop: "8px" }}
+  />
+)} 
             </div>
           ))}
       </div>
