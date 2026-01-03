@@ -1,20 +1,40 @@
-  import { supabase } from "@/lib/supabase";
+  import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { supabase } from "@/lib/supabase";
 
-export default async function PartPage({
+export async function generateStaticParams() {
+export async function generateMetadata({
   params,
 }: {
   params: { id: string };
-}) {
-  const { data: part, error } = await supabase
+}): Promise<Metadata> {
+  const { data: part } = await supabase
     .from("parts")
-    .select("*")
+    .select("title, description")
     .eq("id", Number(params.id))
     .single();
 
-  if (error || !part) {
-    return <div style={{ padding: 40 }}>Part not found</div>;
-  }
+if (error || !part) {
+  notFound();
+}
 
+  return {
+    title: `${part.title} | Any-Part & Gear`,
+    description:
+      part.description ??
+      "Find quality auto parts and gear on Any-Part & Gear.",
+  };
+} 
+  const { data: parts } = await supabase
+    .from("parts")
+    .select("id");
+
+  if (!parts) return [];
+
+  return parts.map((part) => ({
+    id: part.id.toString(),
+  }));
+}
   return (
     <main style={{ padding: 40 }}>
       <h1>{part.title}</h1>
