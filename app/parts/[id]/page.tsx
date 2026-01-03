@@ -1,19 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export default async function PartPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!
-  );
-
   const { data: part } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", Number(params.id)) // ✅ REQUIRED
     .single();
 
   if (!part) {
@@ -32,8 +32,13 @@ export default async function PartPage({
         />
       )}
 
-      <p>{part.description}</p>
-      <p><strong>${part.price}</strong></p>
+      {part.description && <p>{part.description}</p>}
+
+      {part.price !== null && (
+        <p>
+          <strong>${part.price}</strong>
+        </p>
+      )}
     </main>
   );
 }
