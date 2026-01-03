@@ -36,50 +36,42 @@ export default function BrowsePage() {
 
       {/* PART LIST */}
       <div>
-        {parts
-          .filter((part) =>
-            part.title?.toLowerCase().includes(search.toLowerCase())
-          )
-          .map((part) => (
- <a
-  href={`/parts/${part.id}`}
-  style={{ textDecoration: "none", color: "inherit" }}
->
-  <div
-    style={{
-      border: "1px solid #444",
-      padding: "16px",
-      marginBottom: "12px",
-      cursor: "pointer",
-    }}
-  >
-    <h3>{part.title}</h3>
-    {part.image_url && (
-      <img
-        src={part.image_url}
-        alt={part.title}
-        style={{ maxWidth: "200px" }}
-      />
-    )}
-  </div>
-</a>
-             <h3>{part.title}</h3>
+      {parts
+  .filter((part) =>
+    part.title?.toLowerCase().includes(search.toLowerCase())
+  )
+  .map((part) => (
+    <a
+      key={part.id}
+      href={`/parts/${part.id}`}
+      style={{ textDecoration: "none", color: "inherit" }}
+    >
+      <div
+        style={{
+          border: "1px solid #444",
+          padding: "16px",
+          marginBottom: "12px",
+          cursor: "pointer",
+        }}
+      >
+        <h3>{part.title}</h3>
 
-{part.price !== null && (
-  <p style={{ color: "#4ade80", marginTop: "4px" }}>
-    ${Number(part.price).toFixed(2)}
-  </p>
-)}
+        {part.price !== null && (
+          <p style={{ color: "#4ade80", marginTop: "4px" }}>
+            ${part.price}
+          </p>
+        )}
 
-{part.image_url && (
-  <img
-    src={part.image_url}
-    alt={part.title}
-    style={{ maxWidth: "200px", marginTop: "8px" }}
-  />
-)} 
-            </div>
-          ))}
+        {part.image_url && (
+          <img
+            src={part.image_url}
+            alt={part.title}
+            style={{ maxWidth: "200px", marginTop: "10px" }}
+          />
+        )}
+      </div>
+    </a>
+  ))}  
       </div>
     </main>
   );
