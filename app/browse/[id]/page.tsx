@@ -1,22 +1,17 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+  import { supabase } from "@/lib/supabase";
 
 export default async function PartPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const { data: part } = await supabase
+  const { data: part, error } = await supabase
     .from("parts")
     .select("*")
     .eq("id", Number(params.id))
     .single();
 
-  if (!part) {
+  if (error || !part) {
     return <div style={{ padding: 40 }}>Part not found</div>;
   }
 
@@ -32,8 +27,8 @@ export default async function PartPage({
         />
       )}
 
-      {part.price !== null && <p>Price: ${part.price}</p>}
+      {part.price && <p>Price: ${part.price}</p>}
       {part.description && <p>{part.description}</p>}
     </main>
   );
-}
+}  
