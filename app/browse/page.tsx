@@ -20,6 +20,19 @@ export default function BrowsePage() {
       <h1>Browse Parts</h1>
 
       {/* SEARCH INPUT */}
+      <input
+        type="text"
+        placeholder="Search parts..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{
+          padding: "10px",
+          marginBottom: "20px",
+          width: "100%",
+          maxWidth: "300px",
+          display: "block",
+        }}
+      />
 
       {/* PART LIST */}
       <div>
