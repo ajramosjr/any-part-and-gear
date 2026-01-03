@@ -5,46 +5,43 @@ import { createClient } from "@supabase/supabase-js";
 
 export async function createPart(formData: FormData) {
   const title = formData.get("title")?.toString();
+  const description = formData.get("description")?.toString() || "";
   const price = Number(formData.get("price"));
 
   if (!title || !price) {
     redirect("/sell?error=Missing required fields");
   }
 
-  // rest of your logic…
-}
-
   const supabase = createClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const image = formData.get("image") as File;
+  const image = formData.get("image") as File | null;
+  let image_url: string | null = null;
 
-let image_url = null;
+  if (image && image.size > 0) {
+    const fileName = `${Date.now()}-${image.name}`;
 
-if (image && image.size > 0) {
-  const fileName = `${Date.now()}-${image.name}`;
+    const { error: uploadError } = await supabase.storage
+      .from("part-images")
+      .upload(fileName, image);
 
-  const { data, error } = await supabase.storage
-    .from("part-images")
-    .upload(fileName, image);
+    if (uploadError) {
+      redirect("/sell?error=Image upload failed");
+    }
 
-  if (error) {
-    redirect("/sell?error=Image upload failed");
+    image_url = supabase.storage
+      .from("part-images")
+      .getPublicUrl(fileName).data.publicUrl;
   }
 
-  image_url = supabase.storage
-    .from("part-images")
-    .getPublicUrl(fileName).data.publicUrl;
-}
-  
-  await supabase.from("parts").insert({
-  title,
-  description,
-  price,
-  image_url,
-});
+  const { error } = await supabase.from("parts").insert({
+    title,
+    description,
+    price,
+    image_url,
+  });
 
   if (error) {
     redirect(`/sell?error=${encodeURIComponent(error.message)}`);
