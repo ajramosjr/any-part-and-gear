@@ -1,4 +1,9 @@
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default async function PartPage({
   params,
@@ -27,7 +32,7 @@ export default async function PartPage({
         />
       )}
 
-      {part.price && <p>Price: ${part.price}</p>}
+      {part.price !== null && <p>Price: ${part.price}</p>}
       {part.description && <p>{part.description}</p>}
     </main>
   );
