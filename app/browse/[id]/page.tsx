@@ -8,7 +8,7 @@ export default async function PartPage({
   const { data: part } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", Number(params.id))
     .single();
 
   if (!part) {
