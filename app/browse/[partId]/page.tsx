@@ -1,3 +1,4 @@
+export const dynamicParams = true;
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
