@@ -41,16 +41,28 @@ export default function BrowsePage() {
             part.title?.toLowerCase().includes(search.toLowerCase())
           )
           .map((part) => (
-            <div
-  key={part.id}
-  onClick={() => window.location.href = `/parts/${part.id}`}
-  style={{
-    border: "1px solid #444",
-    padding: "16px",
-    marginBottom: "12px",
-    cursor: "pointer",
-  }}
+ <a
+  href={`/parts/${part.id}`}
+  style={{ textDecoration: "none", color: "inherit" }}
 >
+  <div
+    style={{
+      border: "1px solid #444",
+      padding: "16px",
+      marginBottom: "12px",
+      cursor: "pointer",
+    }}
+  >
+    <h3>{part.title}</h3>
+    {part.image_url && (
+      <img
+        src={part.image_url}
+        alt={part.title}
+        style={{ maxWidth: "200px" }}
+      />
+    )}
+  </div>
+</a>
              <h3>{part.title}</h3>
 
 {part.price !== null && (
