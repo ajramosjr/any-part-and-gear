@@ -18,17 +18,13 @@ export default function SellPage() {
     const price = Number(formData.get("price"));
 
     const { error } = await supabase.from("parts").insert([
-      {
-        title,
-        description,
-        price,
-      },
+      { title, description, price },
     ]);
 
     if (error) {
       setMessage(error.message);
     } else {
-      setMessage("✅ Part listed successfully!");
+      setMessage("✅ Part listed successfully");
       e.currentTarget.reset();
     }
 
@@ -36,7 +32,7 @@ export default function SellPage() {
   }
 
   return (
-    <main style={{ padding: "40px", maxWidth: "600px" }}>
+    <main style={{ padding: 40, maxWidth: 600 }}>
       <h1>Sell a Part</h1>
 
       <form
@@ -44,12 +40,11 @@ export default function SellPage() {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "16px",
+          gap: 12,
         }}
       >
         <input
           name="title"
-          type="text"
           placeholder="Part title"
           required
         />
@@ -65,7 +60,7 @@ export default function SellPage() {
           name="price"
           type="number"
           step="0.01"
-          placeholder="Price (USD)"
+          placeholder="Price"
           required
         />
 
