@@ -1,4 +1,5 @@
-import Breadcrumbs from "@/components/Breadcrumbs";
+"use client";
+
 import Link from "next/link";
 
 export default function Breadcrumbs({
