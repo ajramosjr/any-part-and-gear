@@ -1,5 +1,4 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -10,9 +9,7 @@ export default async function PartPage({
 }: {
   params: { partId: string };
 }) {
-  const supabase = createServerComponentClient({ cookies });
-
-  const { data: part } = await supabase
+const { data: part } = await supabase
     .from("parts") // ✅ correct table
     .select("*")
     .eq("id", Number(params.partId)) // ✅ int8 → Number
