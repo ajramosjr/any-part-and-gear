@@ -3,11 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useSearchParams } from "next/navigation";
 
 export default function BrowsePage() {
   const [parts, setParts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
-
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category");
+  const filtered = parts.filter((part) => {
+  if (category && part.category !== category) return false;
+  return part.title?.toLowerCase().includes(search.toLowerCase());
+});
+  
   useEffect(() => {
     async function fetchParts() {
       const { data, error } = await supabase
