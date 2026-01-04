@@ -82,7 +82,13 @@ export default async function PartPage({
     .select("*")
     .eq("id", Number(params.partId))
     .single();
+if (!part) {
+    return <div style={{ padding: 40 }}>Part not found</div>;
+  }
 
+  // ✅ ADD THIS LINE HERE
+  const images = part.image_url ? [part.image_url] : [];
+  
   if (!part) {
     notFound();
   }
