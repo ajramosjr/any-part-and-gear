@@ -2,19 +2,6 @@ export const dynamicParams = true;
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
-/* 1️⃣ Static params */
-export async function generateStaticParams() {
-  const { data: parts } = await supabase
-    .from("parts")
-    .select("id");
-
-  if (!parts) return [];
-
-  return parts.map((part) => ({
-    partId: part.id.toString(),
-  }));
-}
-
 /* 2️⃣ SEO metadata */
 export async function generateMetadata({
   params,
