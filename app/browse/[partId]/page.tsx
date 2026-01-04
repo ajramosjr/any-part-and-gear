@@ -9,29 +9,30 @@ export default async function PartPage({
 }: {
   params: { partId: string };
 }) {
-const { data: part } = await supabase
-    .from("parts") // ✅ correct table
+  const partId = Number(params.partId);
+
+  // 🚨 Guard: invalid ID in URL
+  if (Number.isNaN(partId)) {
+    notFound();
+  }
+
+  const { data: part, error } = await supabase
+    .from("parts")
     .select("*")
-    .eq("id", Number(params.partId)) // ✅ int8 → Number
+    .eq("id", partId)
     .single();
 
-  if (!part) {
+  if (error || !part) {
     notFound();
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-10">
-      <Link href="/browse" className="underline">
-        ← Back to Browse
-      </Link>
+    <main style={{ padding: 40 }}>
+      <h1>{part.title}</h1>
 
-      <h1 className="text-3xl font-bold mt-4">{part.title}</h1>
+      {part.description && <p>{part.description}</p>}
 
-      {part.description && (
-        <p className="mt-4 text-muted-foreground">
-          {part.description}
-        </p>
-      )}
-    </div>
+      <Link href="/browse">← Back to Browse</Link>
+    </main>
   );
 }
