@@ -1,15 +1,13 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-
-export const dynamic = "force-dynamic";
 
 export default async function BrowsePage({
   searchParams,
 }: {
   searchParams: { category?: string };
 }) {
-  const supabase = createServerComponentClient({ cookies });
-
   const category = searchParams.category ?? null;
 
   const { data: parts, error } = await supabase
