@@ -1,8 +1,9 @@
 export const dynamicParams = true;
+
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
-/* 2️⃣ SEO metadata */
+/* SEO metadata */
 export async function generateMetadata({
   params,
 }: {
@@ -15,7 +16,10 @@ export async function generateMetadata({
     .single();
 
   if (!part) {
-    return { title: "Part not found" };
+    return {
+      title: "Part not found",
+      description: "This part does not exist.",
+    };
   }
 
   return {
@@ -24,7 +28,7 @@ export async function generateMetadata({
   };
 }
 
-/* 3️⃣ Page component */
+/* Page */
 export default async function PartPage({
   params,
 }: {
