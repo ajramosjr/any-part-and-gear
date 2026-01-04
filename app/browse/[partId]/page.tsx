@@ -2,8 +2,7 @@ export const dynamicParams = true;
 
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
-import Breadcrumbs from "@/components/Breadcrumbs";
-
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 /* ---------------- SEO METADATA ---------------- */
 export async function generateMetadata({
   params,
