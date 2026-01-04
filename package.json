@@ -1,3 +1,7 @@
+npm install @supabase/auth-helpers-nextjs
+git add .
+git commit -m "Install Supabase auth helpers"
+git push
 {
   "name": "nextjs",
   "version": "0.1.0",
