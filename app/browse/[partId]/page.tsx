@@ -2,6 +2,7 @@ export const dynamicParams = true;
 
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 /* SEO metadata */
 export async function generateMetadata({
@@ -61,3 +62,24 @@ export default async function PartPage({
     </main>
   );
 }
+return (
+  <main style={{ padding: 40 }}>
+    <Breadcrumbs
+      category={part.category}
+      title={part.title}
+    />
+
+    <h1>{part.title}</h1>
+
+    {part.image_url && (
+      <img
+        src={part.image_url}
+        alt={part.title}
+        style={{ maxWidth: 300 }}
+      />
+    )}
+
+    {part.price && <p>Price: ${part.price}</p>}
+    {part.description && <p>{part.description}</p>}
+  </main>
+);
