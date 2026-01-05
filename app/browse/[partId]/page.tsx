@@ -17,7 +17,9 @@ export default async function PartPage({ params }: PageProps) {
 
   return (
     <main style={{ padding: 40 }}>
-      <Link href="/browse">← Back to Browse</Link>
+      <Link href={`/browse/${listing.id}`}>
+  {listing.title}
+</Link>
 
       <h1>{part.title}</h1>
       {part.description && <p>{part.description}</p>}
