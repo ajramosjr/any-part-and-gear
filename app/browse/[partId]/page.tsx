@@ -11,19 +11,17 @@ export default async function PartPage({
 }) {
  const partId = params.partId;
 
-if (!partId) {
+if (!partId) 
   notFound();
 } 
 
-  const { data: part, error } = await supabase
-    .from("parts")
-    .select("*")
-    .eq("id", partId)
-    .single();
+  const { data: part } = await supabase
+  .from("parts")
+  .select("*")
+  .eq("id", Number(params.partId))
+  .single();
 
-  if (error || !part) {
-    notFound();
-  }
+if (!part) notFound();
 
   return (
    <main style={{ padding: 40 }}>
