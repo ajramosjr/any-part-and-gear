@@ -1,56 +1,89 @@
-export const dynamic = "force-dynamic";
+"use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
-export default async function BrowsePage({
-  searchParams,
-}: {
-  searchParams: { category?: string };
-}) {
-  const category = searchParams.category ?? null;
+type Part = {
+  id: number;
+  title: string | null;
+  category: string | null;
+  price: number | null;
+  image_url: string | null;
+};
 
-  const { data: parts, error } = await supabase
-    .from("parts")
-    .select("*")
-    .order("created_at", { ascending: false });
+export default function BrowsePage() {
+  const [parts, setParts] = useState<Part[]>([]);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
 
-  if (error) {
-    throw new Error("Failed to load parts");
-  }
+  useEffect(() => {
+    async function fetchParts() {
+      let query = supabase.from("parts").select("*");
 
-  const filtered = category
-    ? parts?.filter((part) => part.category === category)
-    : parts;
+      if (search) {
+        query = query.ilike("title", `%${search}%`);
+      }
+
+      if (category) {
+        query = query.eq("category", category);
+      }
+
+      const { data } = await query.order("created_at", { ascending: false });
+      setParts(data || []);
+    }
+
+    fetchParts();
+  }, [search, category]);
 
   return (
     <main style={{ padding: 40 }}>
       <h1>Browse Parts</h1>
-      
-  <ul>
-  {filtered?.map((part) => (
-    <li key={part.id}>
-      <Link href={`/browse/${part.id}`}>{part.title}</Link>
-    </li>
-  ))}
-    {parts.map((part) => (
-  <div key={part.id} style={{ marginBottom: 20 }}>
-    {part.image_url && (
-      <img
-        src={part.image_url}
-        alt={part.title}
-        width={150}
-        style={{ borderRadius: 8 }}
-      />
-    )}
 
-    <Link href={`/browse/${part.id}`}>
-      {part.title}
-    </Link>
-  </div>
-))}
-</ul>
-      
-    </main>
-  );
-}
+      {/* SEARCH */}
+      <input
+        type="text"
+        placeholder="Search parts..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ padding: 10, width: 300, marginBottom: 12, display: "block" }}
+      />
+
+      {/* CATEGORY FILTER */}
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        style={{ padding: 10, width: 300, marginBottom: 24 }}
+      >
+        <option value="">All Categories</option>
+        <option value="brakes">Brakes</option>
+        <option value="suspension">Suspension</option>
+        <option value="engine">Engine</option>
+        <option value="interior">Interior</option>
+        <option value="wheels">Wheels</option>
+      </select>
+
+      {/* RESULTS */}
+      {parts.length === 0 && <p>No parts found.</p>}
+
+      {parts.map((part) => (
+        <Link key={part.id} href={`/browse/${part.id}`}>
+          <div
+            style={{
+              border: "1px solid #444",
+              padding: 16,
+              marginBottom: 12,
+              cursor: "pointer",
+            }}
+          >
+            <h3>{part.title}</h3>
+            {part.category && <p>Category: {part.category}</p>}
+            {part.price && <strong>${part.price}</strong>}
+            {part.image_url && (
+              <img
+                src={part.image_url}
+                alt={part.title ?? ""}
+                style={{ maxWidth: 200, display: "block", marginTop: 8 }}
+              />
+            )}
+          </div>
