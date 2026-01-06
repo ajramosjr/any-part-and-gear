@@ -11,8 +11,21 @@ export default function SellForm() {
     e.preventDefault();
     setLoading(true);
 
+    // ✅ Get logged-in user
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("You must be logged in");
+      setLoading(false);
+      return;
+    }
+
+    // ✅ Insert part with owner
     const { error } = await supabase.from("parts").insert({
       title,
+      user_id: user.id,
     });
 
     setLoading(false);
@@ -33,9 +46,10 @@ export default function SellForm() {
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Part title"
       />
+
       <button disabled={loading}>
         {loading ? "Posting..." : "Post Part"}
       </button>
     </form>
   );
-}
+}        
