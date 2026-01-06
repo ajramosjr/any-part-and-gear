@@ -33,6 +33,22 @@ export default async function BrowsePage({
       <Link href={`/browse/${part.id}`}>{part.title}</Link>
     </li>
   ))}
+    {parts.map((part) => (
+  <div key={part.id} style={{ marginBottom: 20 }}>
+    {part.image_url && (
+      <img
+        src={part.image_url}
+        alt={part.title}
+        width={150}
+        style={{ borderRadius: 8 }}
+      />
+    )}
+
+    <Link href={`/browse/${part.id}`}>
+      {part.title}
+    </Link>
+  </div>
+))}
 </ul>
       
     </main>
