@@ -1,9 +1,20 @@
-"use client";
 
+import { redirect } from "next/navigation";
+import { supabaseServer } from "@/lib/supabaseServer";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function SellPage() {
+const supabase = supabaseServer();
+
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+if (!user) {
+  redirect("/login");
+}
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
