@@ -25,7 +25,22 @@ export default function LoginPage() {
     if (error) setMessage(error.message);
     else setMessage("Account created!");
   };
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
 
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${location.origin}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    alert("Check your email for the login link!");
+  }
+};
   return (
     <main style={{ padding: 40 }}>
       <h1>Login</h1>
