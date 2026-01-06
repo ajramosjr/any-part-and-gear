@@ -1,76 +1,22 @@
-
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabaseServer";
+import SellForm from "@/components/SellForm";
 
-export default async function SellPage()
-{const supabase = supabaseServer();
+export default async function SellPage() {
+  const supabase = supabaseServer();
 
-const {
-  data: { user },
-} = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-if (!user) {
-  redirect("/login");
-}
-
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-
-    const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
-    const price = Number(formData.get("price"));
-
-    const { error } = await supabase.from("parts").insert([
-      { title, description, price },
-    ]);
-
-    if (error) {
-      setMessage(error.message);
-    } else {
-      setMessage("✅ Part listed successfully");
-      e.currentTarget.reset();
-    }
-
-    setLoading(false);
+  if (!user) {
+    redirect("/login");
   }
 
   return (
-    <main style={{ padding: 40, maxWidth: 600 }}>
+    <main style={{ padding: 40 }}>
       <h1>Sell a Part</h1>
-
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: 12 }}
-      >
-        <input name="title" placeholder="Part title" required />
-
-        <textarea
-          name="description"
-          placeholder="Description"
-          rows={4}
-          required
-        />
-
-        <input
-          name="price"
-          type="number"
-          step="0.01"
-          placeholder="Price"
-          required
-        />
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Submitting..." : "Submit"}
-        </button>
-      </form>
-
-      {message && <p>{message}</p>}
+      <SellForm />
     </main>
   );
 }
