@@ -28,11 +28,9 @@ export default async function BrowsePage({
       <h1>Browse Parts</h1>
 
       {filtered?.map((part) => (
-        <Link key={part.id} href={`/browse/${part.id}`}>
-          <div style={{ marginBottom: 12 }}>
-            <strong>{part.title}</strong>
-          </div>
-        </Link>
+      <Link href={`/browse/${part.id}`}>
+  <strong>{part.title}</strong>
+</Link>  
       ))}
     </main>
   );
