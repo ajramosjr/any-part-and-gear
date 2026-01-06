@@ -9,12 +9,17 @@ export default async function PartPage({
 }: {
   params: { partId: string };
 }) {
-  const partId = params.partId; // UUID — DO NOT convert to Number
+  const partId = Number(params.partId);
+
+  // 🔒 Guard against invalid URLs
+  if (Number.isNaN(partId)) {
+    notFound();
+  }
 
   const { data: part, error } = await supabase
-    .from("listings")
+    .from("parts")        // ✅ SAME table as browse
     .select("*")
-    .eq("id", partId)
+    .eq("id", partId)     // ✅ numeric ID
     .single();
 
   if (error || !part) {
@@ -25,8 +30,9 @@ export default async function PartPage({
     <main style={{ padding: 40 }}>
       <Link href="/browse">← Back to Browse</Link>
 
-      <h1>{part.part_name}</h1>
-      <p>{part.vehicle_type}</p>
+      <h1>{part.title}</h1>
+      <p>{part.description}</p>
+      <p><strong>Category:</strong> {part.category}</p>
     </main>
   );
 }
