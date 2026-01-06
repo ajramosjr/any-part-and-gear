@@ -9,17 +9,17 @@ export default async function PartPage({
 }: {
   params: { partId: string };
 }) {
-  const partId = Number(params.partId);
+  const partId = params.partId; // ✅ KEEP AS STRING
 
-  // 🔒 Guard against invalid URLs
-  if (Number.isNaN(partId)) {
+  // optional safety check (UUIDs contain hyphens)
+  if (!partId || partId.length < 10) {
     notFound();
   }
 
   const { data: part, error } = await supabase
-    .from("parts")        // ✅ SAME table as browse
+    .from("parts")
     .select("*")
-    .eq("id", partId)     // ✅ numeric ID
+    .eq("id", partId) // ✅ UUID comparison
     .single();
 
   if (error || !part) {
@@ -32,7 +32,9 @@ export default async function PartPage({
 
       <h1>{part.title}</h1>
       <p>{part.description}</p>
-      <p><strong>Category:</strong> {part.category}</p>
+      <p>
+        <strong>Category:</strong> {part.category}
+      </p>
     </main>
   );
 }
