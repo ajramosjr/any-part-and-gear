@@ -67,7 +67,7 @@ export default function BrowsePage() {
       {parts.length === 0 && <p>No parts found.</p>}
 
       {parts.map((part) => (
-        </Link> key={part.id} href={`/browse/${part.id}`}>
+        <Link key={part.id} href={`/browse/${part.id}`}>
           <div
             style={{
               border: "1px solid #444",
