@@ -9,26 +9,12 @@ export default async function PartPage({
 }: {
   params: { partId: string };
 }) {
-  const partId = params.partId; // ✅ KEEP AS STRING
+  const partId = params.partId; // ✅ KEEP AS STRING (UUID)
 
-  // optional safety check (UUIDs contain hyphens)
-  if (!partId || partId.length < 10) {
-    notFound();
-  }
-const {
-  data: { user },
-} = await supabase.auth.getUser();
-
-await supabase.from("parts").insert({
-  title,
-  description,
-  category,
-  user_id: user!.id,
-});
   const { data: part, error } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", partId) // ✅ UUID comparison
+    .eq("id", partId) // ✅ UUID match
     .single();
 
   if (error || !part) {
