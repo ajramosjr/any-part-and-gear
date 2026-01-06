@@ -20,7 +20,13 @@ export default async function PartPage({
   if (error || !part) {
     notFound();
   }
-
+{part.image_url && (
+  <img
+    src={part.image_url}
+    alt={part.title}
+    style={{ maxWidth: "100%", borderRadius: 12 }}
+  />
+)}
   return (
     <main style={{ padding: 40 }}>
       <Link href="/browse">← Back to Browse</Link>
