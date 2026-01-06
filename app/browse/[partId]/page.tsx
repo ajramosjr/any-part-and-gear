@@ -15,7 +15,16 @@ export default async function PartPage({
   if (!partId || partId.length < 10) {
     notFound();
   }
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 
+await supabase.from("parts").insert({
+  title,
+  description,
+  category,
+  user_id: user!.id,
+});
   const { data: part, error } = await supabase
     .from("parts")
     .select("*")
