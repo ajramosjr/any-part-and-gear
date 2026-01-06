@@ -1,8 +1,6 @@
 
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 
 export default async function SellPage()
 {const supabase = supabaseServer();
