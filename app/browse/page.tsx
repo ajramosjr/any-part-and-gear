@@ -27,11 +27,13 @@ export default async function BrowsePage({
     <main style={{ padding: 40 }}>
       <h1>Browse Parts</h1>
       
-{filtered?.map((part) => (
-  <Link key={part.id} href={`/browse/${part.id}`}>
-    {part.title}
-  </Link>
-))}
+  <ul>
+  {filtered?.map((part) => (
+    <li key={part.id}>
+      <Link href={`/browse/${part.id}`}>{part.title}</Link>
+    </li>
+  ))}
+</ul>
       
     </main>
   );
