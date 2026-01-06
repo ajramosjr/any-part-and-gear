@@ -1,33 +1,32 @@
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 
-type PageProps = {
+export const dynamic = "force-dynamic";
+
+export default async function PartPage({
+  params,
+}: {
   params: { partId: string };
-};
+}) {
+  const partId = params.partId; // UUID — DO NOT convert to Number
 
-export default async function PartPage({ params }: PageProps) {
-  const { data: part } = await supabase
-    .from("parts")
+  const { data: part, error } = await supabase
+    .from("listings")
     .select("*")
-    .eq("id", Number(params.partId))
+    .eq("id", partId)
     .single();
 
-  if (!part) notFound();
+  if (error || !part) {
+    notFound();
+  }
 
   return (
     <main style={{ padding: 40 }}>
-      <Link href={`/browse/${listing.id}`}>
-  {listing.title}
-</Link>
+      <Link href="/browse">← Back to Browse</Link>
 
-      <h1>{part.title}</h1>
-      {part.description && <p>{part.description}</p>}
-      {part.category && (
-        <p>
-          <strong>Category:</strong> {part.category}
-        </p>
-      )}
+      <h1>{part.part_name}</h1>
+      <p>{part.vehicle_type}</p>
     </main>
   );
 }
