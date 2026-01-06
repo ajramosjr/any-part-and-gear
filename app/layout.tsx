@@ -1,5 +1,6 @@
 import "./globals.css";
 import ToasterClient from "@/app/ui/toaster-client";
+import Link from "next/link";
 
 export default function RootLayout({
   children,
