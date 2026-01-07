@@ -131,8 +131,7 @@ setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
 
       {/* RESULTS */}
       {parts.length === 0 && <p>No parts found.</p>}
-
-      {parts.map((part) => (
+{parts.map((part) => (
   <Link key={part.id} href={`/browse/${part.id}`}>
     <div
       style={{
