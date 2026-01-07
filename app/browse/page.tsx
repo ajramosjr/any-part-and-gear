@@ -23,13 +23,21 @@ const [maxPrice, setMaxPrice] = useState("");
     async function fetchParts() {
       let query = supabase.from("parts").select("*");
 
-      if (search) {
-        query = query.ilike("title", `%${search}%`);
-      }
+if (search) {
+  query = query.ilike("title", `%${search}%`);
+}
 
-      if (category) {
-        query = query.eq("category", category);
-      }
+if (category) {
+  query = query.eq("category", category);
+}
+
+if (minPrice) {
+  query = query.gte("price", Number(minPrice));
+}
+
+if (maxPrice) {
+  query = query.lte("price", Number(maxPrice));
+}
 
       const { data } = await query.order("created_at", { ascending: false });
       setParts(data || []);
