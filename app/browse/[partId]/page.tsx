@@ -1,14 +1,13 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export default async function PartPage({
   params,
 }: {
   params: { partId: string };
 }) {
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = createSupabaseServerClient();
 
   const {
     data: { user },
@@ -27,6 +26,8 @@ export default async function PartPage({
 
     if (!user) redirect("/login");
 
+    const supabase = createSupabaseServerClient();
+
     // Check for existing conversation
     const { data: existing } = await supabase
       .from("conversations")
@@ -39,8 +40,7 @@ export default async function PartPage({
       redirect(`/messages/${existing.id}`);
     }
 
-    // Create new conversation
-    const { data: conversation } = await supabase
+    const { data: conversation, error } = await supabase
       .from("conversations")
       .insert({
         part_id: part.id,
@@ -49,6 +49,10 @@ export default async function PartPage({
       })
       .select()
       .single();
+
+    if (error) {
+      throw new Error("Failed to create conversation");
+    }
 
     redirect(`/messages/${conversation.id}`);
   }
