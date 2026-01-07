@@ -42,10 +42,19 @@ if (maxPrice) {
   query = query.lte("price", Number(maxPrice));
 }
 
-      const { data } = await query.order("created_at", { ascending: false });
-      setParts(data || []);
-    }
+  if (sort === "newest") {
+  query = query.order("created_at", { ascending: false });
+}
 
+if (sort === "price_low") {
+  query = query.order("price", { ascending: true });
+}
+
+if (sort === "price_high") {
+  query = query.order("price", { ascending: false });
+}
+
+const { data } = await query;
     fetchParts();
   }, [search, category]);
 
@@ -84,7 +93,17 @@ if (maxPrice) {
     onChange={(e) => setMinPrice(e.target.value)}
     style={{ padding: 10, width: 140, marginRight: 8 }}
   />
-
+{/* SORT */}
+<select
+  value={sort}
+  onChange={(e) => setSort(e.target.value)}
+  style={{ padding: 10, width: 300, marginBottom: 24 }}
+>
+  <option value="newest">Newest</option>
+  <option value="price_low">Price: Low → High</option>
+  <option value="price_high">Price: High → Low</option>
+</select>
+  
   <input
     type="number"
     placeholder="Max price"
