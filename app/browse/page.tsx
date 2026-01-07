@@ -1,11 +1,10 @@
 "use client"
 
 const [sort, setSort] = useState("newest");
-import { useEffect, useState } from "react"
-;
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-
+export const dynamic = "force-dynamic";
 
 type Part = {
   id: number;
