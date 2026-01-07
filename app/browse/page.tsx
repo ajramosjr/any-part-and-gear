@@ -16,7 +16,9 @@ export default function BrowsePage() {
   const [parts, setParts] = useState<Part[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
-
+const [minPrice, setMinPrice] = useState("");
+const [maxPrice, setMaxPrice] = useState("");
+  
   useEffect(() => {
     async function fetchParts() {
       let query = supabase.from("parts").select("*");
