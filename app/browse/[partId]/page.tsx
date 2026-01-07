@@ -9,10 +9,6 @@ export default async function PartPage({
 }) {
   const supabase = createSupabaseServerClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const { data: part } = await supabase
     .from("parts")
     .select("*")
@@ -24,9 +20,13 @@ export default async function PartPage({
   async function startConversation() {
     "use server";
 
-    if (!user) redirect("/login");
-
     const supabase = createSupabaseServerClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) redirect("/login");
 
     // Check for existing conversation
     const { data: existing } = await supabase
@@ -75,20 +75,18 @@ export default async function PartPage({
 
       {part.price && <strong>${part.price}</strong>}
 
-      {user?.id !== part.user_id && (
-        <form action={startConversation}>
-          <button
-            style={{
-              marginTop: 24,
-              padding: "10px 16px",
-              fontSize: 16,
-              cursor: "pointer",
-            }}
-          >
-            Message Seller
-          </button>
-        </form>
-      )}
+      <form action={startConversation}>
+        <button
+          style={{
+            marginTop: 24,
+            padding: "10px 16px",
+            fontSize: 16,
+            cursor: "pointer",
+          }}
+        >
+          Message Seller
+        </button>
+      </form>
     </main>
   );
 }
