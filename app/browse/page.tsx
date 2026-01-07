@@ -177,7 +177,6 @@ setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
     </button>
   ))}
 </div>
-        </Link>
       ))}
     </main>
   );
