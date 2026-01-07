@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import SellForm from "@/components/SellForm";
 
 export default async function SellPage() {
-  const supabase = supabaseServer();
+  const supabase = createSupabaseServerClient();
 
   const {
     data: { user },
