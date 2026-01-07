@@ -1,41 +1,38 @@
-import { createSupabaseServerClient } from "@/lib/supabaseServer";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export default async function BrowsePage() {
   const supabase = createSupabaseServerClient();
 
-  const { data: parts, error } = await supabase
-    .from("parts")
+  const { data: listings, error } = await supabase
+    .from("listings")
     .select("*")
     .order("created_at", { ascending: false });
 
   if (error) {
-    return (
-      <div className="p-6 text-red-500">
-        Failed to load parts.
-      </div>
-    );
+    console.error(error);
   }
 
   return (
     <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Browse Parts</h1>
+      <h1 className="text-2xl font-bold mb-4">Browse Listings</h1>
 
-      {parts?.length === 0 && (
-        <p className="text-gray-500">No parts listed yet.</p>
+      {(!listings || listings.length === 0) && (
+        <p>No listings yet.</p>
       )}
 
-      <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {parts?.map((part) => (
+      <ul className="space-y-2">
+        {listings?.map((item) => (
           <li
-            key={part.id}
-            className="border rounded-lg p-4 bg-white text-black shadow"
+            key={item.id}
+            className="border rounded p-3"
           >
-            <h2 className="font-semibold">{part.title}</h2>
-            <p className="text-sm text-gray-600">{part.description}</p>
-            <p className="mt-2 font-bold">${part.price}</p>
+            <h2 className="font-semibold">{item.title}</h2>
+            <p className="text-sm text-gray-500">
+              {item.description}
+            </p>
           </li>
         ))}
       </ul>
     </main>
   );
-}        
+}
