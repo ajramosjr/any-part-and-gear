@@ -1,41 +1,90 @@
-import { supabase } from "@/lib/supabase";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
+import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-
-export const dynamic = "force-dynamic";
 
 export default async function PartPage({
   params,
 }: {
   params: { partId: string };
 }) {
-  const partId = params.partId; // ✅ KEEP AS STRING (UUID)
+  const supabase = createServerComponentClient({ cookies });
 
-  const { data: part, error } = await supabase
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: part } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", partId) // ✅ UUID match
+    .eq("id", Number(params.partId))
     .single();
 
-  if (error || !part) {
-    notFound();
+  if (!part) notFound();
+
+  async function startConversation() {
+    "use server";
+
+    if (!user) redirect("/login");
+
+    // Check for existing conversation
+    const { data: existing } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("part_id", part.id)
+      .eq("buyer_id", user.id)
+      .single();
+
+    if (existing) {
+      redirect(`/messages/${existing.id}`);
+    }
+
+    // Create new conversation
+    const { data: conversation } = await supabase
+      .from("conversations")
+      .insert({
+        part_id: part.id,
+        buyer_id: user.id,
+        seller_id: part.user_id,
+      })
+      .select()
+      .single();
+
+    redirect(`/messages/${conversation.id}`);
   }
-{part.image_url && (
-  <img
-    src={part.image_url}
-    alt={part.title}
-    style={{ maxWidth: "100%", borderRadius: 12 }}
-  />
-)}
+
   return (
     <main style={{ padding: 40 }}>
       <Link href="/browse">← Back to Browse</Link>
 
       <h1>{part.title}</h1>
+
+      {part.image_url && (
+        <img
+          src={part.image_url}
+          alt={part.title}
+          style={{ maxWidth: 400, marginBottom: 20 }}
+        />
+      )}
+
       <p>{part.description}</p>
-      <p>
-        <strong>Category:</strong> {part.category}
-      </p>
+
+      {part.price && <strong>${part.price}</strong>}
+
+      {user?.id !== part.user_id && (
+        <form action={startConversation}>
+          <button
+            style={{
+              marginTop: 24,
+              padding: "10px 16px",
+              fontSize: 16,
+              cursor: "pointer",
+            }}
+          >
+            Message Seller
+          </button>
+        </form>
+      )}
     </main>
   );
 }
