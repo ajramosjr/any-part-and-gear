@@ -133,25 +133,31 @@ setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
       {parts.length === 0 && <p>No parts found.</p>}
 
       {parts.map((part) => (
-        <Link key={part.id} href={`/browse/${part.id}`}>
-          <div
-            style={{
-              border: "1px solid #444",
-              padding: 16,
-              marginBottom: 12,
-              cursor: "pointer",
-            }}
-          >
-            <h3>{part.title}</h3>
-            {part.category && <p>Category: {part.category}</p>}
-            {part.price && <strong>${part.price}</strong>}
-            {part.image_url && (
-              <img
-                src={part.image_url}
-                alt={part.title ?? ""}
-                style={{ maxWidth: 200, marginTop: 8 }}
-              />
-            )}
+  <Link key={part.id} href={`/browse/${part.id}`}>
+    <div
+      style={{
+        border: "1px solid #444",
+        padding: 16,
+        marginBottom: 12,
+        cursor: "pointer",
+      }}
+    >
+      <h3>{part.title}</h3>
+
+      {part.category && <p>Category: {part.category}</p>}
+      {part.price && <strong>${part.price}</strong>}
+
+      {part.image_url && (
+        <img
+          src={part.image_url}
+          alt={part.title ?? ""}
+          style={{ maxWidth: 200, display: "block", marginTop: 8 }}
+        />
+      )}
+    </div>
+  </Link>
+))}
+      
           {/* PAGINATION */}
 <div style={{ marginTop: 24 }}>
   {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
