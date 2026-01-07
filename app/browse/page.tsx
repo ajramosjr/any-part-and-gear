@@ -22,42 +22,36 @@ export default function BrowsePage() {
 const [minPrice, setMinPrice] = useState("");
 const [maxPrice, setMaxPrice] = useState("");
   
-  useEffect(() => {
-    async function fetchParts() {
-      let query = supabase.from("parts").select("*");
+useEffect(() => {
+  async function fetchParts() {
+    let query = supabase.from("parts").select("*");
 
-if (search) {
-  query = query.ilike("title", `%${search}%`);
-}
+    if (search) {
+      query = query.ilike("title", `%${search}%`);
+    }
 
-if (category) {
-  query = query.eq("category", category);
-}
+    if (category) {
+      query = query.eq("category", category);
+    }
 
-if (minPrice) {
-  query = query.gte("price", Number(minPrice));
-}
+    if (sort === "newest") {
+      query = query.order("created_at", { ascending: false });
+    }
 
-if (maxPrice) {
-  query = query.lte("price", Number(maxPrice));
-}
+    if (sort === "price_low") {
+      query = query.order("price", { ascending: true });
+    }
 
-  if (sort === "newest") {
-  query = query.order("created_at", { ascending: false });
-}
+    if (sort === "price_high") {
+      query = query.order("price", { ascending: false });
+    }
 
-if (sort === "price_low") {
-  query = query.order("price", { ascending: true });
-}
+    const { data } = await query;
+    setParts(data || []);
+  }
 
-if (sort === "price_high") {
-  query = query.order("price", { ascending: false });
-}
-
-const { data } = await query;
-    fetchParts();
-  }, [search, category]);
-
+  fetchParts();
+}, [search, category, sort]);  
   return (
     <main style={{ padding: 40 }}>
       <h1>Browse Parts</h1>
