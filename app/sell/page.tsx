@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createSupabaseServerClient } from "@/lib/supabaseServer.ts";
 import SellForm from "@/components/SellForm";
 
 export default async function SellPage() {
