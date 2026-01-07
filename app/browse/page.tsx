@@ -1,10 +1,10 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
 
 type Part = {
   id: number;
@@ -15,18 +15,13 @@ type Part = {
 };
 
 export default function BrowsePage() {
- const PAGE_SIZE = 6;
-const [page, setPage] = useState(1);
-const [totalPages, setTotalPages] = useState(1);
   const [parts, setParts] = useState<Part[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
-  const [sort, setSort] = useState("newest");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-useEffect(() => {
-  setPage(1);
-}, [search, category, sort]);
+  const [sort, setSort] = useState("newest");
+
   useEffect(() => {
     async function fetchParts() {
       let query = supabase.from("parts").select("*");
@@ -58,20 +53,13 @@ useEffect(() => {
       if (sort === "price_high") {
         query = query.order("price", { ascending: false });
       }
-const from = (page - 1) * PAGE_SIZE;
-const to = from + PAGE_SIZE - 1;
 
-const { data, count } = await query
-  .range(from, to)
-  .select("*", { count: "exact" });
-
-setParts(data || []);
-setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
+      const { data } = await query;
       setParts(data || []);
     }
 
     fetchParts();
-  }, [search, category, sort, minPrice, maxPrice]);
+  }, [search, category, minPrice, maxPrice, sort]);
 
   return (
     <main style={{ padding: 40 }}>
@@ -100,8 +88,8 @@ setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
         <option value="wheels">Wheels</option>
       </select>
 
-      {/* PRICE + SORT */}
-      <div style={{ marginBottom: 24 }}>
+      {/* PRICE FILTER */}
+      <div style={{ marginBottom: 12 }}>
         <input
           type="number"
           placeholder="Min price"
@@ -109,30 +97,30 @@ setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
           onChange={(e) => setMinPrice(e.target.value)}
           style={{ padding: 10, width: 140, marginRight: 8 }}
         />
-
         <input
           type="number"
           placeholder="Max price"
           value={maxPrice}
           onChange={(e) => setMaxPrice(e.target.value)}
-          style={{ padding: 10, width: 140, marginRight: 8 }}
+          style={{ padding: 10, width: 140 }}
         />
-
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          style={{ padding: 10, width: 200 }}
-        >
-          <option value="newest">Newest</option>
-          <option value="price_low">Price: Low → High</option>
-          <option value="price_high">Price: High → Low</option>
-        </select>
       </div>
 
-{/* RESULTS */}
-{parts.length === 0 && <p>No parts found.</p>}
+      {/* SORT */}
+      <select
+        value={sort}
+        onChange={(e) => setSort(e.target.value)}
+        style={{ padding: 10, width: 300, marginBottom: 24 }}
+      >
+        <option value="newest">Newest</option>
+        <option value="price_low">Price: Low → High</option>
+        <option value="price_high">Price: High → Low</option>
+      </select>
 
-{parts.map((part) => (
+      {/* RESULTS */}
+      {parts.length === 0 && <p>No parts found.</p>}
+
+      {parts.map((part) => (
         <Link key={part.id} href={`/browse/${part.id}`}>
           <div
             style={{
@@ -156,12 +144,11 @@ setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
         </Link>
       ))}
 
-      {/* PAGINATION (must be HERE) */}
+      {/* PAGINATION (placeholder) */}
       <div style={{ marginTop: 24 }}>
         <button disabled>Prev</button>
         <button style={{ marginLeft: 12 }}>Next</button>
       </div>
-
     </main>
   );
 }
