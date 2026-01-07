@@ -150,12 +150,6 @@ setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
                 src={part.image_url}
                 alt={part.title ?? ""}
                 style={{ maxWidth: 200, display: "block", marginTop: 8 }}
-              />
-            )}
-          </div>
-        </Link>
-      ))}
-    </main>
   );
 }    
           {/* PAGINATION */}
