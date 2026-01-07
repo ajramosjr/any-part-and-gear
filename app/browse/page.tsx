@@ -1,6 +1,13 @@
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
-export default async function BrowsePage() {
+ export default function BrowsePage() {
+  return (
+    <main>
+      <h1>Browse Parts</h1>
+    </main>
+  );
+ }
+{
   const supabase = createSupabaseServerClient();
 
   const { data: listings, error } = await supabase
