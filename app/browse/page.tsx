@@ -64,7 +64,24 @@ const [maxPrice, setMaxPrice] = useState("");
         <option value="interior">Interior</option>
         <option value="wheels">Wheels</option>
       </select>
+{/* PRICE FILTER */}
+<div style={{ marginBottom: 24 }}>
+  <input
+    type="number"
+    placeholder="Min price"
+    value={minPrice}
+    onChange={(e) => setMinPrice(e.target.value)}
+    style={{ padding: 10, width: 140, marginRight: 8 }}
+  />
 
+  <input
+    type="number"
+    placeholder="Max price"
+    value={maxPrice}
+    onChange={(e) => setMaxPrice(e.target.value)}
+    style={{ padding: 10, width: 140 }}
+  />
+</div>
       {/* RESULTS */}
       {parts.length === 0 && <p>No parts found.</p>}
 
