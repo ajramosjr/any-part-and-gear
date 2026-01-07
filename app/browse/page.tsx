@@ -22,9 +22,7 @@ export default async function BrowsePage({
     .range(from, to)
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error(error);
-  }
+  if (error) console.error(error);
 
   const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
 
@@ -65,11 +63,10 @@ export default async function BrowsePage({
         ))}
       </div>
 
-      {/* Pagination */}
       <div style={{ marginTop: 32 }}>
         {page > 1 && <Link href={`/browse?page=${page - 1}`}>← Prev</Link>}
         {page < totalPages && (
-          <Link style={{ marginLeft: 16 }} href={`/browse?page=${page + 1}`}>
+          <Link href={`/browse?page=${page + 1}`} style={{ marginLeft: 16 }}>
             Next →
           </Link>
         )}
