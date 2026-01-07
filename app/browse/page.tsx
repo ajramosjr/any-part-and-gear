@@ -1,50 +1,41 @@
-import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
-export const dynamic = "force-dynamic";
-
-const PAGE_SIZE = 12;
-
-export default async function BrowsePage({
-  searchParams,
-}: {
-  searchParams: { page?: string };
-}) {
+export default async function BrowsePage() {
   const supabase = createSupabaseServerClient();
 
-  const page = Number(searchParams.page ?? 1);
-  const from = (page - 1) * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
-
-  const { data: parts, count } = await supabase
+  const { data: parts, error } = await supabase
     .from("parts")
-    .select("*", { count: "exact" })
-    .range(from, to)
+    .select("*")
     .order("created_at", { ascending: false });
 
-  const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
+  if (error) {
+    return (
+      <div className="p-6 text-red-500">
+        Failed to load parts.
+      </div>
+    );
+  }
 
   return (
-    <main style={{ padding: 24 }}>
-      <h1>Browse Parts</h1>
+    <main className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Browse Parts</h1>
 
-      <div style={{ display: "grid", gap: 16 }}>
+      {parts?.length === 0 && (
+        <p className="text-gray-500">No parts listed yet.</p>
+      )}
+
+      <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {parts?.map((part) => (
-          <Link key={part.id} href={`/browse/${part.id}`}>
-            <h3>{part.title}</h3>
-            <p>${part.price}</p>
-          </Link>
+          <li
+            key={part.id}
+            className="border rounded-lg p-4 bg-white text-black shadow"
+          >
+            <h2 className="font-semibold">{part.title}</h2>
+            <p className="text-sm text-gray-600">{part.description}</p>
+            <p className="mt-2 font-bold">${part.price}</p>
+          </li>
         ))}
-      </div>
-
-      <div style={{ marginTop: 24 }}>
-        {page > 1 && <Link href={`/browse?page=${page - 1}`}>← Prev</Link>}
-        {page < totalPages && (
-          <Link href={`/browse?page=${page + 1}`} style={{ marginLeft: 16 }}>
-            Next →
-          </Link>
-        )}
-      </div>
+      </ul>
     </main>
   );
-}
+}        
