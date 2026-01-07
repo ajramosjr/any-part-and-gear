@@ -132,7 +132,7 @@ setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
 {/* RESULTS */}
 {parts.length === 0 && <p>No parts found.</p>}
 
-  {parts.map((part) => (
+{parts.map((part) => (
         <Link key={part.id} href={`/browse/${part.id}`}>
           <div
             style={{
@@ -150,28 +150,18 @@ setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
                 src={part.image_url}
                 alt={part.title ?? ""}
                 style={{ maxWidth: 200, display: "block", marginTop: 8 }}
-  );
-}    
-          {/* PAGINATION */}
-<div style={{ marginTop: 24 }}>
-  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-    <button
-      key={p}
-      onClick={() => setPage(p)}
-      style={{
-        marginRight: 8,
-        padding: "8px 12px",
-        background: p === page ? "#6b21a8" : "#222",
-        color: "white",
-        border: "none",
-        cursor: "pointer",
-      }}
-    >
-      {p}
-    </button>
-  ))}
-</div>
+              />
+            )}
+          </div>
         </Link>
+      ))}
+
+      {/* PAGINATION (must be HERE) */}
+      <div style={{ marginTop: 24 }}>
+        <button disabled>Prev</button>
+        <button style={{ marginLeft: 12 }}>Next</button>
+      </div>
+
     </main>
   );
 }
