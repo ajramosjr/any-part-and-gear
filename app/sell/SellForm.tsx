@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createSupabaseServerClient } from "@/lib/supabaseServer.ts";
+import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
 export default function SellForm() {
   const [title, setTitle] = useState("");
