@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -14,49 +15,51 @@ type Part = {
   image_url: string | null;
 };
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 6;
 
 export default function BrowsePage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const [category, setCategory] = useState(searchParams.get("category") ?? "");
+  const [sort, setSort] = useState(searchParams.get("sort") ?? "newest");
+  const [minPrice, setMinPrice] = useState(searchParams.get("min") ?? "");
+  const [maxPrice, setMaxPrice] = useState(searchParams.get("max") ?? "");
+  const [page, setPage] = useState(Number(searchParams.get("page") ?? 1));
+
   const [parts, setParts] = useState<Part[]>([]);
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [sort, setSort] = useState("newest");
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  /* ---------------- URL SYNC ---------------- */
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (search) params.set("search", search);
+    if (category) params.set("category", category);
+    if (sort !== "newest") params.set("sort", sort);
+    if (minPrice) params.set("min", minPrice);
+    if (maxPrice) params.set("max", maxPrice);
+    if (page > 1) params.set("page", page.toString());
+
+    router.replace(`/browse?${params.toString()}`);
+  }, [search, category, sort, minPrice, maxPrice, page, router]);
+
+  /* ---------------- FETCH PARTS ---------------- */
   useEffect(() => {
     async function fetchParts() {
-      let query = supabase
-        .from("parts")
-        .select("*", { count: "exact" });
+      let query = supabase.from("parts").select("*", { count: "exact" });
 
-      if (search) {
-        query = query.ilike("title", `%${search}%`);
-      }
-
-      if (category) {
-        query = query.eq("category", category);
-      }
-
-      if (minPrice) {
-        query = query.gte("price", Number(minPrice));
-      }
-
-      if (maxPrice) {
-        query = query.lte("price", Number(maxPrice));
-      }
+      if (search) query = query.ilike("title", `%${search}%`);
+      if (category) query = query.eq("category", category);
+      if (minPrice) query = query.gte("price", Number(minPrice));
+      if (maxPrice) query = query.lte("price", Number(maxPrice));
 
       if (sort === "newest") {
         query = query.order("created_at", { ascending: false });
-      }
-
-      if (sort === "price_low") {
+      } else if (sort === "price_low") {
         query = query.order("price", { ascending: true });
-      }
-
-      if (sort === "price_high") {
+      } else if (sort === "price_high") {
         query = query.order("price", { ascending: false });
       }
 
@@ -70,8 +73,9 @@ export default function BrowsePage() {
     }
 
     fetchParts();
-  }, [search, category, minPrice, maxPrice, sort, page]);
+  }, [search, category, sort, minPrice, maxPrice, page]);
 
+  /* ---------------- UI ---------------- */
   return (
     <main style={{ padding: 40 }}>
       <h1>Browse Parts</h1>
@@ -105,7 +109,7 @@ export default function BrowsePage() {
         <option value="wheels">Wheels</option>
       </select>
 
-      {/* PRICE FILTERS */}
+      {/* PRICE */}
       <div style={{ marginBottom: 12 }}>
         <input
           type="number"
@@ -159,7 +163,7 @@ export default function BrowsePage() {
           >
             <h3>{part.title}</h3>
             {part.category && <p>Category: {part.category}</p>}
-            {part.price !== null && <strong>${part.price}</strong>}
+            {part.price && <strong>${part.price}</strong>}
             {part.image_url && (
               <img
                 src={part.image_url}
@@ -173,22 +177,17 @@ export default function BrowsePage() {
 
       {/* PAGINATION */}
       <div style={{ marginTop: 24 }}>
-        <button
-          disabled={page === 1}
-          onClick={() => setPage((p) => p - 1)}
-          style={{ marginRight: 8 }}
-        >
-          Prev
+        <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+          Previous
         </button>
 
-        <span>
+        <span style={{ margin: "0 12px" }}>
           Page {page} of {totalPages}
         </span>
 
         <button
           disabled={page === totalPages}
-          onClick={() => setPage((p) => p + 1)}
-          style={{ marginLeft: 8 }}
+          onClick={() => setPage(page + 1)}
         >
           Next
         </button>
