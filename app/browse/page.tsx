@@ -15,13 +15,18 @@ type Part = {
 };
 
 export default function BrowsePage() {
+ const PAGE_SIZE = 6;
+const [page, setPage] = useState(1);
+const [totalPages, setTotalPages] = useState(1);
   const [parts, setParts] = useState<Part[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("newest");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-
+useEffect(() => {
+  setPage(1);
+}, [search, category, sort]);
   useEffect(() => {
     async function fetchParts() {
       let query = supabase.from("parts").select("*");
@@ -53,8 +58,15 @@ export default function BrowsePage() {
       if (sort === "price_high") {
         query = query.order("price", { ascending: false });
       }
+const from = (page - 1) * PAGE_SIZE;
+const to = from + PAGE_SIZE - 1;
 
-      const { data } = await query;
+const { data, count } = await query
+  .range(from, to)
+  .select("*", { count: "exact" });
+
+setParts(data || []);
+setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
       setParts(data || []);
     }
 
@@ -140,7 +152,25 @@ export default function BrowsePage() {
                 style={{ maxWidth: 200, marginTop: 8 }}
               />
             )}
-          </div>
+          {/* PAGINATION */}
+<div style={{ marginTop: 24 }}>
+  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+    <button
+      key={p}
+      onClick={() => setPage(p)}
+      style={{
+        marginRight: 8,
+        padding: "8px 12px",
+        background: p === page ? "#6b21a8" : "#222",
+        color: "white",
+        border: "none",
+        cursor: "pointer",
+      }}
+    >
+      {p}
+    </button>
+  ))}
+</div>
         </Link>
       ))}
     </main>
