@@ -1,8 +1,11 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
+const [sort, setSort] = useState("newest");
+import { useEffect, useState } from "react"
+;
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+
 
 type Part = {
   id: number;
