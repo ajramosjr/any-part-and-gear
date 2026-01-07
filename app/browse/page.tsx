@@ -14,6 +14,8 @@ type Part = {
   image_url: string | null;
 };
 
+const PAGE_SIZE = 10;
+
 export default function BrowsePage() {
   const [parts, setParts] = useState<Part[]>([]);
   const [search, setSearch] = useState("");
@@ -21,10 +23,14 @@ export default function BrowsePage() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [sort, setSort] = useState("newest");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     async function fetchParts() {
-      let query = supabase.from("parts").select("*");
+      let query = supabase
+        .from("parts")
+        .select("*", { count: "exact" });
 
       if (search) {
         query = query.ilike("title", `%${search}%`);
@@ -54,12 +60,17 @@ export default function BrowsePage() {
         query = query.order("price", { ascending: false });
       }
 
-      const { data } = await query;
+      const from = (page - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      const { data, count } = await query.range(from, to);
+
       setParts(data || []);
+      setTotalPages(count ? Math.ceil(count / PAGE_SIZE) : 1);
     }
 
     fetchParts();
-  }, [search, category, minPrice, maxPrice, sort]);
+  }, [search, category, minPrice, maxPrice, sort, page]);
 
   return (
     <main style={{ padding: 40 }}>
@@ -70,14 +81,20 @@ export default function BrowsePage() {
         type="text"
         placeholder="Search parts..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setPage(1);
+        }}
         style={{ padding: 10, width: 300, marginBottom: 12, display: "block" }}
       />
 
       {/* CATEGORY */}
       <select
         value={category}
-        onChange={(e) => setCategory(e.target.value)}
+        onChange={(e) => {
+          setCategory(e.target.value);
+          setPage(1);
+        }}
         style={{ padding: 10, width: 300, marginBottom: 12 }}
       >
         <option value="">All Categories</option>
@@ -88,20 +105,27 @@ export default function BrowsePage() {
         <option value="wheels">Wheels</option>
       </select>
 
-      {/* PRICE FILTER */}
+      {/* PRICE FILTERS */}
       <div style={{ marginBottom: 12 }}>
         <input
           type="number"
           placeholder="Min price"
           value={minPrice}
-          onChange={(e) => setMinPrice(e.target.value)}
+          onChange={(e) => {
+            setMinPrice(e.target.value);
+            setPage(1);
+          }}
           style={{ padding: 10, width: 140, marginRight: 8 }}
         />
+
         <input
           type="number"
           placeholder="Max price"
           value={maxPrice}
-          onChange={(e) => setMaxPrice(e.target.value)}
+          onChange={(e) => {
+            setMaxPrice(e.target.value);
+            setPage(1);
+          }}
           style={{ padding: 10, width: 140 }}
         />
       </div>
@@ -109,7 +133,10 @@ export default function BrowsePage() {
       {/* SORT */}
       <select
         value={sort}
-        onChange={(e) => setSort(e.target.value)}
+        onChange={(e) => {
+          setSort(e.target.value);
+          setPage(1);
+        }}
         style={{ padding: 10, width: 300, marginBottom: 24 }}
       >
         <option value="newest">Newest</option>
@@ -132,7 +159,7 @@ export default function BrowsePage() {
           >
             <h3>{part.title}</h3>
             {part.category && <p>Category: {part.category}</p>}
-            {part.price && <strong>${part.price}</strong>}
+            {part.price !== null && <strong>${part.price}</strong>}
             {part.image_url && (
               <img
                 src={part.image_url}
@@ -144,10 +171,27 @@ export default function BrowsePage() {
         </Link>
       ))}
 
-      {/* PAGINATION (placeholder) */}
+      {/* PAGINATION */}
       <div style={{ marginTop: 24 }}>
-        <button disabled>Prev</button>
-        <button style={{ marginLeft: 12 }}>Next</button>
+        <button
+          disabled={page === 1}
+          onClick={() => setPage((p) => p - 1)}
+          style={{ marginRight: 8 }}
+        >
+          Prev
+        </button>
+
+        <span>
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage((p) => p + 1)}
+          style={{ marginLeft: 8 }}
+        >
+          Next
+        </button>
       </div>
     </main>
   );
