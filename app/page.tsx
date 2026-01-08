@@ -1,8 +1,10 @@
+import { createSupabaseServerClient } from "@/lib/supabaseServer";
+
 export const dynamic = "force-dynamic";
 
-import { supabase } from "@/lib/supabase";
-
 export default async function HomePage() {
+  const supabase = createSupabaseServerClient();
+
   const { data: parts, error } = await supabase
     .from("parts")
     .select("*")
