@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 
+// ⛔ prevents Next.js from running this at build time
 export const dynamic = "force-dynamic";
 
 const supabase = createClient(
@@ -11,30 +12,30 @@ const supabase = createClient(
 export default async function BrowsePage() {
   const { data: parts, error } = await supabase
     .from("parts")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .select("id, name, price")
+    .limit(20);
 
   if (error) {
     return (
-      <main style={{ padding: 40 }}>
+      <div style={{ padding: 20 }}>
         <h1>Error loading parts</h1>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main style={{ padding: 40 }}>
+    <div style={{ padding: 20 }}>
       <h1>Browse Parts</h1>
 
       <ul>
         {parts?.map((part) => (
           <li key={part.id}>
-            <Link href={`/parts/${part.id}`}>
-              {part.title}
+            <Link href={`/browse/${part.id}`}>
+              {part.name} – ${part.price}
             </Link>
           </li>
         ))}
       </ul>
-    </main>
+    </div>
   );
 }
