@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 export default function PartPage() {
+  return <div>Part details</div>;
+} {
   const { partId } = useParams();
   const [part, setPart] = useState<any>(null);
   const [loading, setLoading] = useState(true);
