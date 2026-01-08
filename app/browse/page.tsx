@@ -1,5 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
+
+export const dynamic = "force-dynamic";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,6 +17,8 @@ export default async function BrowsePage() {
   return (
     <main style={{ padding: 40 }}>
       <h1>Browse Parts</h1>
+
+      {parts?.length === 0 && <p>No parts found.</p>}
 
       <ul style={{ marginTop: 20 }}>
         {parts?.map((part) => (
