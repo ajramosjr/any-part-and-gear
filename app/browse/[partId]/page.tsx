@@ -1,41 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
-export default function BrowsePage() {
-  const [parts, setParts] = useState<any[]>([]);
+export default function PartPage() {
+  const { partId } = useParams();
+  const [part, setPart] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchParts = async () => {
+    if (!partId) return;
+
+    const fetchPart = async () => {
       const { data, error } = await supabase
         .from("parts")
         .select("*")
-        .order("created_at", { ascending: false });
+        .eq("id", partId)
+        .single();
 
-      if (!error && data) {
-        setParts(data);
+      if (!error) {
+        setPart(data);
       }
 
       setLoading(false);
     };
 
-    fetchParts();
-  }, []);
+    fetchPart();
+  }, [partId]);
 
-  if (loading) return <p>Loading parts...</p>;
+  if (loading) return <p>Loading...</p>;
+  if (!part) return <p>Part not found</p>;
 
   return (
     <div>
-      <h1>Browse Parts</h1>
-
-      {parts.map((part) => (
-        <div key={part.id}>
-          <h3>{part.title}</h3>
-          <p>{part.description}</p>
-        </div>
-      ))}
+      <h1>{part.title}</h1>
+      <p>{part.description}</p>
+      <p>Price: ${part.price}</p>
     </div>
   );
 }
