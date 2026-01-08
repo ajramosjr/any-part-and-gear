@@ -9,22 +9,28 @@ const supabase = createClient(
 );
 
 export default async function BrowsePage() {
-  const { data: parts } = await supabase
+  const { data: parts, error } = await supabase
     .from("parts")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (error) {
+    return (
+      <main style={{ padding: 40 }}>
+        <h1>Error loading parts</h1>
+      </main>
+    );
+  }
 
   return (
     <main style={{ padding: 40 }}>
       <h1>Browse Parts</h1>
 
-      {parts?.length === 0 && <p>No parts found.</p>}
-
-      <ul style={{ marginTop: 20 }}>
+      <ul>
         {parts?.map((part) => (
-          <li key={part.id} style={{ marginBottom: 16 }}>
+          <li key={part.id}>
             <Link href={`/parts/${part.id}`}>
-              <strong>{part.title}</strong>
+              {part.title}
             </Link>
           </li>
         ))}
