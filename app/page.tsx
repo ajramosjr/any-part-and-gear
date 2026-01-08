@@ -1,30 +1,19 @@
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const supabase = createSupabaseServerClient();
+  const { createClient } = await import("@supabase/supabase-js");
 
-  const { data: parts, error } = await supabase
-    .from("parts")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
-  if (error) {
-    return <p style={{ color: "red" }}>Error loading parts</p>;
-  }
+  const { data } = await supabase.from("parts").select("*").limit(5);
 
   return (
-    <main style={{ padding: "40px" }}>
-      <h1>Any-Part & Gear</h1>
-
-      <h2>Available Parts</h2>
-
-      {parts.length === 0 && <p>No parts listed yet.</p>}
-
-      <ul>
-        {parts.map((part) => (
-          <li key={part.id}>{part.title}</li>
-        ))}
-      </ul>
+    <main style={{ padding: 20 }}>
+      <h1>AnyPartingGear</h1>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
     </main>
   );
 }
