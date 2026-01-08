@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "../../lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,6 +13,7 @@ export default function LoginPage() {
       email,
       password,
     });
+
     if (error) setMessage(error.message);
     else setMessage("Signed in!");
   };
@@ -22,25 +23,11 @@ export default function LoginPage() {
       email,
       password,
     });
+
     if (error) setMessage(error.message);
-    else setMessage("Account created!");
+    else setMessage("Account created! You can now sign in.");
   };
-const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
 
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: `${location.origin}/auth/callback`,
-    },
-  });
-
-  if (error) {
-    alert(error.message);
-  } else {
-    alert("Check your email for the login link!");
-  }
-};
   return (
     <main style={{ padding: 40 }}>
       <h1>Login</h1>
@@ -65,7 +52,7 @@ const handleLogin = async (e: React.FormEvent) => {
         Sign Up
       </button>
 
-      <p>{message}</p>
+      {message && <p>{message}</p>}
     </main>
   );
 }
