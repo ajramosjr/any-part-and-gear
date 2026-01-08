@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
+export const dynamic = "force-dynamic";
 export default async function PartPage({
   params,
 }: {
