@@ -1,41 +1,41 @@
-import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
+"use client";
 
-// ⛔ prevents Next.js from running this at build time
-export const dynamic = "force-dynamic";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+export default function BrowsePage() {
+  const [parts, setParts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function BrowsePage() {
-  const { data: parts, error } = await supabase
-    .from("parts")
-    .select("id, name, price")
-    .limit(20);
+  useEffect(() => {
+    const fetchParts = async () => {
+      const { data, error } = await supabase
+        .from("parts")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-  if (error) {
-    return (
-      <div style={{ padding: 20 }}>
-        <h1>Error loading parts</h1>
-      </div>
-    );
-  }
+      if (!error && data) {
+        setParts(data);
+      }
+
+      setLoading(false);
+    };
+
+    fetchParts();
+  }, []);
+
+  if (loading) return <p>Loading parts...</p>;
 
   return (
-    <div style={{ padding: 20 }}>
+    <div>
       <h1>Browse Parts</h1>
 
-      <ul>
-        {parts?.map((part) => (
-          <li key={part.id}>
-            <Link href={`/browse/${part.id}`}>
-              {part.name} – ${part.price}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {parts.map((part) => (
+        <div key={part.id}>
+          <h3>{part.title}</h3>
+          <p>{part.description}</p>
+        </div>
+      ))}
     </div>
   );
 }
