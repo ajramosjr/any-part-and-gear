@@ -1,13 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 
-// 🚨 REQUIRED for Supabase + dynamic routes
 export const dynamic = "force-dynamic";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+export const revalidate = 0;
 
 type PageProps = {
   params: {
@@ -17,6 +11,14 @@ type PageProps = {
 
 export default async function PartPage({ params }: PageProps) {
   const { partId } = params;
+
+  // ⛔ Create Supabase INSIDE the function (CRITICAL)
+  const { createClient } = await import("@supabase/supabase-js");
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const { data: part, error } = await supabase
     .from("parts")
@@ -28,7 +30,7 @@ export default async function PartPage({ params }: PageProps) {
     return (
       <div style={{ padding: 20 }}>
         <h1>Part not found</h1>
-        <Link href="/browse">← Back to Browse</Link>
+        <Link href="/browse">← Back</Link>
       </div>
     );
   }
