@@ -8,12 +8,12 @@ const supabase = createClient(
 export default async function PartPage({
   params,
 }: {
-  params: { id: string };
+  params: { partId: string };
 }) {
   const { data: part } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", Number(params.id)) // ✅ REQUIRED
+    .eq("id", Number(params.partId))
     .single();
 
   if (!part) {
