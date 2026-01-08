@@ -1,5 +1,3 @@
-import { createSupabaseServerClient } from "@/lib/supabaseServer";
-
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
