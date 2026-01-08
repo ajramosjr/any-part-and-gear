@@ -1,9 +1,12 @@
-import { createSupabaseServerClient } from "@/lib/supabaseServer";
+import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 
-export default async function BrowsePage() {
-  const supabase = createSupabaseServerClient();
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
+export default async function BrowsePage() {
   const { data: parts } = await supabase
     .from("parts")
     .select("*")
