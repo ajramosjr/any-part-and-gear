@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function MyListings() {
   const [user, setUser] = useState<any>(null);
@@ -35,7 +35,6 @@ export default function MyListings() {
   }, []);
 
   if (loading) return <p>Loading...</p>;
-
   if (!user) return <p>Please sign in</p>;
 
   return (
@@ -47,10 +46,7 @@ export default function MyListings() {
       {parts.map((part) => (
         <div key={part.id} style={{ marginBottom: 20 }}>
           <p>{part.title}</p>
-
-          <Link href={`/my-listings/${part.id}`}>
-            Edit / Delete
-          </Link>
+          <Link href={`/my-listings/${part.id}`}>Edit / Delete</Link>
         </div>
       ))}
     </main>
