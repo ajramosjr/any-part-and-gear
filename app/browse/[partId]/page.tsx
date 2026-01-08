@@ -1,49 +1,42 @@
-import Link from "next/link";
+"use client";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+import { supabase } from "@/lib/supabaseClient";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
-type PageProps = {
-  params: {
-    partId: string;
-  };
-};
+export default function PartPage() {
+  const { partId } = useParams();
+  const [part, setPart] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function PartPage({ params }: PageProps) {
-  const { partId } = params;
+  useEffect(() => {
+    if (!partId) return;
 
-  // ⛔ Create Supabase INSIDE the function (CRITICAL)
-  const { createClient } = await import("@supabase/supabase-js");
+    const fetchPart = async () => {
+      const { data, error } = await supabase
+        .from("parts")
+        .select("*")
+        .eq("id", partId)
+        .single();
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+      if (!error) {
+        setPart(data);
+      }
 
-  const { data: part, error } = await supabase
-    .from("parts")
-    .select("*")
-    .eq("id", partId)
-    .single();
+      setLoading(false);
+    };
 
-  if (error || !part) {
-    return (
-      <div style={{ padding: 20 }}>
-        <h1>Part not found</h1>
-        <Link href="/browse">← Back</Link>
-      </div>
-    );
-  }
+    fetchPart();
+  }, [partId]);
+
+  if (loading) return <p>Loading...</p>;
+  if (!part) return <p>Part not found</p>;
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>{part.name}</h1>
+    <div>
+      <h1>{part.title}</h1>
       <p>{part.description}</p>
-      <p>
-        <strong>Price:</strong> ${part.price}
-      </p>
-
-      <Link href="/browse">← Back to Browse</Link>
+      <p>Price: ${part.price}</p>
     </div>
   );
 }
