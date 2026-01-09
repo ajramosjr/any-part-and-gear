@@ -42,7 +42,14 @@ export default function BrowsePage() {
 
       <div style={styles.grid}>
         {parts.map((part) => (
-          <div key={part.id} style={styles.card}>
+      <a
+  href={`/browse/${part.id}`}
+  key={part.id}
+  style={{ textDecoration: "none" }}
+>
+        </div>
+</a>
+  <div style={styles.card}>    
             <h3 style={styles.title}>{part.title}</h3>
             <p style={styles.description}>{part.description}</p>
             <p style={styles.date}>
