@@ -1,42 +1,45 @@
-import Link from "next/link";
-import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
-export default async function BrowsePage({
-  searchParams,
-}: {
-  searchParams: { category?: string };
-}) {
-  const supabase = createServerComponentClient({ cookies });
+export default function BrowsePage() {
+  const [parts, setParts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const category = searchParams.category ?? null;
+  useEffect(() => {
+    const fetchParts = async () => {
+      const { data, error } = await supabase
+        .from("parts")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-  const { data: parts, error } = await supabase
-    .from("parts")
-    .select("*")
-    .order("created_at", { ascending: false });
+      if (!error && data) {
+        setParts(data);
+      }
 
-  if (error) {
-    throw new Error("Failed to load parts");
+      setLoading(false);
+    };
+
+    fetchParts();
+  }, []);
+
+  if (loading) {
+    return <p>Loading parts...</p>;
   }
 
-  const filtered = category
-    ? parts?.filter((part) => part.category === category)
-    : parts;
-
   return (
-    <div>
+    <main>
       <h1>Browse Parts</h1>
 
-      {filtered?.map((part) => (
-        <Link key={part.id} href={`/browse/${part.id}`}>
-          <div style={{ marginBottom: 12 }}>
-            <strong>{part.title}</strong>
+      <div>
+        {parts.map((part) => (
+          <div key={part.id}>
+            <h3>{part.title}</h3>
+            <p>{part.description}</p>
           </div>
-        </Link>
-      ))}
+        ))}
+      </div>
     </main>
   );
 }
