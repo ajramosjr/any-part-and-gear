@@ -25,21 +25,82 @@ export default function BrowsePage() {
   }, []);
 
   if (loading) {
-    return <p>Loading parts...</p>;
+    return (
+      <div style={styles.page}>
+        <p style={styles.loading}>Loading parts…</p>
+      </div>
+    );
   }
 
   return (
-    <main>
-      <h1>Browse Parts</h1>
+    <div style={styles.page}>
+      <h1 style={styles.heading}>Browse Parts</h1>
 
-      <div>
+      {parts.length === 0 && (
+        <p style={styles.empty}>No parts available yet.</p>
+      )}
+
+      <div style={styles.grid}>
         {parts.map((part) => (
-          <div key={part.id}>
-            <h3>{part.title}</h3>
-            <p>{part.description}</p>
+          <div key={part.id} style={styles.card}>
+            <h3 style={styles.title}>{part.title}</h3>
+            <p style={styles.description}>{part.description}</p>
+            <p style={styles.date}>
+              Listed {new Date(part.created_at).toLocaleDateString()}
+            </p>
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }
+
+const styles: Record<string, React.CSSProperties> = {
+  page: {
+    minHeight: "100vh",
+    padding: "24px",
+    backgroundColor: "#f5f7fa",
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont",
+  },
+  heading: {
+    fontSize: "28px",
+    fontWeight: 700,
+    marginBottom: "20px",
+    color: "#111827",
+  },
+  loading: {
+    fontSize: "18px",
+    color: "#374151",
+  },
+  empty: {
+    fontSize: "16px",
+    color: "#6b7280",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+    gap: "16px",
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    borderRadius: "12px",
+    padding: "16px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    transition: "transform 0.15s ease, box-shadow 0.15s ease",
+  },
+  title: {
+    fontSize: "18px",
+    fontWeight: 600,
+    marginBottom: "8px",
+    color: "#1f2937",
+  },
+  description: {
+    fontSize: "14px",
+    color: "#4b5563",
+    marginBottom: "12px",
+  },
+  date: {
+    fontSize: "12px",
+    color: "#9ca3af",
+  },
+};
