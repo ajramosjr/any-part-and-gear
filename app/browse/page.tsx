@@ -47,8 +47,9 @@ export default function BrowsePage() {
   key={part.id}
   style={{ textDecoration: "none" }}
 >
-        </div>
-</a>
+ </div>
+  </a>
+))}       
   <div style={styles.card}>    
             <h3 style={styles.title}>{part.title}</h3>
             <p style={styles.description}>{part.description}</p>
