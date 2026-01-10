@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 type Part = {
   id: string;
+  user_id: string; // ✅ ADD THIS
   title: string;
   description: string;
   category?: string | null;
