@@ -151,14 +151,13 @@ getUser();
       style={{
         fontSize: "14px",
         color: "#ccc",
-        marginBottom: "8px",
       }}
     >
       {part.description}
     </p>
   )}
 </div>
-  {/* PRICE */}
+      {/* PRICE */}
   {part.price && (
     <p
       style={{
