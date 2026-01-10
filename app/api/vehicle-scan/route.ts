@@ -16,3 +16,14 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ result });
 }
+return Response.json({
+  success: true,
+  vehicle: {
+    year: 2018,
+    make: "Toyota",
+    model: "Camry",
+    trim: "SE",
+    bodyType: "Sedan",
+  },
+  confidence: 0.86,
+});
