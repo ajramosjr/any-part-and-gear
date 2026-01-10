@@ -1,93 +1,83 @@
-"use client";
+import { createClient } from "@/utils/supabase/server";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+export default async function BrowsePage() {
+  const supabase = await createClient();
 
-type Part = {
-  id: string;
-  title: string;
-  description: string;
-};
+  const { data: parts, error } = await supabase
+    .from("parts")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-export default function BrowsePage() {
-  const [parts, setParts] = useState<Part[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchParts = async () => {
-      const { data, error } = await supabase
-        .from("parts")
-        .select("id, title, description")
-        .order("id", { ascending: false });
-
-      if (!error && data) {
-        setParts(data);
-      }
-
-      setLoading(false);
-    };
-
-    fetchParts();
-  }, []);
-
-  if (loading) {
-    return <p style={{ padding: "20px" }}>Loading parts…</p>;
+  if (error) {
+    return (
+      <div className="p-6 text-red-500">
+        Error loading parts
+      </div>
+    );
   }
 
   return (
-    <div
-      style={{
-        maxWidth: "900px",
-        margin: "0 auto",
-        padding: "20px",
-        color: "#fff",
-      }}
-    >
-      <h1 style={{ marginBottom: "20px" }}>Browse Parts</h1>
+    <main className="p-6">
+      <h1 className="text-2xl font-bold text-white mb-6">
+        Browse Parts
+      </h1>
 
-      {parts.length === 0 && <p>No parts listed yet.</p>}
+      {parts && parts.length === 0 && (
+        <p className="text-zinc-400">No parts listed yet.</p>
+      )}
 
-      {parts.map((part) => (
-  <div
-  key={part.id}
-  className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex flex-col justify-between"
->
-  {/* Part info */}
-  <div>
-    <h3 className="text-lg font-semibold text-white">
-      {part.title}
-    </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {parts?.map((part) => (
+          <div
+            key={part.id}
+            className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex flex-col justify-between"
+          >
+            {/* Part Info */}
+            <div>
+              <h3 className="text-lg font-semibold text-white">
+                {part.title}
+              </h3>
 
-    <p className="text-sm text-zinc-400 mt-1">
-      {part.description}
-    </p>
+              <p className="text-sm text-zinc-400 mt-1">
+                {part.description}
+              </p>
 
-    <p className="text-sm text-zinc-500 mt-1">
-      Fits: {part.vehicle_year} {part.vehicle_make} {part.vehicle_model}
-    </p>
+              <p className="text-sm text-zinc-500 mt-1">
+                Fits: {part.vehicle_year} {part.vehicle_make} {part.vehicle_model}
+              </p>
 
-    <p className="text-green-400 font-bold mt-2">
-      ${part.price}
-    </p>
-  </div>
+              <p className="text-green-400 font-bold mt-2">
+                ${part.price}
+              </p>
+            </div>
 
-  {/* Actions */}
-  <div className="flex gap-2 mt-4">
-    <a
-      href={`/seller/${part.seller_id}`}
-      className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded"
-    >
-      Message Seller
-    </a>
+            {/* Actions */}
+            <div className="flex gap-2 mt-4">
+              <a
+                href={`/seller/${part.seller_id}`}
+                className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded"
+              >
+                Message Seller
+              </a>
 
-    <button
-      onClick={async () => {
-        await supabase.from("parts").delete().eq("id", part.id);
-        window.location.reload();
-      }}
-      className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2 rounded"
-    >
-      Delete
-    </button>
-  </div>
-</div>
+              <form
+                action={async () => {
+                  "use server";
+                  const supabase = await createClient();
+                  await supabase.from("parts").delete().eq("id", part.id);
+                }}
+              >
+                <button
+                  type="submit"
+                  className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2 rounded"
+                >
+                  Delete
+                </button>
+              </form>
+            </div>
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}   
