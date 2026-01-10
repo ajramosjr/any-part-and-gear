@@ -12,6 +12,7 @@ export default function PartDetailPage() {
   const { id } = useParams();
   const [part, setPart] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPart = async () => {
@@ -22,6 +23,11 @@ export default function PartDetailPage() {
         .single();
 
       setPart(data);
+
+      if (data?.images?.length > 0) {
+        setActiveImage(data.images[0]);
+      }
+
       setLoading(false);
     };
 
@@ -36,10 +42,10 @@ export default function PartDetailPage() {
     return <p style={{ color: "#fff", padding: 40 }}>Part not found</p>;
   }
 
-  const imageSrc =
+  const images =
     part.images && part.images.length > 0
-      ? part.images[0]
-      : PLACEHOLDER_IMAGE;
+      ? part.images
+      : [PLACEHOLDER_IMAGE];
 
   return (
     <div style={{ padding: 40 }}>
@@ -56,18 +62,50 @@ export default function PartDetailPage() {
           boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
         }}
       >
+        {/* MAIN IMAGE */}
         <img
-          src={imageSrc}
+          src={activeImage || PLACEHOLDER_IMAGE}
           alt={part.title}
           style={{
             width: "100%",
-            height: 300,
+            height: 360,
             objectFit: "cover",
             borderRadius: 12,
-            marginBottom: 20,
+            marginBottom: 16,
           }}
         />
 
+        {/* THUMBNAILS */}
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginBottom: 24,
+            flexWrap: "wrap",
+          }}
+        >
+          {images.map((img: string, index: number) => (
+            <img
+              key={index}
+              src={img}
+              alt={`Image ${index + 1}`}
+              onClick={() => setActiveImage(img)}
+              style={{
+                width: 80,
+                height: 80,
+                objectFit: "cover",
+                borderRadius: 8,
+                cursor: "pointer",
+                border:
+                  activeImage === img
+                    ? "3px solid #8b5cf6"
+                    : "2px solid #ddd",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* DETAILS */}
         <h1 style={{ color: "#111", marginBottom: 10 }}>
           {part.title}
         </h1>
