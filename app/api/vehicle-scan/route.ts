@@ -4,12 +4,14 @@ import { createClient } from "@/lib/supabaseClient";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  // your logic above
+  // (you can parse req later)
+  // const formData = await req.formData();
 
   return NextResponse.json({
     make: "Toyota",
     model: "Camry",
-    year: 2018,
+    year: 2019,
+    bodyType: "Sedan",
     confidence: 0.86,
   });
 }
