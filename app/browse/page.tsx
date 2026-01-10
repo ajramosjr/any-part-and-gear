@@ -124,7 +124,12 @@ export default function BrowsePage() {
               style={image}
             />
 
-            <h3 style={title}>{part.title}</h3>
+            <a
+  href={`/seller/${part.user_id}`}
+  style={{ textDecoration: "none" }}
+>
+  <h3 style={title}>{part.title}</h3>
+</a>
             <p style={desc}>{part.description}</p>
 
             <div style={tags}>
