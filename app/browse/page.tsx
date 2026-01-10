@@ -32,6 +32,13 @@ export default function BrowsePage() {
         .from("parts")
         .select("*")
         .order("created_at", { ascending: false });
+    
+      const getUser = async () => {
+  const { data } = await supabase.auth.getUser();
+  setUserId(data.user?.id ?? null);
+};
+
+getUser();
 
       if (!error && data) {
         setParts(data);
