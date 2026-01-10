@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
+
+const supabase = createClient();
 
 export default function SellPage() {
   const [title, setTitle] = useState("");
