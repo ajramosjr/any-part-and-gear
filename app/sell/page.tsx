@@ -8,45 +8,63 @@ export default function SellPage() {
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files
+    const selected = e.target.files
       ? Array.from(e.target.files)
       : [];
 
-    setFiles(selectedFiles);
+    setFiles(selected);
+    setPreviews(selected.map((f) => URL.createObjectURL(f)));
+  };
 
-    const previewUrls = selectedFiles.map((file) =>
-      URL.createObjectURL(file)
-    );
-    setPreviews(previewUrls);
+  const handleDragStart = (index: number) => {
+    setDragIndex(index);
+  };
+
+  const handleDrop = (index: number) => {
+    if (dragIndex === null || dragIndex === index) return;
+
+    const newFiles = [...files];
+    const newPreviews = [...previews];
+
+    const [movedFile] = newFiles.splice(dragIndex, 1);
+    const [movedPreview] = newPreviews.splice(dragIndex, 1);
+
+    newFiles.splice(index, 0, movedFile);
+    newPreviews.splice(index, 0, movedPreview);
+
+    setFiles(newFiles);
+    setPreviews(newPreviews);
+    setDragIndex(null);
   };
 
   const uploadImages = async () => {
-    const uploadedUrls: string[] = [];
+    const urls: string[] = [];
 
     for (const file of files) {
-      const filePath = `${Date.now()}-${file.name}`;
+      const path = `${Date.now()}-${file.name}`;
 
       const { error } = await supabase.storage
         .from("part-images")
-        .upload(filePath, file);
+        .upload(path, file);
 
       if (error) {
-        console.error("Upload error:", error);
+        console.error(error);
         continue;
       }
 
       const { data } = supabase.storage
         .from("part-images")
-        .getPublicUrl(filePath);
+        .getPublicUrl(path);
 
-      uploadedUrls.push(data.publicUrl);
+      urls.push(data.publicUrl);
     }
 
-    return uploadedUrls;
+    return urls;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,11 +73,7 @@ export default function SellPage() {
     setMessage("");
 
     try {
-      let imageUrls: string[] = [];
-
-      if (files.length > 0) {
-        imageUrls = await uploadImages();
-      }
+      const imageUrls = files.length ? await uploadImages() : [];
 
       const { error } = await supabase.from("parts").insert({
         title,
@@ -73,10 +87,10 @@ export default function SellPage() {
       setDescription("");
       setFiles([]);
       setPreviews([]);
-      setMessage("✅ Part listed successfully!");
+      setMessage("✅ Part listed successfully");
     } catch (err) {
       console.error(err);
-      setMessage("❌ Something went wrong");
+      setMessage("❌ Failed to post part");
     } finally {
       setLoading(false);
     }
@@ -115,29 +129,23 @@ export default function SellPage() {
           style={{ marginBottom: 16 }}
         />
 
-        {/* IMAGE PREVIEWS */}
+        {/* DRAGGABLE PREVIEWS */}
         {previews.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              flexWrap: "wrap",
-              marginBottom: 20,
-            }}
-          >
+          <div style={previewGrid}>
             {previews.map((src, i) => (
-              <img
+              <div
                 key={i}
-                src={src}
-                alt={`Preview ${i + 1}`}
-                style={{
-                  width: 80,
-                  height: 80,
-                  objectFit: "cover",
-                  borderRadius: 8,
-                  border: "2px solid #444",
-                }}
-              />
+                draggable
+                onDragStart={() => handleDragStart(i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(i)}
+                style={previewItem}
+              >
+                <img src={src} alt="" style={previewImage} />
+                <small style={{ color: "#aaa" }}>
+                  Drag to reorder
+                </small>
+              </div>
             ))}
           </div>
         )}
@@ -145,16 +153,7 @@ export default function SellPage() {
         <button
           type="submit"
           disabled={loading}
-          style={{
-            width: "100%",
-            padding: 14,
-            background: "#8b5cf6",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
+          style={buttonStyle}
         >
           {loading ? "Posting..." : "Post Part"}
         </button>
@@ -169,6 +168,8 @@ export default function SellPage() {
   );
 }
 
+/* STYLES */
+
 const inputStyle = {
   width: "100%",
   padding: 12,
@@ -176,4 +177,36 @@ const inputStyle = {
   borderRadius: 8,
   border: "1px solid #444",
   fontSize: 16,
+};
+
+const previewGrid = {
+  display: "flex",
+  gap: 12,
+  flexWrap: "wrap" as const,
+  marginBottom: 20,
+};
+
+const previewItem = {
+  width: 90,
+  textAlign: "center" as const,
+  cursor: "grab",
+};
+
+const previewImage = {
+  width: 90,
+  height: 90,
+  objectFit: "cover" as const,
+  borderRadius: 8,
+  border: "2px solid #444",
+};
+
+const buttonStyle = {
+  width: "100%",
+  padding: 14,
+  background: "#8b5cf6",
+  color: "#fff",
+  border: "none",
+  borderRadius: 8,
+  fontWeight: 600,
+  cursor: "pointer",
 };
