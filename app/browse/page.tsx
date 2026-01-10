@@ -7,8 +7,8 @@ type Part = {
   id: number;
   title: string;
   description: string;
-  images: string[] | null;
   created_at: string;
+  images?: string[] | null;
 };
 
 export default function BrowsePage() {
@@ -23,7 +23,7 @@ export default function BrowsePage() {
         .order("created_at", { ascending: false });
 
       if (!error && data) {
-        setParts(data);
+        setParts(data as Part[]);
       }
 
       setLoading(false);
@@ -32,24 +32,32 @@ export default function BrowsePage() {
     fetchParts();
   }, []);
 
-  if (loading) return <p style={{ padding: 20 }}>Loading parts...</p>;
+  if (loading) {
+    return (
+      <div style={{ padding: 40, color: "#fff" }}>
+        Loading parts...
+      </div>
+    );
+  }
 
   return (
-    <main style={{ padding: 24 }}>
-      <h1>Browse Parts</h1>
+    <div style={{ padding: 40 }}>
+      <h1 style={{ color: "#fff", marginBottom: 30 }}>
+        Browse Parts
+      </h1>
 
       {parts.map((part) => (
         <div
           key={part.id}
           style={{
             background: "#fff",
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 20,
-            boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-            maxWidth: 600,
+            borderRadius: 16,
+            padding: 20,
+            marginBottom: 24,
+            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
           }}
         >
+          {/* IMAGE (only if it exists) */}
           {part.images && part.images.length > 0 && (
             <img
               src={part.images[0]}
@@ -58,20 +66,38 @@ export default function BrowsePage() {
                 width: "100%",
                 height: 200,
                 objectFit: "cover",
-                borderRadius: 8,
-                marginBottom: 12,
+                borderRadius: 12,
+                marginBottom: 16,
               }}
             />
           )}
 
-          <h3>{part.title}</h3>
-          <p>{part.description}</p>
+          <h3
+            style={{
+              color: "#111",
+              fontSize: 20,
+              fontWeight: 600,
+              marginBottom: 8,
+            }}
+          >
+            {part.title}
+          </h3>
 
-          <small>
-            Listed on {new Date(part.created_at).toLocaleDateString()}
+          <p
+            style={{
+              color: "#444",
+              marginBottom: 10,
+            }}
+          >
+            {part.description}
+          </p>
+
+          <small style={{ color: "#666" }}>
+            Listed on{" "}
+            {new Date(part.created_at).toLocaleDateString()}
           </small>
         </div>
       ))}
-    </main>
+    </div>
   );
 }
