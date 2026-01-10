@@ -7,16 +7,22 @@ type Part = {
   id: string;
   title: string;
   description: string;
-  images: string[];
+  category?: string | null;
+  condition?: string | null;
+  images?: string[] | null;
 };
+
+const PLACEHOLDER =
+  "https://via.placeholder.com/600x400?text=No+Image";
 
 export default function BrowsePage() {
   const [parts, setParts] = useState<Part[]>([]);
+  const [filtered, setFiltered] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [activeImages, setActiveImages] = useState<string[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
+  const [condition, setCondition] = useState("all");
 
   useEffect(() => {
     const fetchParts = async () => {
@@ -27,6 +33,7 @@ export default function BrowsePage() {
 
       if (!error && data) {
         setParts(data);
+        setFiltered(data);
       }
       setLoading(false);
     };
@@ -34,132 +41,150 @@ export default function BrowsePage() {
     fetchParts();
   }, []);
 
-  const openLightbox = (images: string[], index: number) => {
-    setActiveImages(images);
-    setActiveIndex(index);
-    setLightboxOpen(true);
-  };
+  useEffect(() => {
+    let result = parts;
 
-  const closeLightbox = () => {
-    setLightboxOpen(false);
-    setActiveImages([]);
-    setActiveIndex(0);
-  };
+    if (search) {
+      result = result.filter((p) =>
+        p.title.toLowerCase().includes(search.toLowerCase())
+      );
+    }
 
-  const nextImage = () => {
-    setActiveIndex((i) =>
-      i + 1 >= activeImages.length ? 0 : i + 1
-    );
-  };
+    if (category !== "all") {
+      result = result.filter(
+        (p) => p.category === category
+      );
+    }
 
-  const prevImage = () => {
-    setActiveIndex((i) =>
-      i - 1 < 0 ? activeImages.length - 1 : i - 1
-    );
-  };
+    if (condition !== "all") {
+      result = result.filter(
+        (p) => p.condition === condition
+      );
+    }
+
+    setFiltered(result);
+  }, [search, category, condition, parts]);
 
   if (loading) {
-    return <p style={{ padding: 40 }}>Loading parts…</p>;
+    return <p style={{ padding: 40 }}>Loading…</p>;
   }
 
   return (
     <main style={{ padding: 40 }}>
-      <h1 style={{ color: "#fff", marginBottom: 30 }}>
+      <h1 style={{ color: "#fff", marginBottom: 20 }}>
         Browse Parts
       </h1>
 
+      {/* FILTER BAR */}
+      <div style={filters}>
+        <input
+          placeholder="Search parts..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={input}
+        />
+
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          style={select}
+        >
+          <option value="all">All Categories</option>
+          <option value="engine">Engine</option>
+          <option value="exhaust">Exhaust</option>
+          <option value="suspension">Suspension</option>
+          <option value="interior">Interior</option>
+          <option value="electronics">Electronics</option>
+        </select>
+
+        <select
+          value={condition}
+          onChange={(e) => setCondition(e.target.value)}
+          style={select}
+        >
+          <option value="all">Any Condition</option>
+          <option value="new">New</option>
+          <option value="used">Used</option>
+          <option value="refurbished">
+            Refurbished
+          </option>
+        </select>
+      </div>
+
+      {/* GRID */}
       <div style={grid}>
-        {parts.map((part) => (
+        {filtered.map((part) => (
           <div key={part.id} style={card}>
-            {part.images?.length > 0 && (
-              <img
-                src={part.images[0]}
-                alt={part.title}
-                style={mainImage}
-                onClick={() =>
-                  openLightbox(part.images, 0)
-                }
-              />
-            )}
+            <img
+              src={
+                part.images && part.images.length > 0
+                  ? part.images[0]
+                  : PLACEHOLDER
+              }
+              style={image}
+            />
 
             <h3 style={title}>{part.title}</h3>
-            <p style={description}>{part.description}</p>
+            <p style={desc}>{part.description}</p>
 
-            {part.images?.length > 1 && (
-              <div style={thumbRow}>
-                {part.images.map((img, i) => (
-                  <img
-                    key={i}
-                    src={img}
-                    alt=""
-                    style={thumb}
-                    onClick={() =>
-                      openLightbox(part.images, i)
-                    }
-                  />
-                ))}
-              </div>
-            )}
+            <div style={tags}>
+              {part.category && (
+                <span style={tag}>
+                  {part.category}
+                </span>
+              )}
+              {part.condition && (
+                <span style={tag}>
+                  {part.condition}
+                </span>
+              )}
+            </div>
           </div>
         ))}
       </div>
-
-      {/* LIGHTBOX */}
-      {lightboxOpen && (
-        <div style={overlay} onClick={closeLightbox}>
-          <button style={closeBtn}>✕</button>
-
-          <button
-            style={{ ...navBtn, left: 20 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              prevImage();
-            }}
-          >
-            ‹
-          </button>
-
-          <img
-            src={activeImages[activeIndex]}
-            style={lightboxImage}
-            onClick={(e) => e.stopPropagation()}
-          />
-
-          <button
-            style={{ ...navBtn, right: 20 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              nextImage();
-            }}
-          >
-            ›
-          </button>
-        </div>
-      )}
     </main>
   );
 }
 
 /* STYLES */
 
+const filters = {
+  display: "flex",
+  gap: 12,
+  flexWrap: "wrap" as const,
+  marginBottom: 30,
+};
+
+const input = {
+  padding: 10,
+  borderRadius: 8,
+  border: "none",
+  minWidth: 200,
+};
+
+const select = {
+  padding: 10,
+  borderRadius: 8,
+  border: "none",
+};
+
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+  gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
   gap: 24,
 };
 
 const card = {
   background: "#111",
+  borderRadius: 14,
   padding: 16,
-  borderRadius: 12,
 };
 
-const mainImage = {
+const image = {
   width: "100%",
   height: 180,
   objectFit: "cover" as const,
   borderRadius: 10,
-  cursor: "pointer",
 };
 
 const title = {
@@ -167,60 +192,21 @@ const title = {
   marginTop: 12,
 };
 
-const description = {
-  color: "#bbb",
+const desc = {
+  color: "#aaa",
   fontSize: 14,
 };
 
-const thumbRow = {
+const tags = {
   display: "flex",
   gap: 8,
   marginTop: 10,
 };
 
-const thumb = {
-  width: 50,
-  height: 50,
-  objectFit: "cover" as const,
+const tag = {
+  background: "#222",
+  color: "#fff",
+  padding: "4px 8px",
   borderRadius: 6,
-  cursor: "pointer",
-  border: "2px solid #333",
-};
-
-const overlay = {
-  position: "fixed" as const,
-  inset: 0,
-  background: "rgba(0,0,0,0.9)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  zIndex: 999,
-};
-
-const lightboxImage = {
-  maxWidth: "90%",
-  maxHeight: "90%",
-  borderRadius: 12,
-};
-
-const navBtn = {
-  position: "absolute" as const,
-  top: "50%",
-  transform: "translateY(-50%)",
-  fontSize: 40,
-  background: "none",
-  border: "none",
-  color: "#fff",
-  cursor: "pointer",
-};
-
-const closeBtn = {
-  position: "absolute" as const,
-  top: 20,
-  right: 20,
-  fontSize: 30,
-  background: "none",
-  border: "none",
-  color: "#fff",
-  cursor: "pointer",
+  fontSize: 12,
 };
