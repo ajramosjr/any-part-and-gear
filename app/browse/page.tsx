@@ -80,4 +80,4 @@ export default async function BrowsePage() {
       </div>
     </main>
   );
-}   
+}
