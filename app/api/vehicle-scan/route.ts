@@ -1,45 +1,35 @@
 import { NextResponse } from "next/server";
 import { analyzeVehicle } from "@/lib/vehicleVision";
 import { createClient } from "@/lib/supabaseClient";
-import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  // (you can parse req later)
-  // const formData = await req.formData();
+  try {
+    const { imageUrl } = await req.json();
 
-  return NextResponse.json({
-    make: "Toyota",
-    model: "Camry",
-    year: 2019,
-    bodyType: "Sedan",
-    confidence: 0.86,
-  });
-}
+    const supabase = await createClient();
+    const { data: user } = await supabase.auth.getUser();
 
-const supabase = createClient();
+    if (!user?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-export async function POST(req: Request) {
-  const { imageUrl } = await req.json();
+    const result = await analyzeVehicle(imageUrl);
 
-  const supabase = await createClient();
-  const { data: user } = await supabase.auth.getUser();
-
-  if (!user?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({
+      success: true,
+      vehicle: {
+        year: result.year,
+        make: result.make,
+        model: result.model,
+        bodyType: result.bodyType,
+      },
+      confidence: result.confidence,
+    });
+  } catch (error) {
+    console.error("Vehicle scan error:", error);
+    return NextResponse.json(
+      { error: "Vehicle scan failed" },
+      { status: 500 }
+    );
   }
-
-  const result = await analyzeVehicle(imageUrl);
-
-  return NextResponse.json({ result });
 }
-return Response.json({
-  success: true,
-  vehicle: {
-    year: 2018,
-    make: "Toyota",
-    model: "Camry",
-    trim: "SE",
-    bodyType: "Sedan",
-  },
-  confidence: 0.86,
-});
