@@ -7,10 +7,24 @@ export default function SellPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  const uploadImages = async (files: File[]) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files
+      ? Array.from(e.target.files)
+      : [];
+
+    setFiles(selectedFiles);
+
+    const previewUrls = selectedFiles.map((file) =>
+      URL.createObjectURL(file)
+    );
+    setPreviews(previewUrls);
+  };
+
+  const uploadImages = async () => {
     const uploadedUrls: string[] = [];
 
     for (const file of files) {
@@ -44,7 +58,7 @@ export default function SellPage() {
       let imageUrls: string[] = [];
 
       if (files.length > 0) {
-        imageUrls = await uploadImages(files);
+        imageUrls = await uploadImages();
       }
 
       const { error } = await supabase.from("parts").insert({
@@ -58,18 +72,21 @@ export default function SellPage() {
       setTitle("");
       setDescription("");
       setFiles([]);
-      setMessage("Part listed successfully ✅");
+      setPreviews([]);
+      setMessage("✅ Part listed successfully!");
     } catch (err) {
       console.error(err);
-      setMessage("Something went wrong ❌");
+      setMessage("❌ Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main style={{ padding: 24, maxWidth: 600, margin: "0 auto" }}>
-      <h1>Sell a Part</h1>
+    <main style={{ padding: 40, maxWidth: 600, margin: "0 auto" }}>
+      <h1 style={{ color: "#fff", marginBottom: 20 }}>
+        Sell a Part
+      </h1>
 
       <form onSubmit={handleSubmit}>
         <input
@@ -78,7 +95,7 @@ export default function SellPage() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          style={{ width: "100%", padding: 10, marginBottom: 12 }}
+          style={inputStyle}
         />
 
         <textarea
@@ -86,28 +103,57 @@ export default function SellPage() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           required
-          style={{ width: "100%", padding: 10, marginBottom: 12 }}
+          rows={4}
+          style={inputStyle}
         />
 
         <input
           type="file"
-          multiple
           accept="image/*"
-          onChange={(e) =>
-            setFiles(e.target.files ? Array.from(e.target.files) : [])
-          }
+          multiple
+          onChange={handleFileChange}
           style={{ marginBottom: 16 }}
         />
+
+        {/* IMAGE PREVIEWS */}
+        {previews.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              flexWrap: "wrap",
+              marginBottom: 20,
+            }}
+          >
+            {previews.map((src, i) => (
+              <img
+                key={i}
+                src={src}
+                alt={`Preview ${i + 1}`}
+                style={{
+                  width: 80,
+                  height: 80,
+                  objectFit: "cover",
+                  borderRadius: 8,
+                  border: "2px solid #444",
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         <button
           type="submit"
           disabled={loading}
           style={{
             width: "100%",
-            padding: 12,
-            background: "#111",
+            padding: 14,
+            background: "#8b5cf6",
             color: "#fff",
-            borderRadius: 6,
+            border: "none",
+            borderRadius: 8,
+            fontWeight: 600,
+            cursor: "pointer",
           }}
         >
           {loading ? "Posting..." : "Post Part"}
@@ -115,8 +161,19 @@ export default function SellPage() {
       </form>
 
       {message && (
-        <p style={{ marginTop: 16, fontWeight: "bold" }}>{message}</p>
+        <p style={{ marginTop: 20, color: "#fff" }}>
+          {message}
+        </p>
       )}
     </main>
   );
 }
+
+const inputStyle = {
+  width: "100%",
+  padding: 12,
+  marginBottom: 12,
+  borderRadius: 8,
+  border: "1px solid #444",
+  fontSize: 16,
+};
