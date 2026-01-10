@@ -124,52 +124,53 @@ getUser();
       <div style={grid}>
      {parts.map((part) => (
   <div
-    key={part.id}
+  key={part.id}
+  style={{
+    background: "#111",
+    border: "1px solid #222",
+    borderRadius: "12px",
+    padding: "16px",
+    color: "#fff",
+    marginBottom: "16px",
+  }}
+>
+  {/* TITLE */}
+  <h3
     style={{
-      background: "#ffffff",
-      borderRadius: "14px",
-      padding: "20px",
-      marginBottom: "20px",
-      boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-      color: "#111",
+      fontSize: "18px",
+      fontWeight: "600",
+      marginBottom: "8px",
     }}
   >
-    {/* TITLE */}
-    <h3
-      style={{
-        fontSize: "22px",
-        fontWeight: "700",
-        marginBottom: "8px",
-        color: "#111",
-      }}
-    >
-      {part.title}
-    </h3>
+    {part.title}
+  </h3>
 
-    {/* DESCRIPTION */}
+  {/* DESCRIPTION */}
+  {part.description && (
     <p
       style={{
-        fontSize: "16px",
-        color: "#444",
-        marginBottom: "10px",
+        fontSize: "14px",
+        color: "#ccc",
+        marginBottom: "8px",
       }}
     >
       {part.description}
     </p>
+  )}
 
-    {/* DATE */}
-    {part.created_at && (
-      <p
-        style={{
-          fontSize: "14px",
-          color: "#777",
-        }}
-      >
-        Listed on{" "}
-        {new Date(part.created_at).toLocaleDateString()}
-      </p>
-    )}
-  </div>
+  {/* PRICE */}
+  {part.price && (
+    <p
+      style={{
+        fontWeight: "bold",
+        color: "#4ade80",
+        marginBottom: "8px",
+      }}
+    >
+      ${part.price}
+    </p>
+  )}
+</div>
 ))}
       </div>
     </main>
