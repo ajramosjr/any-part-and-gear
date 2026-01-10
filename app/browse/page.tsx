@@ -7,6 +7,8 @@ type Part = {
   id: number;
   title: string;
   description: string;
+  images: string[] | null;
+  created_at: string;
 };
 
 export default function BrowsePage() {
@@ -30,57 +32,46 @@ export default function BrowsePage() {
     fetchParts();
   }, []);
 
-  if (loading) {
-    return <p style={{ padding: 20 }}>Loading parts...</p>;
-  }
+  if (loading) return <p style={{ padding: 20 }}>Loading parts...</p>;
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.heading}>Browse Parts</h1>
-
-      {parts.length === 0 && <p>No parts listed yet.</p>}
+    <main style={{ padding: 24 }}>
+      <h1>Browse Parts</h1>
 
       {parts.map((part) => (
-        <a
+        <div
           key={part.id}
-          href={`/browse/${part.id}`}
-          style={styles.link}
+          style={{
+            background: "#fff",
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 20,
+            boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+            maxWidth: 600,
+          }}
         >
-          <div style={styles.card}>
-            <h3 style={styles.title}>{part.title}</h3>
-            <p style={styles.description}>{part.description}</p>
-          </div>
-        </a>
+          {part.images && part.images.length > 0 && (
+            <img
+              src={part.images[0]}
+              alt={part.title}
+              style={{
+                width: "100%",
+                height: 200,
+                objectFit: "cover",
+                borderRadius: 8,
+                marginBottom: 12,
+              }}
+            />
+          )}
+
+          <h3>{part.title}</h3>
+          <p>{part.description}</p>
+
+          <small>
+            Listed on {new Date(part.created_at).toLocaleDateString()}
+          </small>
+        </div>
       ))}
-    </div>
+    </main>
   );
 }
-
-const styles = {
-  container: {
-    padding: "20px",
-    maxWidth: "800px",
-    margin: "0 auto",
-  },
-  heading: {
-    marginBottom: "20px",
-  },
-  link: {
-    textDecoration: "none",
-    color: "inherit",
-  },
-  card: {
-    border: "1px solid #333",
-    borderRadius: "8px",
-    padding: "16px",
-    marginBottom: "12px",
-    backgroundColor: "#111",
-  },
-  title: {
-    margin: "0 0 8px 0",
-  },
-  description: {
-    margin: 0,
-    opacity: 0.8,
-  },
-};
