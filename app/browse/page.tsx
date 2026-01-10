@@ -122,39 +122,70 @@ getUser();
 
       {/* GRID */}
       <div style={grid}>
-        {filtered.map((part) => (
-          <div key={part.id} style={card}>
-            <img
-              src={
-                part.images && part.images.length > 0
-                  ? part.images[0]
-                  : PLACEHOLDER
-              }
-              style={image}
-            />
+     {parts.map((part) => (
+  <div
+    key={part.id}
+    style={{
+      background: "#ffffff",
+      borderRadius: "14px",
+      padding: "20px",
+      marginBottom: "20px",
+      boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+      color: "#111",
+    }}
+  >
+    {/* IMAGE (optional) */}
+    {part.image_url && (
+      <img
+        src={part.image_url}
+        alt={part.title}
+        style={{
+          width: "100%",
+          maxHeight: "220px",
+          objectFit: "cover",
+          borderRadius: "10px",
+          marginBottom: "14px",
+        }}
+      />
+    )}
 
-            <a
-  href={`/seller/${part.user_id}`}
-  style={{ textDecoration: "none" }}
->
-  <h3 style={title}>{part.title}</h3>
-</a>
-            <p style={desc}>{part.description}</p>
+    {/* TITLE */}
+    <h3
+      style={{
+        fontSize: "22px",
+        fontWeight: "700",
+        marginBottom: "8px",
+        color: "#111",
+      }}
+    >
+      {part.title}
+    </h3>
 
-            <div style={tags}>
-              {part.category && (
-                <span style={tag}>
-                  {part.category}
-                </span>
-              )}
-              {part.condition && (
-                <span style={tag}>
-                  {part.condition}
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
+    {/* DESCRIPTION */}
+    <p
+      style={{
+        fontSize: "16px",
+        color: "#444",
+        marginBottom: "10px",
+      }}
+    >
+      {part.description}
+    </p>
+
+    {/* DATE */}
+    {part.created_at && (
+      <p
+        style={{
+          fontSize: "14px",
+          color: "#777",
+        }}
+      >
+        Listed on{" "}
+        {new Date(part.created_at).toLocaleDateString()}
+      </p>
+    )}
+  </div>
+))} 
       </div>
     </main>
   );
