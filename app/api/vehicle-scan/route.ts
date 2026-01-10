@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
 import { analyzeVehicle } from "@/lib/vehicleVision";
 import { createClient } from "@/lib/supabaseClient";
+import { NextResponse } from "next/server";
+
+export async function POST(req: Request) {
+  // your logic above
+
+  return NextResponse.json({
+    make: "Toyota",
+    model: "Camry",
+    year: 2018,
+    confidence: 0.86,
+  });
+}
 
 const supabase = createClient();
 
