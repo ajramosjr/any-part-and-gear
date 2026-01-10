@@ -8,6 +8,26 @@ export default async function BrowsePage() {
     .select("*")
     .order("created_at", { ascending: false });
 
+  const { data: images } = await supabase
+  .from("part_images")
+  .select("*");
+  <div style={{ display: "flex", gap: "10px", overflowX: "auto" }}>
+  {images
+    ?.filter((img) => img.part_title === part.title)
+    .map((img) => (
+      <img
+        key={img.id}
+        src={img.image_url}
+        alt={part.title}
+        style={{
+          width: "120px",
+          height: "120px",
+          objectFit: "cover",
+          borderRadius: "8px",
+        }}
+      />
+    ))}
+</div>
   if (error) {
     return (
       <div className="p-6 text-red-500">
