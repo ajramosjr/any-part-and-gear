@@ -13,6 +13,7 @@ type Part = {
   images?: string[] | null;
 };
 
+const [userId, setUserId] = useState<string | null>(null);
 const PLACEHOLDER =
   "https://via.placeholder.com/600x400?text=No+Image";
 
