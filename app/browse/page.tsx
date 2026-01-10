@@ -134,21 +134,6 @@ getUser();
       color: "#111",
     }}
   >
-    {/* IMAGE (optional) */}
-    {part.image_url && (
-      <img
-        src={part.image_url}
-        alt={part.title}
-        style={{
-          width: "100%",
-          maxHeight: "220px",
-          objectFit: "cover",
-          borderRadius: "10px",
-          marginBottom: "14px",
-        }}
-      />
-    )}
-
     {/* TITLE */}
     <h3
       style={{
