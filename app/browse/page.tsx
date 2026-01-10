@@ -157,7 +157,7 @@ getUser();
       {part.description}
     </p>
   )}
-
+</div>
   {/* PRICE */}
   {part.price && (
     <p
