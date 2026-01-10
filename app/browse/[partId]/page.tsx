@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
+
+const supabase = createClient();
 
 export default function PartDetailPage() {
   const { partId } = useParams();
