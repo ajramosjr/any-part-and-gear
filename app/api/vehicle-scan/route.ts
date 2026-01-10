@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { analyzeVehicle } from "@/lib/vehicleVision";
-import { createClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabaseClient";
+
+const supabase = createClient();
 
 export async function POST(req: Request) {
   const { imageUrl } = await req.json();
