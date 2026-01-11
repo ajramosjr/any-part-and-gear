@@ -5,18 +5,18 @@ const openai = new OpenAI({
 });
 
 export async function analyzeVehicle(imageUrl: string) {
-  const response = await openai.chat.completions.create({
+  const response = await openai.responses.create({
     model: "gpt-4.1-mini",
-    messages: [
+    input: [
       {
         role: "user",
         content: [
-          { type: "text", text: "Identify the vehicle in this image. Return make, model, year range, body type, and confidence." },
-          { type: "image_url", image_url: { url: imageUrl } },
+          { type: "input_text", text: "Identify the vehicle in this image. Return JSON with make, model, year, bodyType, and confidence (0-1)." },
+          { type: "input_image", image_url: imageUrl },
         ],
       },
     ],
   });
 
-  return response.choices[0].message.content;
+  return response.output_parsed ?? response.output_text;
 }
