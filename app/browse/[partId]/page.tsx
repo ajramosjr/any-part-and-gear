@@ -4,14 +4,19 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
 
-const supabase = createClient();
-
 export default function PartDetailPage() {
-  const { partId } = useParams();
+  const supabase = createClient(); // ✅ inside component
+  const params = useParams();
+  const partId = params?.partId as string;
+
   const [part, setPart] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!partId) return;
+
+    let mounted = true;
+
     const fetchPart = async () => {
       const { data, error } = await supabase
         .from("parts")
@@ -19,15 +24,21 @@ export default function PartDetailPage() {
         .eq("id", partId)
         .single();
 
-      if (!error) {
+      if (!error && mounted) {
         setPart(data);
       }
 
-      setLoading(false);
+      if (mounted) {
+        setLoading(false);
+      }
     };
 
     fetchPart();
-  }, [partId]);
+
+    return () => {
+      mounted = false;
+    };
+  }, [partId, supabase]);
 
   if (loading) {
     return <p style={{ padding: 24 }}>Loading part…</p>;
