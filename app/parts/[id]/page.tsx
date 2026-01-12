@@ -5,17 +5,21 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabaseClient";
 
-const supabase = createClient();
 const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/800x500?text=No+Image+Available";
 
 export default function PartDetailPage() {
-  const { id } = useParams();
+  const supabase = createClient(); // ✅ inside component
+  const params = useParams();
+  const id = params.id as string; // ✅ explicit cast
+
   const [part, setPart] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchPart = async () => {
       const { data } = await supabase
         .from("parts")
@@ -33,7 +37,7 @@ export default function PartDetailPage() {
     };
 
     fetchPart();
-  }, [id]);
+  }, [id, supabase]);
 
   if (loading) {
     return <p style={{ color: "#fff", padding: 40 }}>Loading…</p>;
@@ -63,7 +67,6 @@ export default function PartDetailPage() {
           boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
         }}
       >
-        {/* MAIN IMAGE */}
         <img
           src={activeImage || PLACEHOLDER_IMAGE}
           alt={part.title}
@@ -76,7 +79,6 @@ export default function PartDetailPage() {
           }}
         />
 
-        {/* THUMBNAILS */}
         <div
           style={{
             display: "flex",
@@ -106,7 +108,6 @@ export default function PartDetailPage() {
           ))}
         </div>
 
-        {/* DETAILS */}
         <h1 style={{ color: "#111", marginBottom: 10 }}>
           {part.title}
         </h1>
