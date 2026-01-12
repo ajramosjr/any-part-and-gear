@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 export default function LoginPage() {
+  const supabase = createClient();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -47,8 +49,7 @@ export default function LoginPage() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
-      <br />
-      <br />
+      <br /><br />
 
       <input
         type="password"
@@ -56,8 +57,7 @@ export default function LoginPage() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <br />
-      <br />
+      <br /><br />
 
       <button onClick={signIn}>Sign In</button>
       <button onClick={signUp} style={{ marginLeft: 8 }}>
