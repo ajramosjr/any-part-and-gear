@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/800x500?text=No+Image+Available";
 
 export default function PartDetailPage() {
+  const supabase = createClient(); // ✅ REQUIRED
   const params = useParams();
   const id = params.id as string;
 
@@ -44,15 +45,10 @@ export default function PartDetailPage() {
     return () => {
       mounted = false;
     };
-  }, [id]);
+  }, [id, supabase]);
 
-  if (loading) {
-    return <p style={{ padding: 40 }}>Loading…</p>;
-  }
-
-  if (!part) {
-    return <p style={{ padding: 40 }}>Part not found</p>;
-  }
+  if (loading) return <p style={{ padding: 40 }}>Loading…</p>;
+  if (!part) return <p style={{ padding: 40 }}>Part not found</p>;
 
   const images =
     part.images && part.images.length > 0
@@ -74,7 +70,6 @@ export default function PartDetailPage() {
           boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
         }}
       >
-        {/* MAIN IMAGE */}
         <img
           src={activeImage || PLACEHOLDER_IMAGE}
           alt={part.title}
@@ -87,18 +82,15 @@ export default function PartDetailPage() {
           }}
         />
 
-        {/* THUMBNAILS */}
         <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
           {images.map((img: string, index: number) => (
             <img
               key={index}
               src={img}
-              alt={`Image ${index + 1}`}
               onClick={() => setActiveImage(img)}
               style={{
                 width: 80,
                 height: 80,
-                objectFit: "cover",
                 cursor: "pointer",
                 borderRadius: 8,
                 border:
@@ -110,7 +102,6 @@ export default function PartDetailPage() {
           ))}
         </div>
 
-        {/* DETAILS */}
         <h1>{part.title}</h1>
         <p>{part.description}</p>
 
