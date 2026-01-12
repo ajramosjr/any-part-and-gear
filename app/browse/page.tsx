@@ -1,103 +1,90 @@
-import { createClient } from "@/lib/supabaseClient";
+"use client";
 
-export default async function BrowsePage() {
-  const supabase = await createClient();
+import React from "react";
 
-  const { data: parts, error } = await supabase
-    .from("parts")
-    .select("*")
-    .order("created_at", { ascending: false });
+type Part = {
+  id: string;
+  title: string;
+  description?: string;
+};
 
-  const { data: images } = await supabase
-  .from("part_images")
-  .select("*");
-  <div style={{ display: "flex", gap: "10px", overflowX: "auto" }}>
-  {images
-    ?.filter((img) => img.part_title === part.title)
-    .map((img) => (
-      <img
-        key={img.id}
-        src={img.image_url}
-        alt={part.title}
-        style={{
-          width: "120px",
-          height: "120px",
-          objectFit: "cover",
-          borderRadius: "8px",
-        }}
-      />
-    ))}
-</div>
-  if (error) {
-    return (
-      <div className="p-6 text-red-500">
-        Error loading parts
-      </div>
-    );
-  }
+type PartImage = {
+  id: string;
+  url: string;
+  part_title: string;
+};
+
+export default function BrowsePage() {
+  // 🔧 Mock data (replace later with API data)
+  const parts: Part[] = [
+    { id: "1", title: "Alternator" },
+    { id: "2", title: "Brake Caliper" },
+    { id: "3", title: "Exhaust Manifold" },
+  ];
+
+  const images: PartImage[] = [
+    {
+      id: "img1",
+      url: "https://via.placeholder.com/150",
+      part_title: "Alternator",
+    },
+    {
+      id: "img2",
+      url: "https://via.placeholder.com/150",
+      part_title: "Brake Caliper",
+    },
+    {
+      id: "img3",
+      url: "https://via.placeholder.com/150",
+      part_title: "Exhaust Manifold",
+    },
+  ];
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold text-white mb-6">
+    <main style={{ padding: "24px" }}>
+      <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>
         Browse Parts
       </h1>
 
-      {parts && parts.length === 0 && (
-        <p className="text-zinc-400">No parts listed yet.</p>
-      )}
+      {parts.map((part) => (
+        <div
+          key={part.id}
+          style={{
+            marginBottom: "32px",
+            paddingBottom: "16px",
+            borderBottom: "1px solid #333",
+          }}
+        >
+          <h2 style={{ fontSize: "18px", marginBottom: "8px" }}>
+            {part.title}
+          </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {parts?.map((part) => (
           <div
-            key={part.id}
-            className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex flex-col justify-between"
+            style={{
+              display: "flex",
+              gap: "10px",
+              overflowX: "auto",
+            }}
           >
-            {/* Part Info */}
-            <div>
-              <h3 className="text-lg font-semibold text-white">
-                {part.title}
-              </h3>
-
-              <p className="text-sm text-zinc-400 mt-1">
-                {part.description}
-              </p>
-
-              <p className="text-sm text-zinc-500 mt-1">
-                Fits: {part.vehicle_year} {part.vehicle_make} {part.vehicle_model}
-              </p>
-
-              <p className="text-green-400 font-bold mt-2">
-                ${part.price}
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-2 mt-4">
-              <a
-                href={`/seller/${part.seller_id}`}
-                className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded"
-              >
-                Message Seller
-              </a>
-
-              <form
-                action={async () => {
-                  "use server";
-                  const supabase = await createClient();
-                  await supabase.from("parts").delete().eq("id", part.id);
-                }}
-              >
-                <button
-                  type="submit"
-                  className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2 rounded"
-                >
-                  Delete
-                </button>
-              </form>
-            </div>
+            {images
+              .filter((img) => img.part_title === part.title)
+              .map((img) => (
+                <img
+                  key={img.id}
+                  src={img.url}
+                  alt={part.title}
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    objectFit: "cover",
+                    borderRadius: "6px",
+                    border: "1px solid #444",
+                  }}
+                />
+              ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </main>
   );
 }
