@@ -1,82 +1,61 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 export default function SellForm() {
+  const supabase = createClient();
+
   const [title, setTitle] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [description, setDescription] = useState("");
+  const [message, setMessage] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-
+  async function handleSubmit() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user || !image) {
-      alert("You must be logged in and select an image");
-      setLoading(false);
+    if (!user) {
+      setMessage("You must be logged in to sell a part.");
       return;
     }
 
-    const fileName = `${user.id}-${Date.now()}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("part-images")
-      .upload(fileName, image);
-
-    if (uploadError) {
-      alert("Image upload failed");
-      setLoading(false);
-      return;
-    }
-
-    const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/part-images/${fileName}`;
-
-    const { error: insertError } = await supabase.from("parts").insert({
+    const { error } = await supabase.from("parts").insert({
       title,
+      description,
       user_id: user.id,
-      image_url: imageUrl,
     });
 
-    if (insertError) {
-      alert("Failed to save part");
+    if (error) {
+      setMessage(error.message);
     } else {
-      alert("Part posted!");
+      setMessage("Part listed successfully!");
       setTitle("");
-      setImage(null);
+      setDescription("");
     }
-
-    setLoading(false);
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div style={{ maxWidth: 500 }}>
+      <h2>Sell a Part</h2>
+
       <input
-        className="border p-2 w-full"
         placeholder="Part title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        required
+        style={{ width: "100%", marginBottom: 10 }}
       />
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setImage(e.target.files?.[0] || null)}
-        required
+      <textarea
+        placeholder="Description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        style={{ width: "100%", marginBottom: 10 }}
       />
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="bg-black text-white px-4 py-2 rounded"
-      >
-        {loading ? "Posting..." : "Post Part"}
-      </button>
-    </form>
+      <button onClick={handleSubmit}>List Part</button>
+
+      {message && <p>{message}</p>}
+    </div>
   );
 }
