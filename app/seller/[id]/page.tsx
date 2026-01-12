@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabaseClient";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
 type PageProps = {
   params: {
@@ -8,9 +8,6 @@ type PageProps = {
 };
 
 export default async function SellerPage({ params }: PageProps) {
-  // ✅ THIS LINE MUST EXIST
-  const supabase = createClient();
-
   const sellerId = params.id;
 
   const { data: parts } = await supabase
