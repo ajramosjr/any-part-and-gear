@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 export default function MyListings() {
+  const supabase = createClient(); // ✅ MUST be inside component
+
   const [user, setUser] = useState<any>(null);
   const [parts, setParts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +44,7 @@ export default function MyListings() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [supabase]);
 
   if (loading) return <p>Loading...</p>;
   if (!user) return <p>Please sign in</p>;
