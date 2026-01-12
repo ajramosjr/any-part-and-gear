@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function LoginPage() {
-  const supabase = createClient(); // ✅ inside component
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
