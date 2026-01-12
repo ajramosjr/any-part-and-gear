@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { analyzeVehicleAndParts } from "@/lib/vehicleVision";
+import { analyzeVehicle } from "@/lib/vehicleVision";import { NextResponse } from "next/server";
+import { analyzeVehicle } from "@/lib/vehicleVision";
 
 export async function POST(req: Request) {
   const { imageUrl } = await req.json();
@@ -11,8 +11,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const result = await analyzeVehicleAndParts(imageUrl);
-
+  const result = await analyzeVehicle(imageUrl);
+  
   return NextResponse.json({
     success: true,
     data: result
