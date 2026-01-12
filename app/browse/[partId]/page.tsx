@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function PartDetailPage() {
-  const supabase = createClient(); // ✅ inside component
   const params = useParams();
   const partId = params?.partId as string;
 
@@ -38,7 +37,7 @@ export default function PartDetailPage() {
     return () => {
       mounted = false;
     };
-  }, [partId, supabase]);
+  }, [partId]);
 
   if (loading) {
     return <p style={{ padding: 24 }}>Loading part…</p>;
