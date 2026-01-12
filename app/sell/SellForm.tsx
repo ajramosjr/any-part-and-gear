@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabaseClient";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
 type PageProps = {
   params: {
@@ -8,7 +8,6 @@ type PageProps = {
 };
 
 export default async function SellerPage({ params }: PageProps) {
-  const supabase = createClient();
   const sellerId = params.id;
 
   const { data: parts } = await supabase
@@ -27,7 +26,7 @@ export default async function SellerPage({ params }: PageProps) {
         <p>No listings found.</p>
       ) : (
         <div style={{ marginTop: 20 }}>
-          {parts.map((part) => (
+          {parts.map((part: any) => (
             <div
               key={part.id}
               style={{
