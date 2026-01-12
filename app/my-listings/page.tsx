@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabaseClient";
-
-const supabase = createClient();
+import { supabase } from "@/lib/supabaseClient";
 
 export default function MyListings() {
   const [user, setUser] = useState<any>(null);
@@ -12,10 +10,14 @@ export default function MyListings() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     async function load() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
+      if (!mounted) return;
 
       if (!user) {
         setLoading(false);
@@ -29,11 +31,17 @@ export default function MyListings() {
         .select("*")
         .eq("user_id", user.id);
 
-      setParts(data ?? []);
-      setLoading(false);
+      if (mounted) {
+        setParts(data ?? []);
+        setLoading(false);
+      }
     }
 
     load();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   if (loading) return <p>Loading...</p>;
