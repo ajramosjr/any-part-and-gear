@@ -1,17 +1,16 @@
 import { createClient } from "@/lib/supabaseClient";
+import Link from "next/link";
 
-type Part = {
-  id: string;
-  title: string;
-  description: string;
-  images?: string[] | null;
+type PageProps = {
+  params: {
+    id: string;
+  };
 };
 
-export default async function SellerPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function SellerPage({ params }: PageProps) {
+  // ✅ THIS LINE MUST EXIST
+  const supabase = createClient();
+
   const sellerId = params.id;
 
   const { data: parts } = await supabase
@@ -21,59 +20,35 @@ export default async function SellerPage({
     .order("created_at", { ascending: false });
 
   return (
-    <main style={{ padding: 40 }}>
-      <h1 style={{ color: "#fff", marginBottom: 10 }}>
-        Seller Listings
-      </h1>
+    <div style={{ padding: 40 }}>
+      <Link href="/browse">← Back to Browse</Link>
 
-      <p style={{ color: "#aaa", marginBottom: 30 }}>
-        Seller ID: {sellerId}
-      </p>
+      <h1 style={{ marginTop: 20 }}>Seller Listings</h1>
 
-      <div style={grid}>
-        {parts?.map((part) => (
-          <div key={part.id} style={card}>
-            {part.images?.[0] && (
-              <img
-                src={part.images[0]}
-                style={image}
-              />
-            )}
-            <h3 style={title}>{part.title}</h3>
-            <p style={desc}>{part.description}</p>
-          </div>
-        ))}
-      </div>
-    </main>
+      {!parts || parts.length === 0 ? (
+        <p>No listings found.</p>
+      ) : (
+        <div style={{ marginTop: 20 }}>
+          {parts.map((part: any) => (
+            <div
+              key={part.id}
+              style={{
+                background: "#fff",
+                padding: 16,
+                borderRadius: 10,
+                marginBottom: 12,
+              }}
+            >
+              <h3>{part.title}</h3>
+              <p>{part.description}</p>
+
+              <Link href={`/parts/${part.id}`}>
+                View Part
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
-
-/* STYLES */
-const grid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-  gap: 24,
-};
-
-const card = {
-  background: "#111",
-  padding: 16,
-  borderRadius: 14,
-};
-
-const image = {
-  width: "100%",
-  height: 160,
-  objectFit: "cover" as const,
-  borderRadius: 10,
-};
-
-const title = {
-  color: "#fff",
-  marginTop: 10,
-};
-
-const desc = {
-  color: "#aaa",
-  fontSize: 14,
-};
