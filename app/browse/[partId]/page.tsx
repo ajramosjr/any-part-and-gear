@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 export default function PartDetailPage() {
+  const supabase = createClient(); // ✅ correct
   const params = useParams();
   const partId = params?.partId as string;
 
@@ -37,7 +38,7 @@ export default function PartDetailPage() {
     return () => {
       mounted = false;
     };
-  }, [partId]);
+  }, [partId, supabase]);
 
   if (loading) {
     return <p style={{ padding: 24 }}>Loading part…</p>;
@@ -52,7 +53,6 @@ export default function PartDetailPage() {
       <div style={styles.card}>
         <h1 style={styles.title}>{part.title}</h1>
         <p style={styles.description}>{part.description}</p>
-
         <p style={styles.meta}>
           Listed on {new Date(part.created_at).toLocaleDateString()}
         </p>
