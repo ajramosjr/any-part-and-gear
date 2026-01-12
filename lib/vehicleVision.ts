@@ -11,11 +11,17 @@ export async function analyzeVehicle(imageUrl: string) {
     input: [
       {
         role: "user",
-        content: [
-          { type: "input_text", text: "Identify the vehicle in this image." },
-          { type: "input_image", image_url: imageUrl },
-        ],
-      },
+      content: [
+  {
+    type: "input_text",
+    text: "Identify the vehicle and visible parts in this image."
+  },
+  {
+    type: "input_image",
+    image_url: imageUrl,
+    detail: "high"
+  }
+]
     ],
   });
 
