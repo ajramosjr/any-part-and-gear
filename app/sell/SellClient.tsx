@@ -1,18 +1,19 @@
 "use client";
 
 import { supabase } from "@/lib/supabaseClient";
+import { useState } from "react";
 
 export default function SellClient() {
-  async function handleTest() {
-    await supabase.from("parts").insert({
-      title: "Test Part",
-    });
-  }
+  const [title, setTitle] = useState("");
 
   return (
-    <div>
-      <h1>Sell a Part</h1>
-      <button onClick={handleTest}>Test Insert</button>
-    </div>
+    <form>
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Part title"
+      />
+      <button type="submit">Post</button>
+    </form>
   );
 }
