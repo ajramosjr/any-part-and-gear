@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabaseServer";
 import { redirect } from "next/navigation";
 
 export async function updatePart(id: string, formData: FormData) {
