@@ -5,7 +5,7 @@ export default async function MessagesPage({
 }: {
   searchParams: { to?: string; part?: string };
 }) {
-  const supabase = createClient();
+  const supabase = await createClient(); // ✅ FIXED
 
   const { data: messages } = await supabase
     .from("messages")
@@ -17,7 +17,7 @@ export default async function MessagesPage({
       <h2>Messages about: {searchParams.part}</h2>
 
       <div style={{ marginTop: "20px" }}>
-        {messages?.map((msg) => (
+        {messages?.map((msg: any) => (
           <div
             key={msg.id}
             style={{
