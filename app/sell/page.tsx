@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 export default function SellPage() {
+  const supabase = createClient(); // ✅ THIS LINE IS REQUIRED
+
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -13,10 +15,10 @@ export default function SellPage() {
     const loadUser = async () => {
       const { data } = await supabase.auth.getUser();
 
-      if (mounted) {
-        setUser(data.user);
-        setLoading(false);
-      }
+      if (!mounted) return;
+
+      setUser(data.user);
+      setLoading(false);
     };
 
     loadUser();
@@ -24,7 +26,7 @@ export default function SellPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [supabase]);
 
   if (loading) {
     return <p>Loading…</p>;
