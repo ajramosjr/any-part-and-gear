@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabaseServer";
 
 export async function createPart(formData: FormData) {
   const title = formData.get("title")?.toString();
