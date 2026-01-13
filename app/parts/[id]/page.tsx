@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabaseClient";
 const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/800x500?text=No+Image+Available";
 
-export default function PartDetailPage() {
+export default function PartDetailPage() 
   const params = useParams();
   const id = params.id as string;
 
