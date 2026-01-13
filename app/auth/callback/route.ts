@@ -6,6 +6,9 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
 
+  // ✅ FIX: cookies() is async in Next 16
+  const cookieStore = await cookies();
+
   if (code) {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,13 +16,13 @@ export async function GET(request: Request) {
       {
         cookies: {
           get(name) {
-            return cookies().get(name)?.value;
+            return cookieStore.get(name)?.value;
           },
           set(name, value, options) {
-            cookies().set({ name, value, ...options });
+            cookieStore.set({ name, value, ...options });
           },
           remove(name, options) {
-            cookies().set({ name, value: "", ...options });
+            cookieStore.set({ name, value: "", ...options });
           },
         },
       }
