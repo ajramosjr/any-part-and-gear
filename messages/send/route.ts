@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabaseServer";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   const formData = await req.formData();
 
   await supabase.from("messages").insert({
-    sender_email: "buyer@guest.com", // later: auth user
+    sender_email: "buyer@guest.com",
     receiver_email: formData.get("receiver_email"),
     part_title: formData.get("part_title"),
     message: formData.get("message"),
