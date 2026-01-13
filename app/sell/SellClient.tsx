@@ -1,19 +1,28 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useState } from "react";
 
 export default function SellClient() {
-  const [title, setTitle] = useState("");
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+
+  if (!user) {
+    return <p>Please log in to sell items.</p>;
+  }
 
   return (
-    <form>
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Part title"
-      />
-      <button type="submit">Post</button>
-    </form>
+    <div>
+      {/* your sell form here */}
+    </div>
   );
 }
