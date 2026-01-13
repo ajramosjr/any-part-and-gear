@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
-export default function MyListings() {
-  const supabase = createClient(); // ✅ MUST be inside component
+export default function MyListings() 
 
   const [user, setUser] = useState<any>(null);
   const [parts, setParts] = useState<any[]>([]);
