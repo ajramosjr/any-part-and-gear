@@ -1,8 +1,7 @@
-import { createClient } from "@/lib/supabaseServer";
+import { supabase } from "@/lib/supabaseClient";
 import SellClient from "./SellClient";
 
-export default async function SellPage() {
-  const supabase = await createClient();
+export default async function SellPage() 
 
   const {
     data: { user },
