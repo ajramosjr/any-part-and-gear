@@ -1,20 +1,38 @@
-import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+"use client";
 
-type PageProps = {
-  params: {
-    id: string;
-  };
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { createClient } from "@/lib/supabaseClient";
+
+type Part = {
+  id: string;
+  title: string;
+  description?: string;
 };
 
-export default async function SellerPage({ params }: PageProps) {
+export default function SellerPage({ params }: { params: { id: string } }) {
+  const supabase = createClient(); // ✅ REQUIRED
   const sellerId = params.id;
 
-  const { data: parts } = await supabase
-    .from("parts")
-    .select("*")
-    .eq("user_id", sellerId)
-    .order("created_at", { ascending: false });
+  const [parts, setParts] = useState<Part[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadParts = async () => {
+      const { data } = await supabase
+        .from("parts")
+        .select("*")
+        .eq("user_id", sellerId)
+        .order("created_at", { ascending: false });
+
+      setParts(data ?? []);
+      setLoading(false);
+    };
+
+    loadParts();
+  }, [sellerId, supabase]);
+
+  if (loading) return <p>Loading…</p>;
 
   return (
     <div style={{ padding: 40 }}>
@@ -22,11 +40,11 @@ export default async function SellerPage({ params }: PageProps) {
 
       <h1 style={{ marginTop: 20 }}>Seller Listings</h1>
 
-      {!parts || parts.length === 0 ? (
+      {parts.length === 0 ? (
         <p>No listings found.</p>
       ) : (
         <div style={{ marginTop: 20 }}>
-          {parts.map((part: any) => (
+          {parts.map((part) => (
             <div
               key={part.id}
               style={{
@@ -39,9 +57,7 @@ export default async function SellerPage({ params }: PageProps) {
               <h3>{part.title}</h3>
               <p>{part.description}</p>
 
-              <Link href={`/parts/${part.id}`}>
-                View Part
-              </Link>
+              <Link href={`/parts/${part.id}`}>View Part</Link>
             </div>
           ))}
         </div>
