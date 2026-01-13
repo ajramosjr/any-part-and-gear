@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 type PageProps = {
   params: {
@@ -8,6 +8,7 @@ type PageProps = {
 };
 
 export default async function SellerPage({ params }: PageProps) {
+  const supabase = createClient(); // ✅ REQUIRED
   const sellerId = params.id;
 
   const { data: parts } = await supabase
