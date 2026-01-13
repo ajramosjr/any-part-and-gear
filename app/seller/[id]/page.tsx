@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 type Part = {
   id: string;
@@ -10,9 +10,8 @@ type Part = {
   description?: string;
 };
 
-export default function SellerPage({ params }: { params: { id: string } }) {
-  const supabase = createClient(); // ✅ REQUIRED
-  const sellerId = params.id;
+export default function SellerPage({ params }: { params: { id: string } }) 
+ const sellerId = params.id;
 
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
