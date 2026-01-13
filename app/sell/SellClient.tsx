@@ -3,7 +3,7 @@
 import { supabase } from "@/lib/supabaseClient";
 
 export default function SellClient() {
-  async function testInsert() {
+  async function handleTest() {
     await supabase.from("parts").insert({
       title: "Test Part",
     });
@@ -12,7 +12,7 @@ export default function SellClient() {
   return (
     <div>
       <h1>Sell a Part</h1>
-      <button onClick={testInsert}>Test Insert</button>
+      <button onClick={handleTest}>Test Insert</button>
     </div>
   );
 }
