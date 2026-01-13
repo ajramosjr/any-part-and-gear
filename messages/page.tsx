@@ -1,11 +1,11 @@
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabaseServer";
 
 export default async function MessagesPage({
   searchParams,
 }: {
   searchParams: { to?: string; part?: string };
 }) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data: messages } = await supabase
     .from("messages")
