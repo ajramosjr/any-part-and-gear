@@ -1,9 +1,8 @@
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const { createClient } = await import("@supabase/supabase-js");
-
-  const supabase = createClient(
+  import { createClient } from "@/lib/supabaseServer";
+const supabase = createClient();(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
