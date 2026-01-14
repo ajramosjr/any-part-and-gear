@@ -1,18 +1,25 @@
-import SellForm from "@/components/SellForm";
+"use client";
+
+import { useState } from "react";
 import { supabase } from "@/lib/supabaseBrowser";
 
-export default async function SellPage() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export default function SellForm() {
+  const [title, setTitle] = useState("");
 
-  if (!user) {
-    return (
-      <main style={{ padding: 40 }}>
-        <h1>Please log in to sell items</h1>
-      </main>
-    );
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    await supabase.from("parts").insert({ title });
   }
 
-  return <SellForm />;
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Part name"
+      />
+      <button type="submit">Sell</button>
+    </form>
+  );
 }
