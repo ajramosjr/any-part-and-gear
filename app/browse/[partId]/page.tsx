@@ -2,91 +2,41 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseBrowser";
 
 export default function PartDetailPage() {
   const params = useParams();
-  const partId = params?.id as string; // ⚠️ important note below
+  const id = params.partId as string;
 
   const [part, setPart] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!partId) return;
+    if (!id) return;
 
-    let mounted = true;
-
-    const fetchPart = async () => {
-      const { data, error } = await supabase
+    const load = async () => {
+      const { data } = await supabase
         .from("parts")
         .select("*")
-        .eq("id", partId)
+        .eq("id", id)
         .single();
 
-      if (!error && mounted) {
-        setPart(data);
-      }
-
-      if (mounted) {
-        setLoading(false);
-      }
+      setPart(data);
+      setLoading(false);
     };
 
-    fetchPart();
+    load();
+  }, [id]);
 
-    return () => {
-      mounted = false;
-    };
-  }, [partId]);
-
-  if (loading) {
-    return <p style={{ padding: 24 }}>Loading part…</p>;
-  }
-
-  if (!part) {
-    return <p style={{ padding: 24 }}>Part not found</p>;
-  }
+  if (loading) return <p style={{ padding: 40 }}>Loading…</p>;
+  if (!part) return <p style={{ padding: 40 }}>Part not found</p>;
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>{part.title}</h1>
-        <p style={styles.description}>{part.description}</p>
-        <p style={styles.meta}>
-          Listed on {new Date(part.created_at).toLocaleDateString()}
-        </p>
-      </div>
-    </div>
+    <main style={{ padding: 40 }}>
+      <Link href="/browse">← Back</Link>
+      <h1>{part.title}</h1>
+      <p>{part.description}</p>
+    </main>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    padding: "24px",
-    backgroundColor: "#f5f7fa",
-    fontFamily: "system-ui",
-  },
-  card: {
-    maxWidth: "600px",
-    margin: "0 auto",
-    backgroundColor: "#ffffff",
-    padding: "24px",
-    borderRadius: "14px",
-    boxShadow: "0 10px 20px rgba(0,0,0,0.08)",
-  },
-  title: {
-    fontSize: "26px",
-    fontWeight: 700,
-    marginBottom: "12px",
-  },
-  description: {
-    fontSize: "16px",
-    color: "#374151",
-    marginBottom: "16px",
-  },
-  meta: {
-    fontSize: "13px",
-    color: "#6b7280",
-  },
-};
