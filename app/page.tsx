@@ -1,18 +1,19 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+export const dynamic = "force-dynamic";
 
-export function createClient() {
-  const cookieStore = cookies();
+import { createClient } from "@/lib/supabaseServer";
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
+export default async function HomePage() {
+  const supabase = createClient();
+
+  const { data } = await supabase
+    .from("parts")
+    .select("*")
+    .limit(5);
+
+  return (
+    <main style={{ padding: 20 }}>
+      <h1>AnyPartingGear</h1>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </main>
   );
 }
