@@ -1,5 +1,5 @@
-import { supabase } from "@/lib/supabaseClient";
-import SellClient from "./SellClient";
+import SellForm from "@/components/SellForm";
+import { supabase } from "@/lib/supabaseBrowser";
 
 export default async function SellPage() {
   const {
@@ -7,8 +7,12 @@ export default async function SellPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return <p>Please log in to sell items.</p>;
+    return (
+      <main style={{ padding: 40 }}>
+        <h1>Please log in to sell items</h1>
+      </main>
+    );
   }
 
-  return <SellClient />;
+  return <SellForm />;
 }
