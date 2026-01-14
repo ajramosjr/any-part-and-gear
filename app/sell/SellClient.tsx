@@ -6,7 +6,9 @@ import { supabase } from "@/lib/supabaseClient";
 export default function SellClient() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
+const handleSubmit = async () => {
+    await supabase.from("parts").insert({ title: "Test" });
+  };
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
