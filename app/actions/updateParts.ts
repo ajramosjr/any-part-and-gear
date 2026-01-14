@@ -1,30 +1,12 @@
-"use server";
-
 import { createClient } from "@/lib/supabaseServer";
-import { redirect } from "next/navigation";
 
 export async function updatePart(id: string, formData: FormData) {
-  const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabase = await createClient(); // ✅ NO ARGS
 
-  const title = formData.get("title")?.toString();
-  const description = formData.get("description")?.toString() || "";
-  const price = Number(formData.get("price"));
+  const title = formData.get("title");
 
-  if (!title || !price) {
-    redirect("/browse?error=Missing required fields");
-  }
-
-  const { error } = await supabase
+  await supabase
     .from("parts")
-    .update({ title, description, price })
+    .update({ title })
     .eq("id", id);
-
-  if (error) {
-    redirect(`/browse?error=${encodeURIComponent(error.message)}`);
-  }
-
-  redirect("/browse");
 }
