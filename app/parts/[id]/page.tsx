@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabaseClient";
 const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/800x500?text=No+Image+Available";
 
-export default function PartDetailPage() 
+export default function PartDetailPage() {
   const params = useParams();
   const id = params.id as string;
 
@@ -44,7 +44,7 @@ export default function PartDetailPage()
     return () => {
       mounted = false;
     };
-  }, [id, supabase]);
+  }, [id]);
 
   if (loading) return <p style={{ padding: 40 }}>Loading…</p>;
   if (!part) return <p style={{ padding: 40 }}>Part not found</p>;
