@@ -1,51 +1,49 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabaseBrowser";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function SellForm() {
-  const supabase = createClient();
-
   const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     const { error } = await supabase.from("parts").insert({
       title,
-      price: Number(price),
     });
 
     if (error) {
-      alert(error.message);
+      setError(error.message);
     } else {
-      alert("Part listed!");
       setTitle("");
-      setPrice("");
     }
-  }
+
+    setLoading(false);
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} style={{ padding: 40 }}>
+      <h1>Sell a Part</h1>
+
       <input
+        type="text"
+        placeholder="Part title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Part name"
-        className="w-full border p-2"
+        required
+        style={{ display: "block", marginBottom: 12 }}
       />
 
-      <input
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-        placeholder="Price"
-        type="number"
-        className="w-full border p-2"
-      />
-
-      <button className="bg-black text-white px-4 py-2">
-        List Part
+      <button type="submit" disabled={loading}>
+        {loading ? "Posting…" : "Post Part"}
       </button>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </form>
   );
 }
