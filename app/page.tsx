@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabaseServer";
 
 export default async function HomePage() {
-  const supabase = createClient();
+  const supabase = await createClient(); // ✅ AWAIT HERE
 
   const { data } = await supabase
     .from("parts")
