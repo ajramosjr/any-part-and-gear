@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -10,13 +11,16 @@ type Part = {
   description?: string;
 };
 
-export default function SellerPage({ params }: { params: { id: string } }) 
- const sellerId = params.id;
+export default function SellerPage() {
+  const params = useParams();
+  const sellerId = params.id as string;
 
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!sellerId) return;
+
     const loadParts = async () => {
       const { data } = await supabase
         .from("parts")
@@ -29,7 +33,7 @@ export default function SellerPage({ params }: { params: { id: string } })
     };
 
     loadParts();
-  }, [sellerId, supabase]);
+  }, [sellerId]);
 
   if (loading) return <p>Loading…</p>;
 
