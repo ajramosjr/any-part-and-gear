@@ -1,4 +1,4 @@
-type Part = {
+type part = {
   id?: string;
   title: string;
   price: number;
