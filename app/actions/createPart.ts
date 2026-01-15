@@ -1,11 +1,8 @@
-import { createClient } from "@/lib/supabaseServer";
+// app/actions/createPart.ts
+// TEMP DISABLED – handled in browser Supabase until server auth is reintroduced
 
-export async function createPart(formData: FormData) {
-  const supabase = await createClient(); // ✅ THIS IS THE FIX
-
-  const title = formData.get("title");
-
-  await supabase.from("parts").insert({
-    title,
-  });
+export async function createPart() {
+  throw new Error(
+    "createPart is temporarily disabled. Use browser Supabase instead."
+  );
 }
