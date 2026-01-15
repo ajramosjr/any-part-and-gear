@@ -1,4 +1,59 @@
 type Part = {
+  id?: string;
+  title: string;
+  price: number;
+  fitment?: string;
+};
+
+export default function PartCard({ part }: { part: Part }) {
+  return (
+    <div
+      style={{
+        border: "1px solid #e5e7eb",
+        borderRadius: "12px",
+        padding: "16px",
+        background: "#ffffff",
+        boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+      }}
+    >
+      <h3 style={{ fontSize: "18px", fontWeight: 600 }}>
+        {part.title}
+      </h3>
+
+      {part.fitment && (
+        <p style={{ marginTop: "6px", color: "#6b7280" }}>
+          Fits: {part.fitment}
+        </p>
+      )}
+
+      <p
+        style={{
+          marginTop: "10px",
+          fontWeight: 700,
+          fontSize: "16px",
+        }}
+      >
+        ${part.price}
+      </p>
+
+      <button
+        style={{
+          marginTop: "14px",
+          padding: "10px",
+          width: "100%",
+          background: "#0a2540",
+          color: "white",
+          borderRadius: "8px",
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        View Details
+      </button>
+    </div>
+  );
+}
+type Part = {
   title: string;
   price: number;
   fitment: string;
