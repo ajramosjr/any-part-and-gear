@@ -1,10 +1,12 @@
-import { createClient } from "@/lib/supabaseServer";
+import { supabase } from "@/lib/supabaseClient";
 
 export async function deletePart(id: string) {
-  const supabase = await createClient(); // ✅ NO ARGS, AWAIT IT
-
-  await supabase
+  const { error } = await supabase
     .from("parts")
     .delete()
     .eq("id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
