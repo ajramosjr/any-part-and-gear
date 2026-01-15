@@ -3,16 +3,16 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import PartCard from "@/components/PartCard";
 
-export default function PartPage() {
-  const params = useParams();
-  const partId = params.partId as string;
-
+export default function PartDetailPage() {
+  const { partId } = useParams();
   const [part, setPart] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!partId) return;
+
     async function fetchPart() {
       const { data, error } = await supabase
         .from("parts")
@@ -20,51 +20,27 @@ export default function PartPage() {
         .eq("id", partId)
         .single();
 
-      if (error) {
-        setError(error.message);
-      } else {
+      if (!error) {
         setPart(data);
       }
 
       setLoading(false);
     }
 
-    if (partId) {
-      fetchPart();
-    }
+    fetchPart();
   }, [partId]);
 
   if (loading) {
-    return <p style={{ padding: 20 }}>Loading...</p>;
-  }
-
-  if (error) {
-    return (
-      <p style={{ padding: 20, color: "red" }}>
-        Error: {error}
-      </p>
-    );
+    return <p className="p-6">Loading part…</p>;
   }
 
   if (!part) {
-    return <p style={{ padding: 20 }}>Part not found.</p>;
+    return <p className="p-6">Part not found</p>;
   }
 
   return (
-    <main style={{ padding: 20, maxWidth: 800, margin: "0 auto" }}>
-      <h1>{part.title}</h1>
-
-      <pre
-        style={{
-          marginTop: 20,
-          background: "#f5f5f5",
-          padding: 16,
-          borderRadius: 6,
-          overflowX: "auto",
-        }}
-      >
-        {JSON.stringify(part, null, 2)}
-      </pre>
+    <main className="p-6 max-w-4xl mx-auto">
+      <PartCard part={part} />
     </main>
   );
 }
