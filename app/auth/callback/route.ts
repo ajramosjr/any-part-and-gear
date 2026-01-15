@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabaseServer";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
 
-  if (code) {
-    const supabase = await createClient(); // ✅ correct
-    await supabase.auth.exchangeCodeForSession(code);
-  }
+  // optional redirect path
+  const next = searchParams.get("next") ?? "/";
 
-  return NextResponse.redirect(`${origin}/browse`);
+  return NextResponse.redirect(`${origin}${next}`);
 }
