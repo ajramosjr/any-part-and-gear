@@ -1,13 +1,11 @@
-import { createClient } from "@/lib/supabaseServer";
+import { supabase } from "@/lib/supabaseClient";
 
 export default async function MessagesPage({
   searchParams,
 }: {
   searchParams: { to?: string; part?: string };
 }) {
-  const supabase = await createClient(); // ✅ FIXED
-
-  const { data: messages } = await supabase
+  const { data: messages, error } = await supabase
     .from("messages")
     .select("*")
     .order("created_at", { ascending: true });
@@ -15,6 +13,12 @@ export default async function MessagesPage({
   return (
     <div style={{ maxWidth: "700px", margin: "40px auto" }}>
       <h2>Messages about: {searchParams.part}</h2>
+
+      {error && (
+        <p style={{ color: "red" }}>
+          Failed to load messages
+        </p>
+      )}
 
       <div style={{ marginTop: "20px" }}>
         {messages?.map((msg: any) => (
@@ -32,8 +36,16 @@ export default async function MessagesPage({
       </div>
 
       <form action="/messages/send" method="POST" style={{ marginTop: "20px" }}>
-        <input type="hidden" name="receiver_email" value={searchParams.to} />
-        <input type="hidden" name="part_title" value={searchParams.part} />
+        <input
+          type="hidden"
+          name="receiver_email"
+          value={searchParams.to ?? ""}
+        />
+        <input
+          type="hidden"
+          name="part_title"
+          value={searchParams.part ?? ""}
+        />
 
         <textarea
           name="message"
