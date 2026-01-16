@@ -1,3 +1,4 @@
+import PartCard from "@/components/PartCard";
 type Part = {
   id?: string;
   title: string;
