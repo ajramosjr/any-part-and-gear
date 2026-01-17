@@ -1,6 +1,5 @@
 import "./globals.css";
-import ToasterClient from "@/app/ui/toaster-client";
-import Link from "next/link";
+import Navbar from "./components/Navbar";
 
 export default function RootLayout({
   children,
@@ -10,21 +9,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ToasterClient />
-<body className="bg-white text-gray-900 min-h-screen">
-        {/* Global Navigation */}
-        <nav style={{ padding: 16, borderBottom: "1px solid #444" }}>
-          <Link href="/browse" style={{ marginRight: 16 }}>
-            Browse
-          </Link>
-          <Link href="/sell" style={{ marginRight: 16 }}>
-            Sell
-          </Link>
-          <Link href="/my-listings">
-            My Listings
-          </Link>
-        </nav>
-
+        <Navbar />
         {children}
       </body>
     </html>
