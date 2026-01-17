@@ -7,7 +7,8 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
 
   if (code) {
-    const cookieStore = cookies();
+    // ✅ MUST AWAIT cookies() in Next.js 16
+    const cookieStore = await cookies();
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,7 +28,7 @@ export async function GET(request: Request) {
       }
     );
 
-    // 🔑 THIS IS THE MAGIC LINE
+    // 🔑 REQUIRED FOR AUTH TO WORK
     await supabase.auth.exchangeCodeForSession(code);
   }
 
