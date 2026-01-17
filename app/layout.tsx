@@ -11,7 +11,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ToasterClient />
-
+<body className="bg-white text-gray-900 min-h-screen">
         {/* Global Navigation */}
         <nav style={{ padding: 16, borderBottom: "1px solid #444" }}>
           <Link href="/browse" style={{ marginRight: 16 }}>
