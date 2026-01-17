@@ -1,9 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import PartCard from "@/components/PartCard";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseServer";
 
 export default async function HomePage() {
+  const supabase = await createClient();
+
   const { data: parts, error } = await supabase
     .from("parts")
     .select("*")
