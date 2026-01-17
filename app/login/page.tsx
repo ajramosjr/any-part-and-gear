@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -20,6 +23,8 @@ export default function LoginPage() {
       setMessage(error.message);
     } else {
       setMessage("Signed in!");
+      router.refresh(); // 🔑 refresh server components
+      router.push("/");
     }
   };
 
@@ -29,12 +34,17 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: `${location.origin}/auth/callback`,
+      },
     });
 
     if (error) {
       setMessage(error.message);
     } else {
-      setMessage("Account created! You can now sign in.");
+      setMessage(
+        "Account created! Check your email to confirm, then sign in."
+      );
     }
   };
 
