@@ -11,7 +11,7 @@ export default async function HomePage() {
 
   return (
     <main style={{ padding: 40 }}>
-      <h1>AnyPartingGear</h1>
+      <h1>Any-Part and Gear</h1>
       <h2>Latest Parts</h2>
 
       {data?.map((part) => (
