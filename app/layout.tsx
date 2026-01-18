@@ -1,6 +1,6 @@
 import "./globals.css";
 import Navbar from "./components/Navbar";
-
+import { SITE_NAME } from "@/lib/constants";
 export default function RootLayout({
   children,
 }: {
@@ -9,6 +9,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+<h1>{SITE_NAME}</h1>
         Any-Part and Gear
         <Navbar />
         {children}
