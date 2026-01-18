@@ -9,6 +9,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        Any-Part and Gear
         <Navbar />
         {children}
       </body>
