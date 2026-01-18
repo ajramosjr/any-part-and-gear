@@ -1,28 +1,53 @@
 import { supabase } from "@/lib/supabaseClient";
 
-export const dynamic = "force-dynamic";
-
 export default async function HomePage() {
-  const { data } = await supabase
+  const { data: parts } = await supabase
     .from("parts")
     .select("*")
-    .order("created_at", { ascending: false })
     .limit(6);
 
   return (
-    <main style={{ padding: 40 }}>
-      <h2>Latest Parts</h2>
+    <>
+      <h1 style={{ fontSize: "32px", fontWeight: 700, marginBottom: 8 }}>
+        Any-Part and Gear
+      </h1>
 
-      {data?.map((part) => (
-        <div key={part.id} style={{ borderBottom: "1px solid #ddd", marginBottom: 10 }}>
-          <h3>{part.title}</h3>
-          <p>{part.description}</p>
-          <strong>${part.price}</strong>
-          <p style={{ color: "#666" }}>
-  Buy, sell, and trade auto parts
-</p>
-        </div>
-      ))}
-    </main>
+      <p style={{ color: "#6b7280", marginBottom: 32 }}>
+        Buy, sell, and trade auto parts
+      </p>
+
+      <h2 style={{ fontSize: "20px", fontWeight: 600, marginBottom: 16 }}>
+        Latest Parts
+      </h2>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+          gap: 16,
+        }}
+      >
+        {parts?.map((part) => (
+          <div
+            key={part.id}
+            style={{
+              background: "#ffffff",
+              border: "1px solid #e5e7eb",
+              borderRadius: 8,
+              padding: 16,
+            }}
+          >
+            <h3 style={{ fontWeight: 600 }}>{part.title}</h3>
+            <p style={{ color: "#6b7280", fontSize: 14 }}>
+              {part.description}
+            </p>
+
+            <p style={{ fontWeight: 700, marginTop: 8 }}>
+              ${part.price || "—"}
+            </p>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
