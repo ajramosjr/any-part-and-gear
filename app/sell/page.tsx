@@ -8,6 +8,7 @@ export default function SellPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [image, setImage] = useState<File | null>(null);
   const [message, setMessage] = useState("");
 
   const submit = async () => {
@@ -17,13 +18,40 @@ export default function SellPage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (!user) {
+      setMessage("Not authenticated");
+      return;
+    }
 
+    let imageUrl: string | null = null;
+
+    // 🔹 Upload image if selected
+    if (image) {
+      const fileName = `${user.id}-${Date.now()}-${image.name}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("part-images")
+        .upload(fileName, image);
+
+      if (uploadError) {
+        setMessage(uploadError.message);
+        return;
+      }
+
+      const { data } = supabase.storage
+        .from("part-images")
+        .getPublicUrl(fileName);
+
+      imageUrl = data.publicUrl;
+    }
+
+    // 🔹 Insert listing
     const { error } = await supabase.from("parts").insert({
       user_id: user.id,
       title,
       description,
-      price,
+      price: price ? Number(price) : null,
+      image: imageUrl,
     });
 
     if (error) {
@@ -32,13 +60,14 @@ export default function SellPage() {
       setTitle("");
       setDescription("");
       setPrice("");
-      setMessage("✅ Part listed!");
+      setImage(null);
+      setMessage("✅ Part listed successfully!");
     }
   };
 
   return (
     <RequireAuth>
-      <main style={{ padding: 40 }}>
+      <main style={{ padding: 40, maxWidth: 500 }}>
         <h1>Sell a Part</h1>
 
         <input
@@ -62,9 +91,16 @@ export default function SellPage() {
         />
         <br /><br />
 
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImage(e.target.files?.[0] || null)}
+        />
+        <br /><br />
+
         <button onClick={submit}>Post Listing</button>
 
-        {message && <p>{message}</p>}
+        {message && <p style={{ marginTop: 12 }}>{message}</p>}
       </main>
     </RequireAuth>
   );
