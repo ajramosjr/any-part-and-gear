@@ -19,6 +19,9 @@ export default async function HomePage() {
           <h3>{part.title}</h3>
           <p>{part.description}</p>
           <strong>${part.price}</strong>
+          <p style={{ color: "#666" }}>
+  Buy, sell, and trade auto parts
+</p>
         </div>
       ))}
     </main>
