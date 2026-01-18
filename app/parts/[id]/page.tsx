@@ -14,49 +14,36 @@ export default function PartDetailPage() {
 
   const [part, setPart] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
 
-    let mounted = true;
-
     const fetchPart = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("parts")
         .select("*")
         .eq("id", id)
         .single();
 
-      if (!mounted) return;
-
-      setPart(data);
-
-      if (data?.images?.length > 0) {
-        setActiveImage(data.images[0]);
+      if (error) {
+        console.error(error);
       }
 
+      setPart(data);
       setLoading(false);
     };
 
     fetchPart();
-
-    return () => {
-      mounted = false;
-    };
   }, [id]);
 
   if (loading) return <p style={{ padding: 40 }}>Loading…</p>;
   if (!part) return <p style={{ padding: 40 }}>Part not found</p>;
 
-  const images =
-    part.images && part.images.length > 0
-      ? part.images
-      : [PLACEHOLDER_IMAGE];
+  const image = part.image || PLACEHOLDER_IMAGE;
 
   return (
     <div style={{ padding: 40 }}>
-      <Link href="/browse" style={{ color: "#8b5cf6" }}>
+      <Link href="/browse" style={{ color: "#2563eb" }}>
         ← Back to Browse
       </Link>
 
@@ -66,46 +53,33 @@ export default function PartDetailPage() {
           borderRadius: 16,
           padding: 24,
           marginTop: 20,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
         }}
       >
         <img
-          src={activeImage || PLACEHOLDER_IMAGE}
+          src={image}
           alt={part.title}
           style={{
             width: "100%",
             height: 360,
             objectFit: "cover",
             borderRadius: 12,
-            marginBottom: 16,
+            marginBottom: 20,
           }}
         />
 
-        <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-          {images.map((img: string, index: number) => (
-            <img
-              key={index}
-              src={img}
-              onClick={() => setActiveImage(img)}
-              style={{
-                width: 80,
-                height: 80,
-                cursor: "pointer",
-                borderRadius: 8,
-                border:
-                  activeImage === img
-                    ? "3px solid #8b5cf6"
-                    : "2px solid #ddd",
-              }}
-            />
-          ))}
-        </div>
+        <h1 style={{ fontSize: 28, fontWeight: 700 }}>{part.title}</h1>
 
-        <h1>{part.title}</h1>
-        <p>{part.description}</p>
+        {part.price && (
+          <p style={{ fontSize: 20, fontWeight: 600, marginTop: 8 }}>
+            ${part.price}
+          </p>
+        )}
+
+        <p style={{ marginTop: 16 }}>{part.description}</p>
 
         {part.created_at && (
-          <p style={{ color: "#666", marginTop: 12 }}>
+          <p style={{ color: "#666", marginTop: 16 }}>
             Listed on {new Date(part.created_at).toLocaleDateString()}
           </p>
         )}
