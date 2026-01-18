@@ -9,8 +9,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-<h1>{SITE_NAME}</h1>
-        Any-Part and Gear
         <Navbar />
         {children}
       </body>
