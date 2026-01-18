@@ -30,7 +30,7 @@ export default function Navbar() {
         justifyContent: "space-between",
       }}
     >
-      <Link href="/">AnyPartingGear</Link>
+      <Link href="/">Any-Part and Gear</Link>
 
       <div>
         {user ? (
