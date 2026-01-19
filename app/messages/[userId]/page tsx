@@ -1,32 +1,175 @@
-useEffect(() => {
-  async function loadMessages() {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+"use client";
 
-    if (!user) return;
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
-    setUserIdSelf(user.id);
+type Message = {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  created_at: string;
+};
 
-    // Load messages
-    const { data } = await supabase
-      .from("messages")
-      .select("*")
-      .or(
-        `and(sender_id.eq.${user.id},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${user.id})`
-      )
-      .order("created_at");
+export default function ConversationPage() {
+  const params = useParams();
+  const otherUserId = params.userId as string;
 
-    setMessages(data || []);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [messageText, setMessageText] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    // ✅ MARK AS READ
-    await supabase
-      .from("messages")
-      .update({ read_at: new Date().toISOString() })
-      .eq("sender_id", userId)
-      .eq("receiver_id", user.id)
-      .is("read_at", null);
+  // 🔐 Get current user
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUserId(data.user?.id ?? null);
+    });
+  }, []);
+
+  // 📥 Fetch conversation
+  useEffect(() => {
+    if (!currentUserId || !otherUserId) return;
+
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .or(
+          `and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`
+        )
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error(error);
+      } else {
+        setMessages(data || []);
+      }
+
+      setLoading(false);
+    };
+
+    fetchMessages();
+  }, [currentUserId, otherUserId]);
+
+  // ✉️ Send message
+  const sendMessage = async () => {
+    if (!messageText.trim() || !currentUserId) return;
+
+    const res = await fetch("/messages/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        receiver_id: otherUserId,
+        content: messageText,
+      }),
+    });
+
+    if (res.ok) {
+      setMessageText("");
+
+      // Refresh messages
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .or(
+          `and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`
+        )
+        .order("created_at", { ascending: true });
+
+      setMessages(data || []);
+    }
+  };
+
+  if (loading) {
+    return <p style={{ padding: 40 }}>Loading conversation…</p>;
   }
 
-  loadMessages();
-}, [userId]);
+  if (!currentUserId) {
+    return <p style={{ padding: 40 }}>Please log in.</p>;
+  }
+
+  return (
+    <main style={{ padding: 40, maxWidth: 700 }}>
+      <Link href="/messages" style={{ color: "#2563eb" }}>
+        ← Back to Inbox
+      </Link>
+
+      <h1 style={{ marginTop: 20, marginBottom: 20 }}>
+        Conversation
+      </h1>
+
+      <div
+        style={{
+          background: "#fff",
+          padding: 16,
+          borderRadius: 12,
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+          marginBottom: 20,
+          maxHeight: 400,
+          overflowY: "auto",
+        }}
+      >
+        {messages.map((msg) => {
+          const isMe = msg.sender_id === currentUserId;
+
+          return (
+            <div
+              key={msg.id}
+              style={{
+                display: "flex",
+                justifyContent: isMe ? "flex-end" : "flex-start",
+                marginBottom: 10,
+              }}
+            >
+              <div
+                style={{
+                  background: isMe ? "#2563eb" : "#e5e7eb",
+                  color: isMe ? "#fff" : "#000",
+                  padding: "8px 12px",
+                  borderRadius: 10,
+                  maxWidth: "70%",
+                }}
+              >
+                <p style={{ margin: 0 }}>{msg.content}</p>
+                <small style={{ fontSize: 11, opacity: 0.7 }}>
+                  {new Date(msg.created_at).toLocaleTimeString()}
+                </small>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <input
+          placeholder="Type a message..."
+          value={messageText}
+          onChange={(e) => setMessageText(e.target.value)}
+          style={{
+            flex: 1,
+            padding: 10,
+            borderRadius: 8,
+            border: "1px solid #ccc",
+          }}
+        />
+
+        <button
+          onClick={sendMessage}
+          style={{
+            padding: "10px 16px",
+            borderRadius: 8,
+            background: "#2563eb",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Send
+        </button>
+      </div>
+    </main>
+  );
+}
