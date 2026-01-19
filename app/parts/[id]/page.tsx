@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
+const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/800x500?text=No+Image+Available";
 
@@ -40,10 +41,13 @@ export default function PartDetailPage() {
 
     fetchPart();
   }, [id]);
-
+supabase.auth.getUser().then(({ data }) => {
+  setCurrentUserId(data.user?.id || null);
+});
   if (loading) return <p style={{ padding: 40 }}>Loading…</p>;
   if (!part) return <p style={{ padding: 40 }}>Part not found</p>;
 
+  const isOwner = currentUserId === part.user_id;
   const image = part.image || PLACEHOLDER_IMAGE;
 
   return (
@@ -74,7 +78,44 @@ export default function PartDetailPage() {
         />
 
         <h1 style={{ fontSize: 28, fontWeight: 700 }}>{part.title}</h1>
+{isOwner && (
+  <div style={{ marginTop: 20, display: "flex", gap: 12 }}>
+    <Link
+      href={`/edit/${part.id}`}
+      style={{
+        padding: "10px 16px",
+        borderRadius: 8,
+        background: "#2563eb",
+        color: "#fff",
+        textDecoration: "none",
+      }}
+    >
+      Edit Listing
+    </Link>
 
+    <button
+      onClick={async () => {
+        const confirmDelete = confirm(
+          "Are you sure you want to delete this listing?"
+        );
+        if (!confirmDelete) return;
+
+        await supabase.from("parts").delete().eq("id", part.id);
+        window.location.href = "/browse";
+      }}
+      style={{
+        padding: "10px 16px",
+        borderRadius: 8,
+        background: "#dc2626",
+        color: "#fff",
+        border: "none",
+        cursor: "pointer",
+      }}
+    >
+      Delete
+    </button>
+  </div>
+)}
         {part.price && (
           <p style={{ fontSize: 20, fontWeight: 600, marginTop: 8 }}>
             ${part.price}
