@@ -1,0 +1,8 @@
+const { data } = await supabase
+  .from("messages")
+  .select("*")
+  .or(
+    `and(sender_id.eq.${me},receiver_id.eq.${them}),
+     and(sender_id.eq.${them},receiver_id.eq.${me})`
+  )
+  .order("created_at", { ascending: true });
