@@ -29,7 +29,7 @@ export default function ConversationPage() {
     });
   }, []);
 
-  // 🔹 Load messages
+  // 🔹 Initial load + mark as read
   useEffect(() => {
     if (!currentUserId || !otherUserId) return;
 
@@ -46,7 +46,6 @@ export default function ConversationPage() {
       setMessages(data ?? []);
       setLoading(false);
 
-      // ✅ Mark messages as read
       await supabase
         .from("messages")
         .update({ is_read: true })
@@ -55,6 +54,48 @@ export default function ConversationPage() {
     };
 
     loadMessages();
+  }, [currentUserId, otherUserId]);
+
+  // 🔴 REALTIME SUBSCRIPTION
+  useEffect(() => {
+    if (!currentUserId || !otherUserId) return;
+
+    const channel = supabase
+      .channel("messages-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+        },
+        (payload) => {
+          const msg = payload.new as Message;
+
+          const isRelevant =
+            (msg.sender_id === currentUserId &&
+              msg.receiver_id === otherUserId) ||
+            (msg.sender_id === otherUserId &&
+              msg.receiver_id === currentUserId);
+
+          if (!isRelevant) return;
+
+          setMessages((prev) => [...prev, msg]);
+
+          // mark read if incoming
+          if (msg.receiver_id === currentUserId) {
+            supabase
+              .from("messages")
+              .update({ is_read: true })
+              .eq("id", msg.id);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [currentUserId, otherUserId]);
 
   // 🔹 Send message
@@ -68,18 +109,6 @@ export default function ConversationPage() {
     });
 
     setNewMessage("");
-
-    // Reload messages
-    const { data } = await supabase
-      .from("messages")
-      .select("*")
-      .or(
-        `and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),
-         and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`
-      )
-      .order("created_at", { ascending: true });
-
-    setMessages(data ?? []);
   };
 
   if (loading) {
