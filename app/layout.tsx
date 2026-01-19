@@ -41,6 +41,9 @@ export default function RootLayout({
             <Link href="/browse">Browse</Link>
             <Link href="/sell">Sell</Link>
             <Link href="/login">Login</Link>
+            <Link href="/inbox" style={{ marginLeft: 16 }}>
+  Inbox
+</Link>
           </nav>
         </header>
 
