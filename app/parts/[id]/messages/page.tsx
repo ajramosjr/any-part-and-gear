@@ -8,6 +8,7 @@ type Message = {
   id: string;
   sender_id: string;
   receiver_id: string;
+  part_id: string;
   content: string;
   created_at: string;
   read: boolean;
@@ -34,7 +35,6 @@ export default function PartMessagesPage() {
     if (!userId || !partId) return;
 
     const loadMessages = async () => {
-      // 1️⃣ Fetch messages
       const { data, error } = await supabase
         .from("messages")
         .select("*")
@@ -50,7 +50,7 @@ export default function PartMessagesPage() {
       setMessages(data ?? []);
       setLoading(false);
 
-      // 2️⃣ Mark unread messages as read
+      // Mark unread as read
       await supabase
         .from("messages")
         .update({ read: true })
@@ -62,38 +62,64 @@ export default function PartMessagesPage() {
     loadMessages();
   }, [userId, partId]);
 
+  // 🔹 REAL-TIME SUBSCRIPTION
+  useEffect(() => {
+    if (!userId || !partId) return;
+
+    const channel = supabase
+      .channel("messages-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `part_id=eq.${partId}`,
+        },
+        (payload) => {
+          const newMessage = payload.new as Message;
+
+          setMessages((prev) => {
+            // prevent duplicates
+            if (prev.some((m) => m.id === newMessage.id)) return prev;
+            return [...prev, newMessage];
+          });
+
+          // auto-mark read if received
+          if (newMessage.receiver_id === userId) {
+            supabase
+              .from("messages")
+              .update({ read: true })
+              .eq("id", newMessage.id);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, partId]);
+
   // 🔹 Send message
   const sendMessage = async () => {
     if (!text.trim() || !userId) return;
 
-    const receiverId =
+    const otherUserId =
       messages.find((m) => m.sender_id !== userId)?.sender_id ||
       messages.find((m) => m.receiver_id !== userId)?.receiver_id;
 
-    if (!receiverId) return;
+    if (!otherUserId) return;
 
-    const { error } = await supabase.from("messages").insert({
+    await supabase.from("messages").insert({
       sender_id: userId,
-      receiver_id: receiverId,
+      receiver_id: otherUserId,
       part_id: partId,
       content: text,
       read: false,
     });
 
-    if (!error) {
-      setText("");
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          sender_id: userId,
-          receiver_id: receiverId,
-          content: text,
-          created_at: new Date().toISOString(),
-          read: true,
-        },
-      ]);
-    }
+    setText("");
   };
 
   if (loading) return <p style={{ padding: 40 }}>Loading messages…</p>;
@@ -101,7 +127,7 @@ export default function PartMessagesPage() {
 
   return (
     <main style={{ padding: 40, maxWidth: 800 }}>
-      <h1>Conversation</h1>
+      <h1>Messages</h1>
 
       <div
         style={{
@@ -109,7 +135,7 @@ export default function PartMessagesPage() {
           padding: 16,
           border: "1px solid #e5e7eb",
           borderRadius: 8,
-          maxHeight: 400,
+          maxHeight: 420,
           overflowY: "auto",
         }}
       >
@@ -141,7 +167,7 @@ export default function PartMessagesPage() {
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Type a message..."
+          placeholder="Type a message…"
           style={{ flex: 1, padding: 10 }}
         />
         <button onClick={sendMessage}>Send</button>
