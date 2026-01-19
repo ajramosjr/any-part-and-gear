@@ -21,7 +21,7 @@ export default function ConversationPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
+  const [isOnline, setIsOnline] = useState(false);
 
   // 🔹 Get logged-in user
   useEffect(() => {
@@ -46,12 +46,6 @@ export default function ConversationPage() {
 
       setMessages(data ?? []);
       setLoading(false);
-
-      await supabase
-        .from("messages")
-        .update({ is_read: true })
-        .eq("receiver_id", currentUserId)
-        .eq("sender_id", otherUserId);
     };
 
     loadMessages();
@@ -78,13 +72,6 @@ export default function ConversationPage() {
           if (!relevant) return;
 
           setMessages((prev) => [...prev, msg]);
-
-          if (msg.receiver_id === currentUserId) {
-            supabase
-              .from("messages")
-              .update({ is_read: true })
-              .eq("id", msg.id);
-          }
         }
       )
       .subscribe();
@@ -94,45 +81,31 @@ export default function ConversationPage() {
     };
   }, [currentUserId, otherUserId]);
 
-  // 🟡 TYPING INDICATOR (Realtime Presence)
+  // 🟢 ONLINE / OFFLINE PRESENCE
   useEffect(() => {
     if (!currentUserId || !otherUserId) return;
 
-    const channel = supabase.channel(`typing-${otherUserId}`, {
+    const channel = supabase.channel(`presence-${otherUserId}`, {
       config: {
-        presence: {
-          key: currentUserId,
-        },
+        presence: { key: currentUserId },
       },
     });
 
     channel
       .on("presence", { event: "sync" }, () => {
         const state = channel.presenceState();
-        setIsTyping(Object.keys(state).length > 1);
+        setIsOnline(Boolean(state[otherUserId]));
       })
       .subscribe();
 
+    // Track yourself as online
+    channel.track({ online: true });
+
     return () => {
+      channel.untrack();
       supabase.removeChannel(channel);
     };
   }, [currentUserId, otherUserId]);
-
-  // ✍️ Send typing signal
-  const handleTyping = async (value: string) => {
-    setNewMessage(value);
-
-    if (!currentUserId) return;
-
-    const channel = supabase.getChannel(`typing-${otherUserId}`);
-    if (!channel) return;
-
-    await channel.track({ typing: true });
-
-    setTimeout(() => {
-      channel.untrack();
-    }, 1200);
-  };
 
   // 📤 Send message
   const sendMessage = async () => {
@@ -154,7 +127,23 @@ export default function ConversationPage() {
     <main style={{ padding: 40, maxWidth: 700 }}>
       <Link href="/messages">← Back to inbox</Link>
 
-      <h1 style={{ marginTop: 20 }}>Conversation</h1>
+      <div style={{ marginTop: 20 }}>
+        <h1 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          Conversation
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: "50%",
+              background: isOnline ? "#22c55e" : "#9ca3af",
+              display: "inline-block",
+            }}
+          />
+          <span style={{ fontSize: 14, color: "#6b7280" }}>
+            {isOnline ? "Online" : "Offline"}
+          </span>
+        </h1>
+      </div>
 
       <div
         style={{
@@ -192,17 +181,11 @@ export default function ConversationPage() {
             </span>
           </div>
         ))}
-
-        {isTyping && (
-          <p style={{ fontStyle: "italic", color: "#6b7280" }}>
-            Typing…
-          </p>
-        )}
       </div>
 
       <textarea
         value={newMessage}
-        onChange={(e) => handleTyping(e.target.value)}
+        onChange={(e) => setNewMessage(e.target.value)}
         placeholder="Type a message…"
         style={{
           marginTop: 16,
