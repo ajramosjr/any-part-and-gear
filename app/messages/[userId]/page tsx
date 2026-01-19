@@ -21,6 +21,7 @@ export default function ConversationPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
 
   // 🔹 Get logged-in user
   useEffect(() => {
@@ -29,7 +30,7 @@ export default function ConversationPage() {
     });
   }, []);
 
-  // 🔹 Initial load + mark as read
+  // 🔹 Load messages
   useEffect(() => {
     if (!currentUserId || !otherUserId) return;
 
@@ -56,33 +57,28 @@ export default function ConversationPage() {
     loadMessages();
   }, [currentUserId, otherUserId]);
 
-  // 🔴 REALTIME SUBSCRIPTION
+  // 🔴 REALTIME MESSAGES
   useEffect(() => {
     if (!currentUserId || !otherUserId) return;
 
     const channel = supabase
-      .channel("messages-realtime")
+      .channel("chat-messages")
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-        },
+        { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
           const msg = payload.new as Message;
 
-          const isRelevant =
+          const relevant =
             (msg.sender_id === currentUserId &&
               msg.receiver_id === otherUserId) ||
             (msg.sender_id === otherUserId &&
               msg.receiver_id === currentUserId);
 
-          if (!isRelevant) return;
+          if (!relevant) return;
 
           setMessages((prev) => [...prev, msg]);
 
-          // mark read if incoming
           if (msg.receiver_id === currentUserId) {
             supabase
               .from("messages")
@@ -98,7 +94,47 @@ export default function ConversationPage() {
     };
   }, [currentUserId, otherUserId]);
 
-  // 🔹 Send message
+  // 🟡 TYPING INDICATOR (Realtime Presence)
+  useEffect(() => {
+    if (!currentUserId || !otherUserId) return;
+
+    const channel = supabase.channel(`typing-${otherUserId}`, {
+      config: {
+        presence: {
+          key: currentUserId,
+        },
+      },
+    });
+
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        setIsTyping(Object.keys(state).length > 1);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId, otherUserId]);
+
+  // ✍️ Send typing signal
+  const handleTyping = async (value: string) => {
+    setNewMessage(value);
+
+    if (!currentUserId) return;
+
+    const channel = supabase.getChannel(`typing-${otherUserId}`);
+    if (!channel) return;
+
+    await channel.track({ typing: true });
+
+    setTimeout(() => {
+      channel.untrack();
+    }, 1200);
+  };
+
+  // 📤 Send message
   const sendMessage = async () => {
     if (!newMessage.trim() || !currentUserId) return;
 
@@ -111,13 +147,8 @@ export default function ConversationPage() {
     setNewMessage("");
   };
 
-  if (loading) {
-    return <p style={{ padding: 40 }}>Loading messages…</p>;
-  }
-
-  if (!currentUserId) {
-    return <p style={{ padding: 40 }}>Please sign in</p>;
-  }
+  if (loading) return <p style={{ padding: 40 }}>Loading messages…</p>;
+  if (!currentUserId) return <p style={{ padding: 40 }}>Please sign in</p>;
 
   return (
     <main style={{ padding: 40, maxWidth: 700 }}>
@@ -134,8 +165,6 @@ export default function ConversationPage() {
           minHeight: 300,
         }}
       >
-        {messages.length === 0 && <p>No messages yet</p>}
-
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -145,7 +174,7 @@ export default function ConversationPage() {
                 msg.sender_id === currentUserId ? "right" : "left",
             }}
           >
-            <div
+            <span
               style={{
                 display: "inline-block",
                 padding: "8px 12px",
@@ -160,39 +189,44 @@ export default function ConversationPage() {
               }}
             >
               {msg.content}
-            </div>
+            </span>
           </div>
         ))}
+
+        {isTyping && (
+          <p style={{ fontStyle: "italic", color: "#6b7280" }}>
+            Typing…
+          </p>
+        )}
       </div>
 
-      <div style={{ marginTop: 16 }}>
-        <textarea
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message…"
-          style={{
-            width: "100%",
-            padding: 10,
-            borderRadius: 6,
-            border: "1px solid #ccc",
-          }}
-        />
+      <textarea
+        value={newMessage}
+        onChange={(e) => handleTyping(e.target.value)}
+        placeholder="Type a message…"
+        style={{
+          marginTop: 16,
+          width: "100%",
+          padding: 10,
+          borderRadius: 6,
+          border: "1px solid #ccc",
+        }}
+      />
 
-        <button
-          onClick={sendMessage}
-          style={{
-            marginTop: 10,
-            padding: "10px 16px",
-            background: "#2563eb",
-            color: "#fff",
-            borderRadius: 6,
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Send
-        </button>
-      </div>
+      <button
+        onClick={sendMessage}
+        style={{
+          marginTop: 10,
+          padding: "10px 16px",
+          background: "#2563eb",
+          color: "#fff",
+          borderRadius: 6,
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        Send
+      </button>
     </main>
   );
 }
