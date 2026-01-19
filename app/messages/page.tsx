@@ -8,8 +8,9 @@ type Conversation = {
   part_id: string;
   part_title: string;
   other_user_id: string;
+  other_user_email: string;
   last_message: string;
-  last_message_at: string;
+  last_message_time: string;
   unread_count: number;
 };
 
@@ -25,27 +26,20 @@ export default function MessagesInboxPage() {
     });
   }, []);
 
-  // 🔹 Load inbox with unread counts
+  // 🔹 Load inbox
   useEffect(() => {
     if (!userId) return;
 
     const loadInbox = async () => {
-      const { data, error } = await supabase
-        .from("messages")
-        .select(`
-          id,
-          content,
-          created_at,
-          part_id,
-          sender_id,
-          receiver_id,
-          read,
-          parts (
-            title
-          )
-        `)
-        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-        .order("created_at", { ascending: false });
+      /**
+       * This query assumes:
+       * - messages table
+       * - parts table (id, title)
+       * - sender_id / receiver_id
+       */
+      const { data, error } = await supabase.rpc("get_message_inbox", {
+        current_user_id: userId,
+      });
 
       if (error) {
         console.error(error);
@@ -53,32 +47,7 @@ export default function MessagesInboxPage() {
         return;
       }
 
-      const map = new Map<string, Conversation>();
-
-      data?.forEach((msg: any) => {
-        const isUnread =
-          msg.receiver_id === userId && msg.read === false;
-
-        if (!map.has(msg.part_id)) {
-          const otherUser =
-            msg.sender_id === userId
-              ? msg.receiver_id
-              : msg.sender_id;
-
-          map.set(msg.part_id, {
-            part_id: msg.part_id,
-            part_title: msg.parts?.title ?? "Unknown Part",
-            other_user_id: otherUser,
-            last_message: msg.content,
-            last_message_at: msg.created_at,
-            unread_count: isUnread ? 1 : 0,
-          });
-        } else if (isUnread) {
-          map.get(msg.part_id)!.unread_count += 1;
-        }
-      });
-
-      setConversations(Array.from(map.values()));
+      setConversations(data ?? []);
       setLoading(false);
     };
 
@@ -89,53 +58,68 @@ export default function MessagesInboxPage() {
   if (!userId) return <p style={{ padding: 40 }}>Please sign in</p>;
 
   return (
-    <main style={{ padding: 40, maxWidth: 800 }}>
-      <h1>Messages</h1>
+    <main style={{ padding: 40, maxWidth: 900 }}>
+      <h1>Inbox</h1>
 
       {conversations.length === 0 && (
-        <p style={{ marginTop: 20 }}>No conversations yet.</p>
+        <p style={{ marginTop: 20 }}>No messages yet</p>
       )}
 
       <div style={{ marginTop: 20 }}>
         {conversations.map((c) => (
           <Link
-            key={c.part_id}
+            key={`${c.part_id}-${c.other_user_id}`}
             href={`/parts/${c.part_id}/messages`}
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
+              display: "block",
               padding: 16,
-              marginBottom: 12,
-              borderRadius: 8,
+              borderRadius: 10,
               border: "1px solid #e5e7eb",
+              marginBottom: 12,
               textDecoration: "none",
-              color: "#000",
+              color: "inherit",
+              background: c.unread_count > 0 ? "#eff6ff" : "#fff",
             }}
           >
-            <div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 6,
+              }}
+            >
               <strong>{c.part_title}</strong>
-              <p style={{ marginTop: 6, color: "#555" }}>
-                {c.last_message}
-              </p>
-              <p style={{ fontSize: 12, color: "#888", marginTop: 4 }}>
-                {new Date(c.last_message_at).toLocaleString()}
-              </p>
+              <span style={{ fontSize: 12, color: "#666" }}>
+                {new Date(c.last_message_time).toLocaleString()}
+              </span>
+            </div>
+
+            <div style={{ color: "#374151" }}>{c.last_message}</div>
+
+            <div
+              style={{
+                marginTop: 6,
+                fontSize: 12,
+                color: "#6b7280",
+              }}
+            >
+              With: {c.other_user_email}
             </div>
 
             {c.unread_count > 0 && (
-              <span
+              <div
                 style={{
-                  background: "#dc2626",
+                  marginTop: 6,
+                  display: "inline-block",
+                  background: "#2563eb",
                   color: "#fff",
-                  fontSize: 12,
-                  padding: "4px 8px",
                   borderRadius: 999,
-                  fontWeight: 600,
+                  padding: "2px 8px",
+                  fontSize: 12,
                 }}
               >
-                {c.unread_count}
-              </span>
+                {c.unread_count} new
+              </div>
             )}
           </Link>
         ))}
