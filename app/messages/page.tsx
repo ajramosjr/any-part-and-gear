@@ -5,114 +5,98 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 type Conversation = {
-  user_id: string;
-  last_message: string;
-  created_at: string;
+  other_user_id: string;
   unread_count: number;
 };
 
 export default function MessagesPage() {
+  const [userId, setUserId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadConversations() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id ?? null);
+    });
+  }, []);
 
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+  useEffect(() => {
+    if (!userId) return;
 
-      const { data, error } = await supabase
+    const loadInbox = async () => {
+      const { data } = await supabase
         .from("messages")
-        .select("*")
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .order("created_at", { ascending: false });
+        .select("sender_id, receiver_id, is_read")
+        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
 
-      if (error || !data) {
-        console.error(error);
+      if (!data) {
         setLoading(false);
         return;
       }
 
-      const map = new Map<string, Conversation>();
+      const map = new Map<string, number>();
 
       data.forEach((msg) => {
-        const otherUser =
-          msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
+        const other =
+          msg.sender_id === userId
+            ? msg.receiver_id
+            : msg.sender_id;
 
-        const isUnread =
-          msg.receiver_id === user.id && msg.read_at === null;
+        if (!map.has(other)) map.set(other, 0);
 
-        if (!map.has(otherUser)) {
-          map.set(otherUser, {
-            user_id: otherUser,
-            last_message: msg.content,
-            created_at: msg.created_at,
-            unread_count: isUnread ? 1 : 0,
-          });
-        } else {
-          if (isUnread) {
-            map.get(otherUser)!.unread_count += 1;
-          }
+        if (!msg.is_read && msg.receiver_id === userId) {
+          map.set(other, map.get(other)! + 1);
         }
       });
 
-      setConversations(Array.from(map.values()));
+      const result = Array.from(map.entries()).map(
+        ([other_user_id, unread_count]) => ({
+          other_user_id,
+          unread_count,
+        })
+      );
+
+      setConversations(result);
       setLoading(false);
-    }
+    };
 
-    loadConversations();
-  }, []);
+    loadInbox();
+  }, [userId]);
 
-  if (loading) {
-    return <p style={{ padding: 40 }}>Loading messages…</p>;
-  }
-
-  if (conversations.length === 0) {
-    return <p style={{ padding: 40 }}>No messages yet</p>;
-  }
+  if (loading) return <p style={{ padding: 40 }}>Loading…</p>;
+  if (!userId) return <p style={{ padding: 40 }}>Please sign in</p>;
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1 style={{ marginBottom: 20 }}>Inbox</h1>
+    <main style={{ padding: 40, maxWidth: 600 }}>
+      <h1>Messages</h1>
+
+      {conversations.length === 0 && <p>No conversations</p>}
 
       {conversations.map((c) => (
         <Link
-          key={c.user_id}
-          href={`/messages/${c.user_id}`}
+          key={c.other_user_id}
+          href={`/messages/${c.other_user_id}`}
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: 16,
-            borderBottom: "1px solid #333",
+            padding: "12px 16px",
+            borderBottom: "1px solid #e5e7eb",
             textDecoration: "none",
-            color: "white",
+            color: "#000",
           }}
         >
-          <div>
-            <p style={{ margin: 0 }}>
-              <strong>User:</strong> {c.user_id}
-            </p>
-            <p style={{ margin: 0, opacity: 0.7 }}>{c.last_message}</p>
-          </div>
+          <span>User: {c.other_user_id.slice(0, 8)}…</span>
 
           {c.unread_count > 0 && (
             <span
               style={{
-                background: "red",
-                color: "white",
-                borderRadius: "50%",
-                minWidth: 24,
-                height: 24,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                background: "#dc2626",
+                color: "#fff",
+                padding: "2px 8px",
+                borderRadius: 999,
                 fontSize: 12,
+                fontWeight: 600,
               }}
             >
               {c.unread_count}
@@ -120,6 +104,6 @@ export default function MessagesPage() {
           )}
         </Link>
       ))}
-    </div>
+    </main>
   );
 }
