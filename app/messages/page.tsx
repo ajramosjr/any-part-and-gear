@@ -10,6 +10,7 @@ type Conversation = {
   other_user_id: string;
   last_message: string;
   last_message_at: string;
+  unread_count: number;
 };
 
 export default function MessagesInboxPage() {
@@ -17,22 +18,18 @@ export default function MessagesInboxPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Get current user
+  // 🔹 Get logged-in user
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserId(data.user?.id ?? null);
     });
   }, []);
 
-  // 🔹 Load inbox
+  // 🔹 Load inbox with unread counts
   useEffect(() => {
     if (!userId) return;
 
     const loadInbox = async () => {
-      /**
-       * We fetch messages involving this user,
-       * newest first, then group them by part_id
-       */
       const { data, error } = await supabase
         .from("messages")
         .select(`
@@ -42,6 +39,7 @@ export default function MessagesInboxPage() {
           part_id,
           sender_id,
           receiver_id,
+          read,
           parts (
             title
           )
@@ -58,18 +56,26 @@ export default function MessagesInboxPage() {
       const map = new Map<string, Conversation>();
 
       data?.forEach((msg: any) => {
-        if (map.has(msg.part_id)) return;
+        const isUnread =
+          msg.receiver_id === userId && msg.read === false;
 
-        const otherUser =
-          msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+        if (!map.has(msg.part_id)) {
+          const otherUser =
+            msg.sender_id === userId
+              ? msg.receiver_id
+              : msg.sender_id;
 
-        map.set(msg.part_id, {
-          part_id: msg.part_id,
-          part_title: msg.parts?.title ?? "Unknown Part",
-          other_user_id: otherUser,
-          last_message: msg.content,
-          last_message_at: msg.created_at,
-        });
+          map.set(msg.part_id, {
+            part_id: msg.part_id,
+            part_title: msg.parts?.title ?? "Unknown Part",
+            other_user_id: otherUser,
+            last_message: msg.content,
+            last_message_at: msg.created_at,
+            unread_count: isUnread ? 1 : 0,
+          });
+        } else if (isUnread) {
+          map.get(msg.part_id)!.unread_count += 1;
+        }
       });
 
       setConversations(Array.from(map.values()));
@@ -96,7 +102,9 @@ export default function MessagesInboxPage() {
             key={c.part_id}
             href={`/parts/${c.part_id}/messages`}
             style={{
-              display: "block",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
               padding: 16,
               marginBottom: 12,
               borderRadius: 8,
@@ -105,15 +113,30 @@ export default function MessagesInboxPage() {
               color: "#000",
             }}
           >
-            <strong>{c.part_title}</strong>
+            <div>
+              <strong>{c.part_title}</strong>
+              <p style={{ marginTop: 6, color: "#555" }}>
+                {c.last_message}
+              </p>
+              <p style={{ fontSize: 12, color: "#888", marginTop: 4 }}>
+                {new Date(c.last_message_at).toLocaleString()}
+              </p>
+            </div>
 
-            <p style={{ marginTop: 6, color: "#555" }}>
-              {c.last_message}
-            </p>
-
-            <p style={{ fontSize: 12, color: "#888", marginTop: 4 }}>
-              {new Date(c.last_message_at).toLocaleString()}
-            </p>
+            {c.unread_count > 0 && (
+              <span
+                style={{
+                  background: "#dc2626",
+                  color: "#fff",
+                  fontSize: 12,
+                  padding: "4px 8px",
+                  borderRadius: 999,
+                  fontWeight: 600,
+                }}
+              >
+                {c.unread_count}
+              </span>
+            )}
           </Link>
         ))}
       </div>
