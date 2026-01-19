@@ -29,36 +29,66 @@ export default function ConversationPage() {
     });
   }, []);
 
-  // 📥 Fetch conversation
+  // 📥 Initial fetch
   useEffect(() => {
     if (!currentUserId || !otherUserId) return;
 
-    const fetchMessages = async () => {
-      const { data, error } = await supabase
+    const loadMessages = async () => {
+      const { data } = await supabase
         .from("messages")
         .select("*")
         .or(
-          `and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`
+          `and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),
+           and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`
         )
         .order("created_at", { ascending: true });
 
-      if (error) {
-        console.error(error);
-      } else {
-        setMessages(data || []);
-      }
-
+      setMessages(data || []);
       setLoading(false);
     };
 
-    fetchMessages();
+    loadMessages();
+  }, [currentUserId, otherUserId]);
+
+  // 🔴 REALTIME SUBSCRIPTION
+  useEffect(() => {
+    if (!currentUserId || !otherUserId) return;
+
+    const channel = supabase
+      .channel("messages-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+        },
+        (payload) => {
+          const msg = payload.new as Message;
+
+          const isRelevant =
+            (msg.sender_id === currentUserId &&
+              msg.receiver_id === otherUserId) ||
+            (msg.sender_id === otherUserId &&
+              msg.receiver_id === currentUserId);
+
+          if (isRelevant) {
+            setMessages((prev) => [...prev, msg]);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [currentUserId, otherUserId]);
 
   // ✉️ Send message
   const sendMessage = async () => {
-    if (!messageText.trim() || !currentUserId) return;
+    if (!messageText.trim()) return;
 
-    const res = await fetch("/messages/send", {
+    await fetch("/messages/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -67,29 +97,11 @@ export default function ConversationPage() {
       }),
     });
 
-    if (res.ok) {
-      setMessageText("");
-
-      // Refresh messages
-      const { data } = await supabase
-        .from("messages")
-        .select("*")
-        .or(
-          `and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`
-        )
-        .order("created_at", { ascending: true });
-
-      setMessages(data || []);
-    }
+    setMessageText("");
   };
 
-  if (loading) {
-    return <p style={{ padding: 40 }}>Loading conversation…</p>;
-  }
-
-  if (!currentUserId) {
-    return <p style={{ padding: 40 }}>Please log in.</p>;
-  }
+  if (loading) return <p style={{ padding: 40 }}>Loading…</p>;
+  if (!currentUserId) return <p style={{ padding: 40 }}>Please log in</p>;
 
   return (
     <main style={{ padding: 40, maxWidth: 700 }}>
@@ -98,18 +110,18 @@ export default function ConversationPage() {
       </Link>
 
       <h1 style={{ marginTop: 20, marginBottom: 20 }}>
-        Conversation
+        Live Conversation
       </h1>
 
       <div
         style={{
           background: "#fff",
-          padding: 16,
           borderRadius: 12,
+          padding: 16,
           boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-          marginBottom: 20,
-          maxHeight: 400,
+          maxHeight: 420,
           overflowY: "auto",
+          marginBottom: 16,
         }}
       >
         {messages.map((msg) => {
@@ -145,9 +157,9 @@ export default function ConversationPage() {
 
       <div style={{ display: "flex", gap: 8 }}>
         <input
-          placeholder="Type a message..."
           value={messageText}
           onChange={(e) => setMessageText(e.target.value)}
+          placeholder="Type a message…"
           style={{
             flex: 1,
             padding: 10,
