@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-
+await supabase.from("messages").insert({
+  sender_id: user.id,
+  receiver_id: part.user_id,
+  part_id: part.id,
+  content: messageText,
+});
 const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/800x500?text=No+Image+Available";
