@@ -5,105 +5,118 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 type Conversation = {
+  part_id: string;
+  part_title: string;
   other_user_id: string;
-  unread_count: number;
+  last_message: string;
+  last_message_at: string;
 };
 
-export default function MessagesPage() {
+export default function MessagesInboxPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // 🔹 Get current user
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserId(data.user?.id ?? null);
     });
   }, []);
 
+  // 🔹 Load inbox
   useEffect(() => {
     if (!userId) return;
 
     const loadInbox = async () => {
-      const { data } = await supabase
+      /**
+       * We fetch messages involving this user,
+       * newest first, then group them by part_id
+       */
+      const { data, error } = await supabase
         .from("messages")
-        .select("sender_id, receiver_id, is_read")
-        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
+        .select(`
+          id,
+          content,
+          created_at,
+          part_id,
+          sender_id,
+          receiver_id,
+          parts (
+            title
+          )
+        `)
+        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+        .order("created_at", { ascending: false });
 
-      if (!data) {
+      if (error) {
+        console.error(error);
         setLoading(false);
         return;
       }
 
-      const map = new Map<string, number>();
+      const map = new Map<string, Conversation>();
 
-      data.forEach((msg) => {
-        const other =
-          msg.sender_id === userId
-            ? msg.receiver_id
-            : msg.sender_id;
+      data?.forEach((msg: any) => {
+        if (map.has(msg.part_id)) return;
 
-        if (!map.has(other)) map.set(other, 0);
+        const otherUser =
+          msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
 
-        if (!msg.is_read && msg.receiver_id === userId) {
-          map.set(other, map.get(other)! + 1);
-        }
+        map.set(msg.part_id, {
+          part_id: msg.part_id,
+          part_title: msg.parts?.title ?? "Unknown Part",
+          other_user_id: otherUser,
+          last_message: msg.content,
+          last_message_at: msg.created_at,
+        });
       });
 
-      const result = Array.from(map.entries()).map(
-        ([other_user_id, unread_count]) => ({
-          other_user_id,
-          unread_count,
-        })
-      );
-
-      setConversations(result);
+      setConversations(Array.from(map.values()));
       setLoading(false);
     };
 
     loadInbox();
   }, [userId]);
 
-  if (loading) return <p style={{ padding: 40 }}>Loading…</p>;
+  if (loading) return <p style={{ padding: 40 }}>Loading inbox…</p>;
   if (!userId) return <p style={{ padding: 40 }}>Please sign in</p>;
 
   return (
-    <main style={{ padding: 40, maxWidth: 600 }}>
+    <main style={{ padding: 40, maxWidth: 800 }}>
       <h1>Messages</h1>
 
-      {conversations.length === 0 && <p>No conversations</p>}
+      {conversations.length === 0 && (
+        <p style={{ marginTop: 20 }}>No conversations yet.</p>
+      )}
 
-      {conversations.map((c) => (
-        <Link
-          key={c.other_user_id}
-          href={`/messages/${c.other_user_id}`}
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "12px 16px",
-            borderBottom: "1px solid #e5e7eb",
-            textDecoration: "none",
-            color: "#000",
-          }}
-        >
-          <span>User: {c.other_user_id.slice(0, 8)}…</span>
+      <div style={{ marginTop: 20 }}>
+        {conversations.map((c) => (
+          <Link
+            key={c.part_id}
+            href={`/parts/${c.part_id}/messages`}
+            style={{
+              display: "block",
+              padding: 16,
+              marginBottom: 12,
+              borderRadius: 8,
+              border: "1px solid #e5e7eb",
+              textDecoration: "none",
+              color: "#000",
+            }}
+          >
+            <strong>{c.part_title}</strong>
 
-          {c.unread_count > 0 && (
-            <span
-              style={{
-                background: "#dc2626",
-                color: "#fff",
-                padding: "2px 8px",
-                borderRadius: 999,
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
-              {c.unread_count}
-            </span>
-          )}
-        </Link>
-      ))}
+            <p style={{ marginTop: 6, color: "#555" }}>
+              {c.last_message}
+            </p>
+
+            <p style={{ fontSize: 12, color: "#888", marginTop: 4 }}>
+              {new Date(c.last_message_at).toLocaleString()}
+            </p>
+          </Link>
+        ))}
+      </div>
     </main>
   );
 }
