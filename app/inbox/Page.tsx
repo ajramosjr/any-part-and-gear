@@ -10,7 +10,7 @@ export default function InboxPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadInbox = async () => {
+    const fetchMessages = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -21,66 +21,64 @@ export default function InboxPage() {
         .from("messages")
         .select(`
           id,
-          message,
+          content,
           created_at,
-          sender_id,
           part_id,
-          parts (
-            title
-          )
+          sender_id,
+          parts ( title )
         `)
         .eq("receiver_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
-        setMessages(data);
+      if (!error) {
+        setMessages(data || []);
       }
 
       setLoading(false);
     };
 
-    loadInbox();
+    fetchMessages();
   }, []);
-
-  if (loading) return <p style={{ padding: 40 }}>Loading inbox…</p>;
 
   return (
     <RequireAuth>
-      <main style={{ padding: 40, maxWidth: 800 }}>
-        <h1>Your Inbox</h1>
+      <main style={{ padding: 40, maxWidth: 700 }}>
+        <h1>Inbox</h1>
 
-        {messages.length === 0 && (
-          <p style={{ marginTop: 20 }}>No messages yet.</p>
+        {loading && <p>Loading messages…</p>}
+
+        {!loading && messages.length === 0 && (
+          <p>No messages yet.</p>
         )}
 
         {messages.map((msg) => (
-          <Link
+          <div
             key={msg.id}
-            href={`/messages/${msg.id}`}
-            style={{ textDecoration: "none" }}
+            style={{
+              background: "#fff",
+              padding: 16,
+              borderRadius: 12,
+              marginBottom: 16,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            }}
           >
-            <div
-              style={{
-                background: "#fff",
-                padding: 16,
-                borderRadius: 12,
-                marginTop: 16,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              }}
+            <p style={{ fontWeight: 600 }}>
+              Part: {msg.parts?.title || "Unknown"}
+            </p>
+
+            <p>{msg.content}</p>
+
+            <p style={{ fontSize: 12, color: "#666" }}>
+              {new Date(msg.created_at).toLocaleString()}
+            </p>
+
+            <Link
+              href={`/parts/${msg.part_id}`}
+              style={{ color: "#8b5cf6", fontSize: 14 }}
             >
-              <strong>{msg.parts?.title || "Part"}</strong>
-
-              <p style={{ marginTop: 6, color: "#333" }}>
-                {msg.message.length > 80
-                  ? msg.message.slice(0, 80) + "…"
-                  : msg.message}
-              </p>
-
-              <p style={{ fontSize: 12, color: "#777", marginTop: 8 }}>
-                {new Date(msg.created_at).toLocaleString()}
-              </p>
-            </div>
-          </Link>
+              View Part
+            </Link>
+          </div>
         ))}
       </main>
     </RequireAuth>
