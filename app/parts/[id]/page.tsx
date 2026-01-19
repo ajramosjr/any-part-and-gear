@@ -20,11 +20,16 @@ export default function PartDetailPage() {
 
     const fetchPart = async () => {
       const { data, error } = await supabase
-        .from("parts")
-        .select("*")
-        .eq("id", id)
-        .single();
-
+  .from("parts")
+  .select(`
+    *,
+    user:auth.users (
+      email
+    )
+  `)
+  .eq("id", id)
+  .single();
+      
       if (error) {
         console.error(error);
       }
@@ -77,7 +82,11 @@ export default function PartDetailPage() {
         )}
 
         <p style={{ marginTop: 16 }}>{part.description}</p>
-
+{part.user?.email && (
+  <p style={{ color: "#555", marginTop: 8 }}>
+    Seller: {part.user.email}
+  </p>
+)}
         {part.created_at && (
           <p style={{ color: "#666", marginTop: 16 }}>
             Listed on {new Date(part.created_at).toLocaleDateString()}
