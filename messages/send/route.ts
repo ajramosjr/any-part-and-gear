@@ -10,7 +10,13 @@ export async function POST(req: Request) {
     part_title: formData.get("part_title"),
     message: formData.get("message"),
   });
-
+await supabase.from("messages").insert({
+  sender_id: user.id,
+  receiver_id: part.user_id,
+  part_id: part.id,
+  content: messageText,
+});
+  
   if (error) {
     return NextResponse.json(
       { error: error.message },
