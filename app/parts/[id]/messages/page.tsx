@@ -2,177 +2,150 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 type Message = {
   id: string;
   sender_id: string;
   receiver_id: string;
-  part_id: string;
   content: string;
   created_at: string;
+  read: boolean;
 };
 
 export default function PartMessagesPage() {
   const params = useParams();
   const partId = params.id as string;
 
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [part, setPart] = useState<any>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [messageText, setMessageText] = useState("");
+  const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
 
   // 🔹 Get logged-in user
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      setCurrentUserId(data.user?.id ?? null);
+      setUserId(data.user?.id ?? null);
     });
   }, []);
 
-  // 🔹 Load part + messages
+  // 🔹 Load messages + mark unread as read
   useEffect(() => {
-    if (!partId || !currentUserId) return;
+    if (!userId || !partId) return;
 
-    const loadData = async () => {
-      const { data: partData } = await supabase
-        .from("parts")
-        .select("*")
-        .eq("id", partId)
-        .single();
-
-      setPart(partData);
-
-      const { data: messagesData } = await supabase
+    const loadMessages = async () => {
+      // 1️⃣ Fetch messages
+      const { data, error } = await supabase
         .from("messages")
         .select("*")
         .eq("part_id", partId)
         .order("created_at", { ascending: true });
 
-      setMessages(messagesData ?? []);
+      if (error) {
+        console.error(error);
+        setLoading(false);
+        return;
+      }
+
+      setMessages(data ?? []);
       setLoading(false);
+
+      // 2️⃣ Mark unread messages as read
+      await supabase
+        .from("messages")
+        .update({ read: true })
+        .eq("part_id", partId)
+        .eq("receiver_id", userId)
+        .eq("read", false);
     };
 
-    loadData();
-  }, [partId, currentUserId]);
+    loadMessages();
+  }, [userId, partId]);
 
-  // 🔴 Realtime messages for this part
-  useEffect(() => {
-    if (!partId) return;
-
-    const channel = supabase
-      .channel(`part-chat-${partId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        (payload) => {
-          const msg = payload.new as Message;
-          if (msg.part_id !== partId) return;
-          setMessages((prev) => [...prev, msg]);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [partId]);
-
+  // 🔹 Send message
   const sendMessage = async () => {
-    if (!messageText.trim() || !currentUserId || !part) return;
+    if (!text.trim() || !userId) return;
 
     const receiverId =
-      currentUserId === part.user_id ? null : part.user_id;
+      messages.find((m) => m.sender_id !== userId)?.sender_id ||
+      messages.find((m) => m.receiver_id !== userId)?.receiver_id;
 
     if (!receiverId) return;
 
-    await supabase.from("messages").insert({
-      sender_id: currentUserId,
+    const { error } = await supabase.from("messages").insert({
+      sender_id: userId,
       receiver_id: receiverId,
       part_id: partId,
-      content: messageText,
+      content: text,
+      read: false,
     });
 
-    setMessageText("");
+    if (!error) {
+      setText("");
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          sender_id: userId,
+          receiver_id: receiverId,
+          content: text,
+          created_at: new Date().toISOString(),
+          read: true,
+        },
+      ]);
+    }
   };
 
-  if (loading) return <p style={{ padding: 40 }}>Loading chat…</p>;
-  if (!currentUserId) return <p style={{ padding: 40 }}>Please sign in</p>;
-  if (!part) return <p style={{ padding: 40 }}>Part not found</p>;
+  if (loading) return <p style={{ padding: 40 }}>Loading messages…</p>;
+  if (!userId) return <p style={{ padding: 40 }}>Please sign in</p>;
 
   return (
-    <main style={{ padding: 40, maxWidth: 700 }}>
-      <Link href={`/parts/${partId}`}>← Back to part</Link>
-
-      <h1 style={{ marginTop: 16 }}>Messages about:</h1>
-      <h2 style={{ color: "#2563eb" }}>{part.title}</h2>
+    <main style={{ padding: 40, maxWidth: 800 }}>
+      <h1>Conversation</h1>
 
       <div
         style={{
           marginTop: 20,
+          padding: 16,
           border: "1px solid #e5e7eb",
           borderRadius: 8,
-          padding: 16,
-          minHeight: 300,
+          maxHeight: 400,
+          overflowY: "auto",
         }}
       >
-        {messages.map((msg) => (
+        {messages.map((m) => (
           <div
-            key={msg.id}
+            key={m.id}
             style={{
               marginBottom: 12,
-              textAlign:
-                msg.sender_id === currentUserId ? "right" : "left",
+              textAlign: m.sender_id === userId ? "right" : "left",
             }}
           >
             <span
               style={{
                 display: "inline-block",
                 padding: "8px 12px",
-                borderRadius: 12,
+                borderRadius: 8,
                 background:
-                  msg.sender_id === currentUserId
-                    ? "#2563eb"
-                    : "#e5e7eb",
-                color:
-                  msg.sender_id === currentUserId ? "#fff" : "#000",
-                maxWidth: "70%",
+                  m.sender_id === userId ? "#2563eb" : "#e5e7eb",
+                color: m.sender_id === userId ? "#fff" : "#000",
               }}
             >
-              {msg.content}
+              {m.content}
             </span>
           </div>
         ))}
       </div>
 
-      <textarea
-        value={messageText}
-        onChange={(e) => setMessageText(e.target.value)}
-        placeholder="Ask about this part…"
-        style={{
-          marginTop: 16,
-          width: "100%",
-          padding: 10,
-          borderRadius: 6,
-          border: "1px solid #ccc",
-        }}
-      />
-
-      <button
-        onClick={sendMessage}
-        style={{
-          marginTop: 10,
-          padding: "10px 16px",
-          background: "#2563eb",
-          color: "#fff",
-          borderRadius: 6,
-          border: "none",
-          cursor: "pointer",
-        }}
-      >
-        Send Message
-      </button>
+      <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Type a message..."
+          style={{ flex: 1, padding: 10 }}
+        />
+        <button onClick={sendMessage}>Send</button>
+      </div>
     </main>
   );
 }
