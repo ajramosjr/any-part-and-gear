@@ -71,9 +71,10 @@ body {
 }
 .hero-title {
   margin-top: 10px;
-  font-size: 20px; /* was ~34px */
+  font-size: 24px; /* was ~34px */
+  letter-spacing: 0.2p
   font-weight: 600;
-  letter-spacing: 0.2px;
+  margin-bottom: 6px;  /* tighter */
 }
 /* SECTIONS */
 h2 {
