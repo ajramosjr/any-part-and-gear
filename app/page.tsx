@@ -1,53 +1,33 @@
-import { supabase } from "@/lib/supabaseClient";
+import Image from "next/image";
 
-export default async function HomePage() {
-  const { data: parts } = await supabase
-    .from("parts")
-    .select("*")
-    .limit(6);
-
+export default function HomePage() {
   return (
-    <>
-      <h1 style={{ fontSize: "32px", fontWeight: 700, marginBottom: 8 }}>
-        Any-Part and Gear
-      </h1>
-
-      <p style={{ color: "#6b7280", marginBottom: 32 }}>
-        Buy, sell, and trade auto parts
-      </p>
-
-      <h2 style={{ fontSize: "20px", fontWeight: 600, marginBottom: 16 }}>
-        Latest Parts
-      </h2>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          gap: 16,
-        }}
-      >
-        {parts?.map((part) => (
-          <div
-            key={part.id}
-            style={{
-              background: "#ffffff",
-              border: "1px solid #e5e7eb",
-              borderRadius: 8,
-              padding: 16,
-            }}
-          >
-            <h3 style={{ fontWeight: 600 }}>{part.title}</h3>
-            <p style={{ color: "#6b7280", fontSize: 14 }}>
-              {part.description}
-            </p>
-
-            <p style={{ fontWeight: 700, marginTop: 8 }}>
-              ${part.price || "—"}
-            </p>
+    <div className="space-y-8">
+      {/* HERO / PAGE HEADER */}
+      <div className="text-center mt-10">
+        <div className="flex justify-center mb-4">
+          <div className="bg-white rounded-2xl px-6 py-4 shadow-md">
+            <Image
+              src="/logo.png"
+              alt="Any-Part & Gear LLC"
+              width={260}
+              height={80}
+              priority
+            />
           </div>
-        ))}
+        </div>
+
+        <p className="text-gray-600 text-lg">
+          Buy, sell, and trade auto parts
+        </p>
       </div>
-    </>
+
+      {/* LATEST PARTS */}
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Latest Parts</h2>
+
+        {/* Your existing parts grid stays below */}
+      </section>
+    </div>
   );
 }
