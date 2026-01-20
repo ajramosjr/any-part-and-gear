@@ -2,39 +2,42 @@ import Image from "next/image";
 
 export default function HomePage() {
   return (
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        paddingTop: 40,
-      }}
-    >
-      {/* LOGO + TAGLINE */}
-      <div style={{ textAlign: "center", marginBottom: 60 }}>
-        <img
-          src="/apg-logo.png"
+    <main style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 20px" }}>
+      
+      {/* HERO */}
+      <section
+        style={{
+          textAlign: "center",
+          padding: "40px 0 24px",
+        }}
+      >
+        <Image
+          src="/logo.png"
           alt="Any-Part & Gear Logo"
-          style={{
-            height: 90,
-            width: "auto",
-            marginBottom: 12,
-          }}
+          width={220}
+          height={120}
+          style={{ margin: "0 auto", objectFit: "contain" }}
+          priority
         />
 
-        <p style={{ color: "#4b5563" }}>
+        <p
+          style={{
+            marginTop: 12,
+            fontSize: 18,
+            color: "#555",
+          }}
+        >
           Buy, sell, and trade auto parts
         </p>
-      </div>
+      </section>
 
       {/* CONTENT */}
-      <div style={{ width: "100%", maxWidth: 1100, padding: "0 20px" }}>
-        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>
+      <section style={{ marginTop: 40 }}>
+        <h2 style={{ fontSize: 26, marginBottom: 16 }}>
           Latest Parts
         </h2>
+      </section>
 
-        {/* Parts grid goes here */}
-      </div>
     </main>
   );
 }
