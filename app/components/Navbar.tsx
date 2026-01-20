@@ -16,13 +16,18 @@ export default function Navbar() {
       <Link href="/" style={{ fontWeight: 600 }}>
         Any-Part & Gear
       </Link>
-
-      <div style={{ display: "flex", gap: 24 }}>
-        <Link href="/browse">Browse</Link>
-        <Link href="/sell">Sell</Link>
-        <Link href="/inbox">Inbox</Link>
-        <Link href="/login">Login</Link>
-      </div>
-    </nav>
+<div
+  style={{
+    display: "flex",
+    gap: 28,
+    fontWeight: 500,
+  }}
+>
+  <Link href="/browse">Browse</Link>
+  <Link href="/sell">Sell</Link>
+  <Link href="/inbox">Inbox</Link>
+  <Link href="/login">Login</Link>
+</div>
+      </nav>
   );
 }
