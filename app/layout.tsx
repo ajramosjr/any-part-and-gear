@@ -1,9 +1,10 @@
 import "./globals.css";
-import Image from "next/image";
+import Link from "next/link";
+import type { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Any-Part & Gear",
-  description: "Buy, sell, and trade car & gear parts",
+  description: "Buy, sell, and trade auto parts",
 };
 
 export default function RootLayout({
@@ -13,22 +14,46 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-black text-white min-h-screen">
-        {/* BODY LOGO */}
-        <div className="w-full flex justify-center mt-10 mb-6">
-          <div className="bg-white rounded-2xl px-6 py-4 shadow-lg">
-            <Image
-              src="/logo.png"
-              alt="Any-Part & Gear LLC"
-              width={260}
-              height={80}
-              priority
-            />
-          </div>
-        </div>
+      <body className="bg-gray-50 text-gray-900">
+        {/* NAVBAR */}
+        <header className="border-b bg-white">
+          <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+            {/* LEFT SIDE */}
+            <Link
+              href="/"
+              className="text-xl font-bold tracking-tight text-gray-900"
+            >
+              Any-Part & Gear
+            </Link>
+
+            {/* RIGHT SIDE */}
+            <div className="flex items-center gap-6 text-sm font-medium">
+              <Link
+                href="/browse"
+                className="text-gray-700 hover:text-black"
+              >
+                Browse
+              </Link>
+
+              <Link
+                href="/sell"
+                className="text-gray-700 hover:text-black"
+              >
+                Sell
+              </Link>
+
+              <Link
+                href="/login"
+                className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+              >
+                Login
+              </Link>
+            </div>
+          </nav>
+        </header>
 
         {/* PAGE CONTENT */}
-        <main className="max-w-7xl mx-auto px-4 pb-10">
+        <main className="max-w-7xl mx-auto px-6 py-8">
           {children}
         </main>
       </body>
