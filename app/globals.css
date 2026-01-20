@@ -69,7 +69,12 @@ body {
   font-size: 18px;
   color: #555;
 }
-
+.hero-title {
+  margin-top: 20px;
+  font-size: 26px; /* was ~34px */
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
 /* SECTIONS */
 h2 {
   font-size: 26px;
