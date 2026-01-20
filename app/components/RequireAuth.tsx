@@ -10,19 +10,19 @@ export default function RequireAuth({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) {
-        router.replace("/login"); // 🚨 block access
+        router.replace("/login");
       } else {
-        setLoading(false);
+        setAuthorized(true);
       }
     });
   }, [router]);
 
-  if (loading) return <p>Loading...</p>;
+  if (!authorized) return null; // no flicker
 
   return <>{children}</>;
 }
