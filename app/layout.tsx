@@ -17,44 +17,51 @@ export default function RootLayout({
       <body className="bg-gray-50 text-gray-900">
         {/* NAVBAR */}
         <header className="bg-white border-b">
-          <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            {/* LEFT: BRAND */}
-            <Link
-              href="/"
-              className="text-lg font-semibold tracking-tight whitespace-nowrap"
-            >
-              Any-Part & Gear
-            </Link>
+          <nav className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between gap-6">
+              {/* LEFT: TITLE + TAGLINE */}
+              <div className="flex flex-col leading-tight">
+                <Link
+                  href="/"
+                  className="text-lg font-semibold whitespace-nowrap"
+                >
+                  Any-Part & Gear
+                </Link>
+                <span className="text-xs text-gray-500">
+                  Buy, sell, and trade auto parts
+                </span>
+              </div>
 
-            {/* RIGHT: NAV LINKS */}
-            <div className="flex items-center space-x-5 whitespace-nowrap">
-              <Link
-                href="/browse"
-                className="text-sm font-medium text-gray-700 hover:text-black"
-              >
-                Browse
-              </Link>
+              {/* RIGHT: NAV LINKS */}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                <Link
+                  href="/browse"
+                  className="font-medium text-gray-700 hover:text-black"
+                >
+                  Browse
+                </Link>
 
-              <Link
-                href="/sell"
-                className="text-sm font-medium text-gray-700 hover:text-black"
-              >
-                Sell
-              </Link>
+                <Link
+                  href="/sell"
+                  className="font-medium text-gray-700 hover:text-black"
+                >
+                  Sell
+                </Link>
 
-              <Link
-                href="/inbox"
-                className="text-sm font-medium text-gray-700 hover:text-black"
-              >
-                Inbox
-              </Link>
+                <Link
+                  href="/inbox"
+                  className="font-medium text-gray-700 hover:text-black"
+                >
+                  Inbox
+                </Link>
 
-              <Link
-                href="/login"
-                className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-              >
-                Login
-              </Link>
+                <Link
+                  href="/login"
+                  className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                >
+                  Login
+                </Link>
+              </div>
             </div>
           </nav>
         </header>
