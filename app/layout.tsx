@@ -1,76 +1,31 @@
-import "./globals.css";
-import Link from "next/link";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Any-Part & Gear",
-  description: "Buy, sell, and trade auto parts",
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function HomePage() {
   return (
-    <html lang="en">
-      <body className="bg-gray-50 text-gray-900">
-        {/* NAVBAR */}
-        <header className="bg-white border-b">
-          <nav className="max-w-7xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between gap-6">
-              {/* LEFT: TITLE + TAGLINE */}
-              <div className="flex flex-col leading-tight">
-                <Link
-                  href="/"
-                  className="text-lg font-semibold whitespace-nowrap"
-                >
-                  Any-Part & Gear
-                </Link>
-                <span className="text-xs text-gray-500">
-                  Buy, sell, and trade auto parts
-                </span>
-              </div>
+    <div className="flex flex-col items-center text-center">
+      {/* HERO / LOGO SECTION */}
+      <div className="mt-12 mb-10 flex flex-col items-center">
+        <img
+          src="/apg-logo.png"
+          alt="Any-Part & Gear Logo"
+          className="h-24 w-auto mb-4"
+        />
 
-              {/* RIGHT: NAV LINKS */}
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-                <Link
-                  href="/browse"
-                  className="font-medium text-gray-700 hover:text-black"
-                >
-                  Browse
-                </Link>
+        <h1 className="text-2xl font-semibold">
+          Any-Part & Gear
+        </h1>
 
-                <Link
-                  href="/sell"
-                  className="font-medium text-gray-700 hover:text-black"
-                >
-                  Sell
-                </Link>
+        <p className="mt-1 text-gray-600">
+          Buy, sell, and trade auto parts
+        </p>
+      </div>
 
-                <Link
-                  href="/inbox"
-                  className="font-medium text-gray-700 hover:text-black"
-                >
-                  Inbox
-                </Link>
+      {/* CONTENT */}
+      <div className="w-full max-w-7xl px-4">
+        <h2 className="text-2xl font-bold mb-6 text-left">
+          Latest Parts
+        </h2>
 
-                <Link
-                  href="/login"
-                  className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
-                >
-                  Login
-                </Link>
-              </div>
-            </div>
-          </nav>
-        </header>
-
-        {/* PAGE CONTENT */}
-        <main className="max-w-7xl mx-auto px-4 py-10">
-          {children}
-        </main>
-      </body>
-    </html>
+        {/* Parts grid goes here */}
+      </div>
+    </div>
   );
 }
