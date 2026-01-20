@@ -1,90 +1,104 @@
 "use client";
 
-import React from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
 type Part = {
-  id: string;
+  id: number;
   title: string;
-  description?: string;
-};
-
-type PartImage = {
-  id: string;
-  url: string;
-  part_title: string;
+  price: number;
+  image: string | null;
+  created_at: string;
 };
 
 export default function BrowsePage() {
-  // 🔧 Mock data (replace later with API data)
-  const parts: Part[] = [
-    { id: "1", title: "Alternator" },
-    { id: "2", title: "Brake Caliper" },
-    { id: "3", title: "Exhaust Manifold" },
-  ];
+  const [parts, setParts] = useState<Part[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const images: PartImage[] = [
-    {
-      id: "img1",
-      url: "https://via.placeholder.com/150",
-      part_title: "Alternator",
-    },
-    {
-      id: "img2",
-      url: "https://via.placeholder.com/150",
-      part_title: "Brake Caliper",
-    },
-    {
-      id: "img3",
-      url: "https://via.placeholder.com/150",
-      part_title: "Exhaust Manifold",
-    },
-  ];
+  useEffect(() => {
+    const fetchParts = async () => {
+      const { data, error } = await supabase
+        .from("parts")
+        .select("id, title, price, image, created_at")
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        setParts(data);
+      }
+
+      setLoading(false);
+    };
+
+    fetchParts();
+  }, []);
+
+  if (loading) {
+    return <p style={{ padding: 40 }}>Loading parts…</p>;
+  }
 
   return (
-    <main style={{ padding: "24px" }}>
-      <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>
-        Browse Parts
-      </h1>
+    <main style={{ padding: 40 }}>
+      <h1 style={{ marginBottom: 24 }}>Browse Parts</h1>
 
-      {parts.map((part) => (
-        <div
-          key={part.id}
-          style={{
-            marginBottom: "32px",
-            paddingBottom: "16px",
-            borderBottom: "1px solid #333",
-          }}
-        >
-          <h2 style={{ fontSize: "18px", marginBottom: "8px" }}>
-            {part.title}
-          </h2>
-
-          <div
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+          gap: 20,
+        }}
+      >
+        {parts.map((part) => (
+          <Link
+            key={part.id}
+            href={`/parts/${part.id}`}
             style={{
-              display: "flex",
-              gap: "10px",
-              overflowX: "auto",
+              textDecoration: "none",
+              color: "inherit",
             }}
           >
-            {images
-              .filter((img) => img.part_title === part.title)
-              .map((img) => (
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                overflow: "hidden",
+                boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+                transition: "transform 0.15s ease",
+              }}
+            >
+              {part.image ? (
                 <img
-                  key={img.id}
-                  src={img.url}
+                  src={part.image}
                   alt={part.title}
                   style={{
-                    width: "120px",
-                    height: "120px",
+                    width: "100%",
+                    height: 180,
                     objectFit: "cover",
-                    borderRadius: "6px",
-                    border: "1px solid #444",
                   }}
                 />
-              ))}
-          </div>
-        </div>
-      ))}
+              ) : (
+                <div
+                  style={{
+                    height: 180,
+                    background: "#e5e7eb",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#6b7280",
+                  }}
+                >
+                  No Image
+                </div>
+              )}
+
+              <div style={{ padding: 16 }}>
+                <h3 style={{ marginBottom: 8 }}>{part.title}</h3>
+                <p style={{ fontWeight: 600 }}>${part.price}</p>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
     </main>
   );
 }
