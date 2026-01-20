@@ -15,7 +15,9 @@ export default function HomePage() {
           className="hero-logo"
         />
 
-        <h1>A Marketplace to Buy, Sell, and Trade parts</h1>
+        <h1 className="hero-title">
+  A marketplace to buy, sell, and trade parts
+</h1>
 
         <p>
           Find new and used auto parts from trusted sellers
