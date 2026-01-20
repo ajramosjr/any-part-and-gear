@@ -23,10 +23,10 @@ export default function Navbar() {
     fontWeight: 500,
   }}
 >
-  <Link href="/browse">Browse</Link>
-  <Link href="/sell">Sell</Link>
-  <Link href="/inbox">Inbox</Link>
-  <Link href="/login">Login</Link>
+  <Link href="/Browse">Browse</Link>
+  <Link href="/Sell">Sell</Link>
+  <Link href="/Inbox">Inbox</Link>
+  <Link href="/Login">Login</Link>
 </div>
       </nav>
   );
