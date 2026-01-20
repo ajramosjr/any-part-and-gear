@@ -1,9 +1,10 @@
 import "./globals.css";
+import Image from "next/image";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Any-Part and Gear",
-  description: "Buy, sell, and trade auto parts",
+  title: "Any-Part & Gear",
+  description: "Buy, sell, and trade car & gear parts",
 };
 
 export default function RootLayout({
@@ -13,48 +14,27 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        {/* Header */}
-        <header
-          style={{
-            background: "#ffffff",
-            borderBottom: "1px solid #e5e7eb",
-            padding: "16px 24px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Link
-            href="/"
-            style={{
-              fontSize: "20px",
-              fontWeight: 700,
-              color: "#111827",
-              textDecoration: "none",
-            }}
-          >
-            Any-Part and Gear
-          </Link>
-
-          <nav style={{ display: "flex", gap: "16px" }}>
-            <Link href="/browse">Browse</Link>
-            <Link href="/sell">Sell</Link>
-            <Link href="/login">Login</Link>
-            <Link href="/inbox" style={{ marginLeft: 16 }}>
-  Inbox
-</Link>
-          </nav>
+      <body className="bg-black text-white min-h-screen">
+        {/* HEADER */}
+        <header className="w-full border-b border-zinc-800">
+          <div className="max-w-7xl mx-auto flex items-center px-4 py-4">
+            <Link href="/" className="flex items-center gap-3">
+              {/* Logo container */}
+              <div className="bg-white rounded-xl px-4 py-2">
+                <Image
+                  src="/logo.png"
+                  alt="Any-Part & Gear LLC"
+                  width={200}
+                  height={60}
+                  priority
+                />
+              </div>
+            </Link>
+          </div>
         </header>
 
-        {/* Page Content */}
-        <main
-          style={{
-            background: "#f9fafb",
-            minHeight: "100vh",
-            padding: "32px 24px",
-          }}
-        >
+        {/* PAGE CONTENT */}
+        <main className="max-w-7xl mx-auto px-4 py-6">
           {children}
         </main>
       </body>
