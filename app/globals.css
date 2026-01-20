@@ -71,7 +71,7 @@ body {
 }
 .hero-title {
   margin-top: 20px;
-  font-size: 26px; /* was ~34px */
+  font-size: 22px; /* was ~34px */
   font-weight: 600;
   letter-spacing: 0.2px;
 }
