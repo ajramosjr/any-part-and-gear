@@ -17,7 +17,7 @@ export default function RootLayout({
       <body className="bg-gray-50 text-gray-900">
         {/* NAVBAR */}
         <header className="bg-white border-b">
-          <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             {/* LEFT: BRAND */}
             <Link
               href="/"
@@ -27,7 +27,7 @@ export default function RootLayout({
             </Link>
 
             {/* RIGHT: NAV LINKS */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center space-x-5 whitespace-nowrap">
               <Link
                 href="/browse"
                 className="text-sm font-medium text-gray-700 hover:text-black"
@@ -51,7 +51,7 @@ export default function RootLayout({
 
               <Link
                 href="/login"
-                className="ml-2 rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+                className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
               >
                 Login
               </Link>
@@ -60,7 +60,7 @@ export default function RootLayout({
         </header>
 
         {/* PAGE CONTENT */}
-        <main className="max-w-7xl mx-auto px-6 py-10">
+        <main className="max-w-7xl mx-auto px-4 py-10">
           {children}
         </main>
       </body>
