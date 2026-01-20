@@ -18,8 +18,10 @@ type Part = {
 export default function PartPage() {
   const params = useParams();
   const router = useRouter();
+
   const [part, setPart] = useState<Part | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showImage, setShowImage] = useState(false);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -69,12 +71,14 @@ export default function PartPage() {
             <img
               src={part.image}
               alt={part.title}
+              onClick={() => setShowImage(true)}
               style={{
                 width: "100%",
                 maxHeight: 420,
                 objectFit: "cover",
                 borderRadius: 20,
                 boxShadow: "0 12px 30px rgba(0,0,0,0.15)",
+                cursor: "zoom-in",
               }}
             />
           ) : (
@@ -140,6 +144,33 @@ export default function PartPage() {
           </button>
         </div>
       </div>
+
+      {/* FULLSCREEN IMAGE MODAL */}
+      {showImage && part.image && (
+        <div
+          onClick={() => setShowImage(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.9)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            cursor: "zoom-out",
+          }}
+        >
+          <img
+            src={part.image}
+            alt={part.title}
+            style={{
+              maxWidth: "95%",
+              maxHeight: "95%",
+              borderRadius: 16,
+            }}
+          />
+        </div>
+      )}
     </main>
   );
 }
