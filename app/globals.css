@@ -61,7 +61,7 @@ body {
 .hero h1 {
   margin-top: 20px;
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 300;
 }
 
 .hero p {
@@ -78,5 +78,5 @@ body {
 /* SECTIONS */
 h2 {
   font-size: 26px;
-  margin-top: 20px;
+  margin-top: 40px;
 }
