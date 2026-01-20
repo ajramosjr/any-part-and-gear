@@ -16,35 +16,42 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-gray-50 text-gray-900">
         {/* NAVBAR */}
-        <header className="border-b bg-white">
-          <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-            {/* LEFT SIDE */}
+        <header className="bg-white border-b">
+          <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            {/* LEFT: BRAND */}
             <Link
               href="/"
-              className="text-xl font-bold tracking-tight text-gray-900"
+              className="text-lg font-semibold tracking-tight whitespace-nowrap"
             >
               Any-Part & Gear
             </Link>
 
-            {/* RIGHT SIDE */}
-            <div className="flex items-center gap-6 text-sm font-medium">
+            {/* RIGHT: NAV LINKS */}
+            <div className="flex items-center gap-6">
               <Link
                 href="/browse"
-                className="text-gray-700 hover:text-black"
+                className="text-sm font-medium text-gray-700 hover:text-black"
               >
                 Browse
               </Link>
 
               <Link
                 href="/sell"
-                className="text-gray-700 hover:text-black"
+                className="text-sm font-medium text-gray-700 hover:text-black"
               >
                 Sell
               </Link>
 
               <Link
+                href="/inbox"
+                className="text-sm font-medium text-gray-700 hover:text-black"
+              >
+                Inbox
+              </Link>
+
+              <Link
                 href="/login"
-                className="rounded-md bg-black px-4 py-2 text-white hover:bg-gray-800"
+                className="ml-2 rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
               >
                 Login
               </Link>
@@ -53,7 +60,7 @@ export default function RootLayout({
         </header>
 
         {/* PAGE CONTENT */}
-        <main className="max-w-7xl mx-auto px-6 py-8">
+        <main className="max-w-7xl mx-auto px-6 py-10">
           {children}
         </main>
       </body>
