@@ -10,7 +10,7 @@ export default function HomePage() {
           src="/logo.png"
           alt="Any-Part & Gear Logo"
           width={240}
-          height={200}
+          height={100}
           priority
           className="hero-logo"
         />
