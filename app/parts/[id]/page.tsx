@@ -1,43 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
 
-const PLACEHOLDER_IMAGE =
-  "https://via.placeholder.com/800x500?text=No+Image+Available";
+type Part = {
+  id: number;
+  title: string;
+  description: string | null;
+  price: number;
+  image: string | null;
+  created_at: string;
+  user_id: string;
+};
 
-export default function PartDetailPage() {
+export default function PartPage() {
   const params = useParams();
-  const partId = params.id as string;
-
-  const [part, setPart] = useState<any>(null);
+  const router = useRouter();
+  const [part, setPart] = useState<Part | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [messageText, setMessageText] = useState("");
-  const [sending, setSending] = useState(false);
 
-  // 🔐 Get logged-in user
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setCurrentUserId(data.user?.id ?? null);
-    });
-  }, []);
-
-  // 📦 Fetch part
-  useEffect(() => {
-    if (!partId) return;
+    if (!params?.id) return;
 
     const fetchPart = async () => {
       const { data, error } = await supabase
         .from("parts")
         .select("*")
-        .eq("id", partId)
+        .eq("id", params.id)
         .single();
 
-      if (error) {
-        console.error(error);
+      if (error || !data) {
+        router.push("/browse");
+        return;
       }
 
       setPart(data);
@@ -45,127 +41,105 @@ export default function PartDetailPage() {
     };
 
     fetchPart();
-  }, [partId]);
-
-  // 📨 Send message
-  const sendMessage = async () => {
-    if (!messageText.trim()) return;
-
-    setSending(true);
-
-    const res = await fetch("/messages/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        receiver_id: part.user_id,
-        part_id: part.id,
-        content: messageText,
-      }),
-    });
-
-    const json = await res.json();
-
-    if (!res.ok) {
-      alert(json.error || "Failed to send message");
-    } else {
-      setMessageText("");
-      alert("Message sent!");
-    }
-
-    setSending(false);
-  };
+  }, [params, router]);
 
   if (loading) {
-    return <p style={{ padding: 40 }}>Loading…</p>;
+    return <p style={{ padding: 40 }}>Loading part…</p>;
   }
 
-  if (!part) {
-    return <p style={{ padding: 40 }}>Part not found</p>;
-  }
-
-  const isOwner = currentUserId === part.user_id;
-  const image = part.image || PLACEHOLDER_IMAGE;
+  if (!part) return null;
 
   return (
-    <div style={{ padding: 40 }}>
+    <main style={{ padding: 40, maxWidth: 1000, margin: "0 auto" }}>
       <Link href="/browse" style={{ color: "#2563eb" }}>
         ← Back to Browse
       </Link>
 
       <div
         style={{
-          background: "#fff",
-          borderRadius: 16,
-          padding: 24,
-          marginTop: 20,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 40,
+          marginTop: 24,
         }}
       >
-        <img
-          src={image}
-          alt={part.title}
-          style={{
-            width: "100%",
-            height: 360,
-            objectFit: "cover",
-            borderRadius: 12,
-            marginBottom: 16,
-          }}
-        />
-
-        <h1>{part.title}</h1>
-        <p>{part.description}</p>
-
-        {part.created_at && (
-          <p style={{ color: "#666", marginTop: 12 }}>
-            Listed on {new Date(part.created_at).toLocaleDateString()}
-          </p>
-        )}
-
-        {/* 📨 MESSAGE SELLER */}
-        {!isOwner && currentUserId && (
-          <div style={{ marginTop: 30 }}>
-            <h3>Message Seller</h3>
-
-            <textarea
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              placeholder="Ask about this part..."
-              rows={4}
+        {/* Image */}
+        <div>
+          {part.image ? (
+            <img
+              src={part.image}
+              alt={part.title}
               style={{
                 width: "100%",
-                padding: 12,
-                borderRadius: 8,
-                border: "1px solid #ccc",
-                marginTop: 8,
+                maxHeight: 420,
+                objectFit: "cover",
+                borderRadius: 20,
+                boxShadow: "0 12px 30px rgba(0,0,0,0.15)",
               }}
             />
-
-            <button
-              onClick={sendMessage}
-              disabled={sending}
+          ) : (
+            <div
               style={{
-                marginTop: 10,
-                padding: "10px 18px",
-                borderRadius: 8,
-                border: "none",
-                background: "#2563eb",
-                color: "#fff",
-                cursor: "pointer",
-                opacity: sending ? 0.6 : 1,
+                height: 420,
+                background: "#e5e7eb",
+                borderRadius: 20,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              {sending ? "Sending…" : "Send Message"}
-            </button>
-          </div>
-        )}
+              No Image
+            </div>
+          )}
+        </div>
 
-        {!currentUserId && (
-          <p style={{ marginTop: 20, color: "#888" }}>
-            Log in to message the seller.
+        {/* Info */}
+        <div>
+          <h1 style={{ marginBottom: 12 }}>{part.title}</h1>
+
+          <p
+            style={{
+              fontSize: 24,
+              fontWeight: 700,
+              marginBottom: 16,
+            }}
+          >
+            ${part.price}
           </p>
-        )}
+
+          {part.description && (
+            <p style={{ marginBottom: 24 }}>{part.description}</p>
+          )}
+
+          <button
+            style={{
+              padding: "14px 24px",
+              fontSize: 16,
+              borderRadius: 999,
+              border: "none",
+              cursor: "pointer",
+              background: "#0f172a",
+              color: "#fff",
+              marginRight: 12,
+            }}
+          >
+            Message Seller
+          </button>
+
+          <button
+            style={{
+              padding: "14px 24px",
+              fontSize: 16,
+              borderRadius: 999,
+              border: "2px solid #0f172a",
+              background: "transparent",
+              cursor: "pointer",
+            }}
+          >
+            Make Trade Offer
+          </button>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
