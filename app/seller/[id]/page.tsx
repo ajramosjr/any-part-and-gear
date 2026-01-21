@@ -1,5 +1,6 @@
 "use client";
 
+import SellerReviewForm from "@/components/SellerReviewForm";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
