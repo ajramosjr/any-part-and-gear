@@ -50,7 +50,7 @@ export default function NavBar() {
                 position: "absolute",
                 top: -6,
                 right: -14,
-                background: "#2563eb",
+                background: "#1e40af",
                 color: "#fff",
                 borderRadius: 999,
                 padding: "2px 7px",
