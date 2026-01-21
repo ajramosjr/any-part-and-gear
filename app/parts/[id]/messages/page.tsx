@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
 
 type Message = {
   id: string;
-  content: string;
   sender_id: string;
+  receiver_id: string;
+  content: string;
+  offer_price: number | null;
+  offer_status: string | null;
   created_at: string;
 };
 
@@ -17,180 +19,151 @@ export default function PartMessagesPage() {
   const params = useParams();
   const partId = params.id as string;
 
-  const [userId, setUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [offer, setOffer] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [sellerId, setSellerId] = useState<string | null>(null);
 
-  const bottomRef = useRef<HTMLDivElement | null>(null);
-
-  // 🔹 Get current user
+  // 🔹 Load user
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserId(data.user?.id ?? null);
     });
   }, []);
 
-  // 🔹 Load messages
-  // 🔹 Mark messages as read when opening chat
-useEffect(() => {
-  if (!userId) return;
-
-  supabase
-    .from("messages")
-    .update({ read_at: new Date().toISOString() })
-    .eq("part_id", partId)
-    .eq("receiver_id", userId)
-    .is("read_at", null);
-}, [userId, partId]);
-
-    const loadMessages = async () => {
-      const { data, error } = await supabase
-        .from("messages")
-        .select("id, content, sender_id, created_at")
-        .eq("part_id", partId)
-        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-        .order("created_at", { ascending: true });
-
-      if (!error) {
-        setMessages(data ?? []);
-      }
-
-      setLoading(false);
-    };
-
-    loadMessages();
-  }, [userId, partId]);
-
-  // 🔹 Auto scroll
+  // 🔹 Load part seller
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    supabase
+      .from("parts")
+      .select("user_id")
+      .eq("id", partId)
+      .single()
+      .then(({ data }) => {
+        setSellerId(data?.user_id ?? null);
+      });
+  }, [partId]);
 
-  // 🔹 Send message
+  // 🔹 Load messages
+  const loadMessages = async () => {
+    const { data } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("part_id", partId)
+      .order("created_at");
+
+    setMessages(data ?? []);
+  };
+
+  useEffect(() => {
+    loadMessages();
+  }, [partId]);
+
+  // 🔹 Send message / offer
   const sendMessage = async () => {
-    if (!text.trim() || !userId) return;
+    if (!userId || !sellerId) return;
 
-    const last = messages[messages.length - 1];
     const receiverId =
-      last?.sender_id === userId ? undefined : last?.sender_id;
+      userId === sellerId ? messages[0]?.sender_id : sellerId;
 
-    if (!receiverId) return;
-
-    const { error } = await supabase.from("messages").insert({
-      content: text,
+    await supabase.from("messages").insert({
+      part_id: partId,
       sender_id: userId,
       receiver_id: receiverId,
-      part_id: partId,
+      content: text || null,
+      offer_price: offer ? Number(offer) : null,
+      offer_status: offer ? "pending" : null,
     });
 
-    if (!error) {
-      setText("");
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          content: text,
-          sender_id: userId,
-          created_at: new Date().toISOString(),
-        },
-      ]);
-    }
+    setText("");
+    setOffer("");
+    loadMessages();
+  };
+
+  // 🔹 Accept / Reject offer
+  const updateOffer = async (
+    id: string,
+    status: "accepted" | "rejected"
+  ) => {
+    await supabase
+      .from("messages")
+      .update({ offer_status: status })
+      .eq("id", id);
+
+    loadMessages();
   };
 
   return (
     <RequireAuth>
-      <main
-        style={{
-          maxWidth: 800,
-          margin: "0 auto",
-          padding: 20,
-          display: "flex",
-          flexDirection: "column",
-          height: "80vh",
-        }}
-      >
-        <Link href="/inbox" style={{ marginBottom: 12 }}>
-          ← Back to Inbox
-        </Link>
+      <main style={{ padding: 40, maxWidth: 700 }}>
+        <h1>Messages</h1>
 
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            background: "#f9fafb",
-            padding: 16,
-            borderRadius: 12,
-          }}
-        >
-          {loading && <p>Loading messages…</p>}
-
-          {!loading && messages.length === 0 && (
-            <p>No messages yet.</p>
-          )}
-
-          {messages.map((msg) => {
-            const isMine = msg.sender_id === userId;
-
-            return (
-              <div
-                key={msg.id}
-                style={{
-                  display: "flex",
-                  justifyContent: isMine ? "flex-end" : "flex-start",
-                  marginBottom: 10,
-                }}
-              >
-                <div
-                  style={{
-                    maxWidth: "70%",
-                    padding: "10px 14px",
-                    borderRadius: 14,
-                    background: isMine ? "#0f172a" : "#e5e7eb",
-                    color: isMine ? "#fff" : "#000",
-                    fontSize: 14,
-                  }}
-                >
-                  {msg.content}
-                </div>
-              </div>
-            );
-          })}
-
-          <div ref={bottomRef} />
-        </div>
-
-        {/* INPUT */}
-        <div
-          style={{
-            display: "flex",
-            marginTop: 12,
-            gap: 8,
-          }}
-        >
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Type a message…"
+        {messages.map((m) => (
+          <div
+            key={m.id}
             style={{
-              flex: 1,
-              padding: 12,
-              borderRadius: 999,
-              border: "1px solid #ccc",
-            }}
-          />
-
-          <button
-            onClick={sendMessage}
-            style={{
-              padding: "0 20px",
-              borderRadius: 999,
-              border: "none",
-              background: "#0f172a",
-              color: "#fff",
-              cursor: "pointer",
+              background: "#fff",
+              padding: 14,
+              borderRadius: 12,
+              marginBottom: 12,
+              border:
+                m.sender_id === userId
+                  ? "2px solid #2563eb"
+                  : "1px solid #e5e7eb",
             }}
           >
+            {m.content && <p>{m.content}</p>}
+
+            {m.offer_price && (
+              <p style={{ fontWeight: 600 }}>
+                💰 Offer: ${m.offer_price}
+              </p>
+            )}
+
+            {m.offer_status && (
+              <p>Status: {m.offer_status}</p>
+            )}
+
+            {/* Seller controls */}
+            {userId === sellerId &&
+              m.offer_status === "pending" && (
+                <div style={{ marginTop: 8 }}>
+                  <button
+                    onClick={() =>
+                      updateOffer(m.id, "accepted")
+                    }
+                  >
+                    Accept
+                  </button>
+                  <button
+                    onClick={() =>
+                      updateOffer(m.id, "rejected")
+                    }
+                    style={{ marginLeft: 8 }}
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+          </div>
+        ))}
+
+        <div style={{ marginTop: 20 }}>
+          <textarea
+            placeholder="Message"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <br />
+
+          <input
+            placeholder="Offer price (optional)"
+            value={offer}
+            onChange={(e) => setOffer(e.target.value)}
+          />
+          <br />
+
+          <button onClick={sendMessage}>
             Send
           </button>
         </div>
