@@ -10,8 +10,6 @@ type Message = {
   sender_id: string;
   receiver_id: string;
   content: string;
-  offer_price: number | null;
-  offer_status: string | null;
   created_at: string;
 };
 
@@ -20,152 +18,127 @@ export default function PartMessagesPage() {
   const partId = params.id as string;
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [text, setText] = useState("");
-  const [offer, setOffer] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
-  const [sellerId, setSellerId] = useState<string | null>(null);
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // 🔹 Load user
+  // 🔹 Load user + messages
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id ?? null);
-    });
-  }, []);
+    const loadConversation = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-  // 🔹 Load part seller
-  useEffect(() => {
-    supabase
+      if (!user) return;
+
+      setUserId(user.id);
+
+      // 🔹 Fetch messages for this part
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("part_id", partId)
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .order("created_at", { ascending: true });
+
+      setMessages(data ?? []);
+      setLoading(false);
+
+      // ✅ MARK AS READ (THIS IS YOUR SNIPPET)
+      await supabase
+        .from("messages")
+        .update({ read: true })
+        .eq("part_id", partId)
+        .eq("receiver_id", user.id);
+    };
+
+    loadConversation();
+  }, [partId]);
+
+  // 🔹 Send message
+  const sendMessage = async () => {
+    if (!text.trim() || !userId) return;
+
+    // Get part owner
+    const { data: part } = await supabase
       .from("parts")
       .select("user_id")
       .eq("id", partId)
-      .single()
-      .then(({ data }) => {
-        setSellerId(data?.user_id ?? null);
-      });
-  }, [partId]);
+      .single();
 
-  // 🔹 Load messages
-  const loadMessages = async () => {
+    if (!part) return;
+
+    await supabase.from("messages").insert({
+      sender_id: userId,
+      receiver_id: part.user_id,
+      part_id: partId,
+      content: text,
+    });
+
+    setText("");
+
+    // Reload messages
     const { data } = await supabase
       .from("messages")
       .select("*")
       .eq("part_id", partId)
-      .order("created_at");
+      .order("created_at", { ascending: true });
 
     setMessages(data ?? []);
   };
 
-  useEffect(() => {
-    loadMessages();
-  }, [partId]);
-
-  // 🔹 Send message / offer
-  const sendMessage = async () => {
-    if (!userId || !sellerId) return;
-
-    const receiverId =
-      userId === sellerId ? messages[0]?.sender_id : sellerId;
-
-    await supabase.from("messages").insert({
-      part_id: partId,
-      sender_id: userId,
-      receiver_id: receiverId,
-      content: text || null,
-      offer_price: offer ? Number(offer) : null,
-      offer_status: offer ? "pending" : null,
-    });
-
-    setText("");
-    setOffer("");
-    loadMessages();
-  };
-
-  // 🔹 Accept / Reject offer
-  const updateOffer = async (
-    id: string,
-    status: "accepted" | "rejected"
-  ) => {
-    await supabase
-      .from("messages")
-      .update({ offer_status: status })
-      .eq("id", id);
-
-    loadMessages();
-  };
-
   return (
     <RequireAuth>
-      <main style={{ padding: 40, maxWidth: 700 }}>
+      <main style={{ padding: 40, maxWidth: 800 }}>
         <h1>Messages</h1>
 
-        {messages.map((m) => (
+        {loading && <p>Loading conversation…</p>}
+
+        {!loading && (
           <div
-            key={m.id}
             style={{
+              marginTop: 20,
               background: "#fff",
-              padding: 14,
+              padding: 20,
               borderRadius: 12,
-              marginBottom: 12,
-              border:
-                m.sender_id === userId
-                  ? "2px solid #2563eb"
-                  : "1px solid #e5e7eb",
             }}
           >
-            {m.content && <p>{m.content}</p>}
-
-            {m.offer_price && (
-              <p style={{ fontWeight: 600 }}>
-                💰 Offer: ${m.offer_price}
-              </p>
-            )}
-
-            {m.offer_status && (
-              <p>Status: {m.offer_status}</p>
-            )}
-
-            {/* Seller controls */}
-            {userId === sellerId &&
-              m.offer_status === "pending" && (
-                <div style={{ marginTop: 8 }}>
-                  <button
-                    onClick={() =>
-                      updateOffer(m.id, "accepted")
-                    }
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() =>
-                      updateOffer(m.id, "rejected")
-                    }
-                    style={{ marginLeft: 8 }}
-                  >
-                    Reject
-                  </button>
-                </div>
-              )}
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                style={{
+                  marginBottom: 12,
+                  padding: 12,
+                  borderRadius: 10,
+                  background:
+                    msg.sender_id === userId ? "#dbeafe" : "#f1f5f9",
+                  alignSelf:
+                    msg.sender_id === userId ? "flex-end" : "flex-start",
+                }}
+              >
+                <p style={{ margin: 0 }}>{msg.content}</p>
+                <span style={{ fontSize: 12, color: "#64748b" }}>
+                  {new Date(msg.created_at).toLocaleString()}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
 
-        <div style={{ marginTop: 20 }}>
-          <textarea
-            placeholder="Message"
+        {/* Send box */}
+        <div style={{ marginTop: 20, display: "flex", gap: 8 }}>
+          <input
             value={text}
             onChange={(e) => setText(e.target.value)}
+            placeholder="Type a message…"
+            style={{
+              flex: 1,
+              padding: 10,
+              borderRadius: 8,
+              border: "1px solid #cbd5f5",
+            }}
           />
-          <br />
-
-          <input
-            placeholder="Offer price (optional)"
-            value={offer}
-            onChange={(e) => setOffer(e.target.value)}
-          />
-          <br />
-
-          <button onClick={sendMessage}>
-            Send
-          </button>
+          <button onClick={sendMessage}>Send</button>
         </div>
       </main>
     </RequireAuth>
