@@ -13,7 +13,7 @@ type Review = {
 
 export default function SellerProfilePage() {
   const params = useParams();
-  const sellerId = params.id as string;
+  const sellerid = params.id as string;
   
 const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -45,12 +45,12 @@ useEffect(() => {
     };
 
     loadReviews();
-  }, [sellerId]);
+  }, [sellerid]);
 {currentUserId !== sellerId && (
   <ReviewForm sellerId={sellerId} />
 )}
 
-{currentUserId === sellerId && (
+{currentUserId === sellerid && (
   <p style={{ marginTop: 12, color: "#64748b" }}>
     You can’t review yourself.
   </p>
@@ -87,7 +87,7 @@ useEffect(() => {
           </div>
         ))}
 
-      <SellerReviewForm sellerId={sellerId} />
+      <SellerReviewForm sellerid={sellerid} />
     </main>
   );
 }
