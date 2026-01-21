@@ -4,65 +4,54 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { getSellerStats } from "@/lib/getSellerStats";
+import { getSellerLevel } from "@/lib/getSellerLevel";
 
-type Part = {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  user_id: string;
-};
-
-export default function PartPage() {
+export default function PartDetailPage() {
   const params = useParams();
   const partId = params.id as string;
 
-  const [part, setPart] = useState<Part | null>(null);
+  const [part, setPart] = useState<any>(null);
+  const [sellerLevel, setSellerLevel] = useState("Bronze");
   const [loading, setLoading] = useState(true);
-  const [sellerStats, setSellerStats] = useState<{
-    average: number | null;
-    count: number;
-    isTopSeller: boolean;
-  } | null>(null);
 
   useEffect(() => {
+    if (!partId) return;
+
     const loadPart = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("parts")
         .select("*")
         .eq("id", partId)
         .single();
 
-      if (!error && data) {
+      if (data) {
         setPart(data);
 
-        // load seller stats
-        const stats = await getSellerStats(data.user_id);
-        setSellerStats(stats);
+        if (data.user_id) {
+          const level = await getSellerLevel(data.user_id);
+          setSellerLevel(level);
+        }
       }
 
       setLoading(false);
     };
 
-    if (partId) {
-      loadPart();
-    }
+    loadPart();
   }, [partId]);
 
-  if (loading) {
-    return <p style={{ padding: 40 }}>Loading part…</p>;
-  }
-
-  if (!part) {
-    return <p style={{ padding: 40 }}>Part not found.</p>;
-  }
+  if (loading) return <p style={{ padding: 40 }}>Loading part…</p>;
+  if (!part) return <p style={{ padding: 40 }}>Part not found</p>;
 
   return (
-    <main style={{ padding: 40, maxWidth: 800 }}>
+    <main style={{ padding: 40, maxWidth: 900 }}>
       <h1>{part.title}</h1>
 
-      {/* Seller Info */}
+      <p style={{ fontSize: 18, fontWeight: 600 }}>
+        ${part.price}
+      </p>
+
+      <p style={{ marginTop: 12 }}>{part.description}</p>
+
       <p style={{ marginTop: 6 }}>
         Seller:{" "}
         <Link
@@ -73,45 +62,8 @@ export default function PartPage() {
         </Link>
       </p>
 
-      {/* ⭐ Seller Rating + Badge */}
-      {sellerStats && (
-        <div style={{ marginTop: 8 }}>
-          {sellerStats.isTopSeller && (
-            <span
-              style={{
-                background: "#facc15",
-                color: "#78350f",
-                padding: "6px 12px",
-                borderRadius: 999,
-                fontWeight: 700,
-                fontSize: 13,
-                marginRight: 10,
-              }}
-            >
-              ⭐ Top Seller
-            </span>
-          )}
-
-          {sellerStats.average && (
-            <span style={{ color: "#475569", fontSize: 14 }}>
-              ⭐ {sellerStats.average} ({sellerStats.count} reviews)
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Description */}
-      <p style={{ marginTop: 20 }}>{part.description}</p>
-
-      {/* Price */}
-      <p
-        style={{
-          marginTop: 20,
-          fontSize: 22,
-          fontWeight: 700,
-        }}
-      >
-        ${part.price}
+      <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
+        Seller Level: <strong>{sellerLevel}</strong>
       </p>
     </main>
   );
