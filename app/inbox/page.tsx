@@ -3,17 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import RequireAuth from "@/app/components/RequireAuth";
+import RequireAuth from "@/components/RequireAuth";
 
 type Message = {
   id: string;
   content: string;
   created_at: string;
   part_id: string;
-  sender_id: string;
-  parts: {
-    title: string;
-  }[];
+  sender_id: string | null;
+  parts: { title: string }[] | null;
 };
 
 export default function InboxPage() {
@@ -22,14 +20,8 @@ export default function InboxPage() {
 
   useEffect(() => {
     const fetchMessages = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
 
       const { data, error } = await supabase
         .from("messages")
@@ -40,17 +32,13 @@ export default function InboxPage() {
           created_at,
           part_id,
           sender_id,
-          parts (
-            title
-          )
+          parts ( title )
         `
         )
-        .eq("receiver_id", user.id)
+        .eq("receiver_id", auth.user.id)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error(error);
-      } else if (data) {
+      if (!error && data) {
         setMessages(data);
       }
 
@@ -62,7 +50,7 @@ export default function InboxPage() {
 
   return (
     <RequireAuth>
-      <main style={{ padding: 40, maxWidth: 700 }}>
+      <main style={{ padding: 40, maxWidth: 700, margin: "0 auto" }}>
         <h1>Inbox</h1>
 
         {loading && <p>Loading messages…</p>}
@@ -86,18 +74,29 @@ export default function InboxPage() {
               Part: {msg.parts?.[0]?.title || "Unknown"}
             </p>
 
-            <p>{msg.content}</p>
+            <p style={{ marginTop: 6 }}>{msg.content}</p>
 
-            <p style={{ fontSize: 12, color: "#666" }}>
+            <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
               {new Date(msg.created_at).toLocaleString()}
             </p>
 
-            <Link
-              href={`/parts/${msg.part_id}`}
-              style={{ color: "#2563eb", fontSize: 14 }}
-            >
-              View Part
-            </Link>
+            <div style={{ marginTop: 10, display: "flex", gap: 16 }}>
+              <Link
+                href={`/parts/${msg.part_id}`}
+                style={{ color: "#2563eb", fontWeight: 600 }}
+              >
+                View Part
+              </Link>
+
+              {msg.sender_id && (
+                <Link
+                  href={`/seller/${msg.sender_id}`}
+                  style={{ color: "#16a34a", fontWeight: 600 }}
+                >
+                  Leave Review →
+                </Link>
+              )}
+            </div>
           </div>
         ))}
       </main>
