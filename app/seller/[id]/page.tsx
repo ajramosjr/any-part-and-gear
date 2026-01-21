@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { hasMessaged } from "@/lib/hasMessaged";
+import { getSellerStats } from "@/lib/getSellerStats";
 
 type Review = {
   rating: number;
