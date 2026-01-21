@@ -1,17 +1,20 @@
 import { supabase } from "@/lib/supabaseClient";
 
 export async function getSellerRating(sellerId: string) {
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("seller_reviews")
     .select("rating")
     .eq("seller_id", sellerId);
 
-  if (error || !data || data.length === 0) {
-    return null;
+  if (!data || data.length === 0) {
+    return { avg: null, count: 0 };
   }
 
-  const avg =
-    data.reduce((sum, r) => sum + r.rating, 0) / data.length;
+  const total = data.reduce((sum, r) => sum + r.rating, 0);
+  const avg = total / data.length;
 
-  return Number(avg.toFixed(1));
+  return {
+    avg: Number(avg.toFixed(1)),
+    count: data.length,
+  };
 }
