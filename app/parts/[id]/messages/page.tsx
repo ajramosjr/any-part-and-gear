@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import RequireAuth from "@/app/components/RequireAuth";
 
 type Message = {
   id: string;
-  sender_id: string;
-  receiver_id: string;
-  part_id: string;
   content: string;
+  sender_id: string;
   created_at: string;
-  read: boolean;
 };
 
 export default function PartMessagesPage() {
@@ -23,155 +22,170 @@ export default function PartMessagesPage() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Get logged-in user
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  // 🔹 Get current user
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserId(data.user?.id ?? null);
     });
   }, []);
 
-  // 🔹 Load messages + mark unread as read
+  // 🔹 Load messages
   useEffect(() => {
-    if (!userId || !partId) return;
+    if (!userId) return;
 
     const loadMessages = async () => {
       const { data, error } = await supabase
         .from("messages")
-        .select("*")
+        .select("id, content, sender_id, created_at")
         .eq("part_id", partId)
+        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
         .order("created_at", { ascending: true });
 
-      if (error) {
-        console.error(error);
-        setLoading(false);
-        return;
+      if (!error) {
+        setMessages(data ?? []);
       }
 
-      setMessages(data ?? []);
       setLoading(false);
-
-      // Mark unread as read
-      await supabase
-        .from("messages")
-        .update({ read: true })
-        .eq("part_id", partId)
-        .eq("receiver_id", userId)
-        .eq("read", false);
     };
 
     loadMessages();
   }, [userId, partId]);
 
-  // 🔹 REAL-TIME SUBSCRIPTION
+  // 🔹 Auto scroll
   useEffect(() => {
-    if (!userId || !partId) return;
-
-    const channel = supabase
-      .channel("messages-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `part_id=eq.${partId}`,
-        },
-        (payload) => {
-          const newMessage = payload.new as Message;
-
-          setMessages((prev) => {
-            // prevent duplicates
-            if (prev.some((m) => m.id === newMessage.id)) return prev;
-            return [...prev, newMessage];
-          });
-
-          // auto-mark read if received
-          if (newMessage.receiver_id === userId) {
-            supabase
-              .from("messages")
-              .update({ read: true })
-              .eq("id", newMessage.id);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId, partId]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // 🔹 Send message
   const sendMessage = async () => {
     if (!text.trim() || !userId) return;
 
-    const otherUserId =
-      messages.find((m) => m.sender_id !== userId)?.sender_id ||
-      messages.find((m) => m.receiver_id !== userId)?.receiver_id;
+    const last = messages[messages.length - 1];
+    const receiverId =
+      last?.sender_id === userId ? undefined : last?.sender_id;
 
-    if (!otherUserId) return;
+    if (!receiverId) return;
 
-    await supabase.from("messages").insert({
-      sender_id: userId,
-      receiver_id: otherUserId,
-      part_id: partId,
+    const { error } = await supabase.from("messages").insert({
       content: text,
-      read: false,
+      sender_id: userId,
+      receiver_id: receiverId,
+      part_id: partId,
     });
 
-    setText("");
+    if (!error) {
+      setText("");
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          content: text,
+          sender_id: userId,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+    }
   };
 
-  if (loading) return <p style={{ padding: 40 }}>Loading messages…</p>;
-  if (!userId) return <p style={{ padding: 40 }}>Please sign in</p>;
-
   return (
-    <main style={{ padding: 40, maxWidth: 800 }}>
-      <h1>Messages</h1>
-
-      <div
+    <RequireAuth>
+      <main
         style={{
-          marginTop: 20,
-          padding: 16,
-          border: "1px solid #e5e7eb",
-          borderRadius: 8,
-          maxHeight: 420,
-          overflowY: "auto",
+          maxWidth: 800,
+          margin: "0 auto",
+          padding: 20,
+          display: "flex",
+          flexDirection: "column",
+          height: "80vh",
         }}
       >
-        {messages.map((m) => (
-          <div
-            key={m.id}
+        <Link href="/inbox" style={{ marginBottom: 12 }}>
+          ← Back to Inbox
+        </Link>
+
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            background: "#f9fafb",
+            padding: 16,
+            borderRadius: 12,
+          }}
+        >
+          {loading && <p>Loading messages…</p>}
+
+          {!loading && messages.length === 0 && (
+            <p>No messages yet.</p>
+          )}
+
+          {messages.map((msg) => {
+            const isMine = msg.sender_id === userId;
+
+            return (
+              <div
+                key={msg.id}
+                style={{
+                  display: "flex",
+                  justifyContent: isMine ? "flex-end" : "flex-start",
+                  marginBottom: 10,
+                }}
+              >
+                <div
+                  style={{
+                    maxWidth: "70%",
+                    padding: "10px 14px",
+                    borderRadius: 14,
+                    background: isMine ? "#0f172a" : "#e5e7eb",
+                    color: isMine ? "#fff" : "#000",
+                    fontSize: 14,
+                  }}
+                >
+                  {msg.content}
+                </div>
+              </div>
+            );
+          })}
+
+          <div ref={bottomRef} />
+        </div>
+
+        {/* INPUT */}
+        <div
+          style={{
+            display: "flex",
+            marginTop: 12,
+            gap: 8,
+          }}
+        >
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Type a message…"
             style={{
-              marginBottom: 12,
-              textAlign: m.sender_id === userId ? "right" : "left",
+              flex: 1,
+              padding: 12,
+              borderRadius: 999,
+              border: "1px solid #ccc",
+            }}
+          />
+
+          <button
+            onClick={sendMessage}
+            style={{
+              padding: "0 20px",
+              borderRadius: 999,
+              border: "none",
+              background: "#0f172a",
+              color: "#fff",
+              cursor: "pointer",
             }}
           >
-            <span
-              style={{
-                display: "inline-block",
-                padding: "8px 12px",
-                borderRadius: 8,
-                background:
-                  m.sender_id === userId ? "#2563eb" : "#e5e7eb",
-                color: m.sender_id === userId ? "#fff" : "#000",
-              }}
-            >
-              {m.content}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type a message…"
-          style={{ flex: 1, padding: 10 }}
-        />
-        <button onClick={sendMessage}>Send</button>
-      </div>
-    </main>
+            Send
+          </button>
+        </div>
+      </main>
+    </RequireAuth>
   );
 }
