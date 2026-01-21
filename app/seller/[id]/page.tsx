@@ -1,107 +1,105 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import RequireAuth from "@/app/components/RequireAuth";
+import Link from "next/link";
+
+type Part = {
+  id: string;
+  title: string;
+  price: number;
+};
 
 export default function SellerProfilePage() {
-  const params = useParams();
-  const sellerId = params.id as string;
+  const { id: sellerId } = useParams();
+  const router = useRouter();
 
-  const [sellerEmail, setSellerEmail] = useState<string | null>(null);
-  const [parts, setParts] = useState<any[]>([]);
+  const [parts, setParts] = useState<Part[]>([]);
+  const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!sellerId) return;
 
-    const loadSeller = async () => {
-      // 🔹 Get seller email
-      const { data: userData, error: userError } = await supabase
+    const load = async () => {
+      // 🔹 Seller info
+      const { data: user } = await supabase
         .from("profiles")
         .select("email")
         .eq("id", sellerId)
         .single();
 
-      if (!userError && userData) {
-        setSellerEmail(userData.email);
-      }
+      setEmail(user?.email ?? null);
 
-      // 🔹 Get seller parts
-      const { data: partsData } = await supabase
+      // 🔹 Seller listings
+      const { data: parts } = await supabase
         .from("parts")
-        .select("*")
-        .eq("user_id", sellerId)
-        .order("created_at", { ascending: false });
+        .select("id, title, price")
+        .eq("user_id", sellerId);
 
-      setParts(partsData || []);
+      setParts(parts || []);
       setLoading(false);
     };
 
-    loadSeller();
+    load();
   }, [sellerId]);
 
   if (loading) return <p style={{ padding: 40 }}>Loading seller…</p>;
 
   return (
-    <main style={{ padding: 40, maxWidth: 900 }}>
-      <h1 style={{ fontSize: 28, marginBottom: 8 }}>
-        Seller Profile
-      </h1>
+    <RequireAuth>
+      <main style={{ padding: 40, maxWidth: 900 }}>
+        <h1>Seller Profile</h1>
 
-      <p style={{ color: "#475569", marginBottom: 30 }}>
-        {sellerEmail || "Seller"}
-      </p>
+        <p style={{ color: "#555" }}>
+          Contact seller: <strong>{email}</strong>
+        </p>
 
-      <h2 style={{ fontSize: 20, marginBottom: 16 }}>
-        Listings
-      </h2>
+        <h2 style={{ marginTop: 30 }}>Listings</h2>
 
-      {parts.length === 0 && <p>No listings yet.</p>}
+        {parts.length === 0 && <p>No listings yet.</p>}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-          gap: 20,
-        }}
-      >
-        {parts.map((part) => (
-          <Link
-            key={part.id}
-            href={`/parts/${part.id}`}
-            style={{
-              textDecoration: "none",
-              color: "inherit",
-              background: "#fff",
-              borderRadius: 12,
-              padding: 16,
-              boxShadow: "0 6px 16px rgba(0,0,0,0.08)",
-            }}
-          >
-            <h3 style={{ fontWeight: 600 }}>
-              {part.title}
-            </h3>
-
-            {part.price && (
-              <p style={{ marginTop: 6, fontWeight: 500 }}>
-                ${part.price}
-              </p>
-            )}
-
-            <p
+        <div style={{ marginTop: 20 }}>
+          {parts.map((p) => (
+            <div
+              key={p.id}
               style={{
-                fontSize: 13,
-                color: "#64748b",
-                marginTop: 8,
+                border: "1px solid #e5e7eb",
+                padding: 16,
+                borderRadius: 10,
+                marginBottom: 16,
               }}
             >
-              {new Date(part.created_at).toLocaleDateString()}
-            </p>
-          </Link>
-        ))}
-      </div>
-    </main>
+              <h3>{p.title}</h3>
+              <p>${p.price}</p>
+
+              <div style={{ display: "flex", gap: 12 }}>
+                <Link href={`/parts/${p.id}`}>
+                  View Listing
+                </Link>
+
+                <button
+                  onClick={() =>
+                    router.push(`/parts/${p.id}/messages`)
+                  }
+                  style={{
+                    background: "#2563eb",
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 14px",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                  }}
+                >
+                  Message Seller
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+    </RequireAuth>
   );
 }
