@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { getSellerStats } from "@/lib/getSellerStats";
 
 type Review = {
   rating: number;
@@ -11,104 +10,148 @@ type Review = {
   created_at: string;
 };
 
-export default function SellerPage() {
+export default function SellerProfilePage() {
   const params = useParams();
   const sellerId = params.id as string;
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<{
-    average: number | null;
-    count: number;
-    isTopSeller: boolean;
-  } | null>(null);
+  const [canReview, setCanReview] = useState(false);
+
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
 
   useEffect(() => {
-    const loadSellerData = async () => {
-      // Load reviews
-      const { data, error } = await supabase
+    const loadData = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      /* ------------------ LOAD REVIEWS ------------------ */
+      const { data: reviewData } = await supabase
         .from("seller_reviews")
         .select("rating, comment, created_at")
         .eq("seller_id", sellerId)
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
-        setReviews(data);
-      }
+      setReviews(reviewData || []);
 
-      // Load seller stats (rating + badge)
-      const sellerStats = await getSellerStats(sellerId);
-      setStats(sellerStats);
+      /* -------- CHECK IF USER CAN REVIEW (COMPLETED SALE) -------- */
+      if (user) {
+        const { data: completedOrder } = await supabase
+          .from("orders")
+          .select("id")
+          .eq("seller_id", sellerId)
+          .eq("buyer_id", user.id)
+          .eq("status", "completed")
+          .maybeSingle();
+
+        setCanReview(!!completedOrder);
+      }
 
       setLoading(false);
     };
 
-    if (sellerId) {
-      loadSellerData();
-    }
+    loadData();
   }, [sellerId]);
 
+  const submitReview = async () => {
+    if (!comment) return alert("Please write a review");
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    await supabase.from("seller_reviews").insert({
+      seller_id: sellerId,
+      buyer_id: user.id,
+      rating,
+      comment,
+    });
+
+    setComment("");
+    setRating(5);
+
+    // refresh
+    const { data } = await supabase
+      .from("seller_reviews")
+      .select("rating, comment, created_at")
+      .eq("seller_id", sellerId)
+      .order("created_at", { ascending: false });
+
+    setReviews(data || []);
+  };
+
   if (loading) {
-    return <p style={{ padding: 40 }}>Loading seller profile…</p>;
+    return <p style={{ padding: 40 }}>Loading seller…</p>;
   }
 
   return (
-    <main style={{ padding: 40, maxWidth: 800 }}>
+    <main style={{ padding: 40, maxWidth: 700 }}>
       <h1>Seller Profile</h1>
 
-      {/* ⭐ Seller Rating & Badge */}
-      {stats && (
-        <div style={{ marginTop: 12 }}>
-          {stats.isTopSeller && (
-            <span
-              style={{
-                background: "#facc15",
-                color: "#78350f",
-                padding: "6px 12px",
-                borderRadius: 999,
-                fontWeight: 700,
-                fontSize: 13,
-                display: "inline-block",
-                marginBottom: 6,
-              }}
-            >
-              ⭐ Top Seller
-            </span>
-          )}
-
-          {stats.average && (
-            <p style={{ marginTop: 6, color: "#475569" }}>
-              ⭐ {stats.average} ({stats.count} reviews)
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Reviews */}
+      {/* ⭐ Reviews */}
       <h2 style={{ marginTop: 30 }}>Reviews</h2>
 
-      {reviews.length === 0 && (
-        <p style={{ marginTop: 10 }}>No reviews yet.</p>
-      )}
+      {reviews.length === 0 && <p>No reviews yet.</p>}
 
-      {reviews.map((review, index) => (
+      {reviews.map((r, i) => (
         <div
-          key={index}
+          key={i}
           style={{
             background: "#fff",
             padding: 16,
             borderRadius: 12,
-            marginTop: 12,
+            marginBottom: 12,
             boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
           }}
         >
-          <p style={{ fontWeight: 700 }}>⭐ {review.rating}</p>
-          <p style={{ marginTop: 6 }}>{review.comment}</p>
-          <p style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>
-            {new Date(review.created_at).toLocaleDateString()}
+          <strong>⭐ {r.rating}</strong>
+          <p>{r.comment}</p>
+          <p style={{ fontSize: 12, color: "#64748b" }}>
+            {new Date(r.created_at).toLocaleDateString()}
           </p>
         </div>
       ))}
+
+      {/* ✍️ Review Form (LOCKED) */}
+      {canReview ? (
+        <>
+          <h3 style={{ marginTop: 30 }}>Leave a Review</h3>
+
+          <select
+            value={rating}
+            onChange={(e) => setRating(Number(e.target.value))}
+          >
+            {[5, 4, 3, 2, 1].map((n) => (
+              <option key={n} value={n}>
+                {n} Stars
+              </option>
+            ))}
+          </select>
+
+          <br />
+          <br />
+
+          <textarea
+            placeholder="Write your review"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            style={{ width: "100%", padding: 10 }}
+          />
+
+          <br />
+          <br />
+
+          <button onClick={submitReview}>Submit Review</button>
+        </>
+      ) : (
+        <p style={{ marginTop: 30, color: "#64748b" }}>
+          Only buyers who completed a purchase can leave a review.
+        </p>
+      )}
     </main>
   );
 }
