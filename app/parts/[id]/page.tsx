@@ -21,7 +21,18 @@ export default function PartMessagesPage() {
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
+const [sellerRating, setSellerRating] = useState<number | null>(null);
 
+useEffect(() => {
+  const loadRating = async () => {
+    const rating = await getSellerRating(part.user_id);
+    setSellerRating(rating);
+  };
+
+  if (part?.user_id) {
+    loadRating();
+  }
+}, [part?.user_id]);
   // 🔐 Get logged-in user
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -71,7 +82,21 @@ export default function PartMessagesPage() {
       receiver_id: otherUserId,
       content: newMessage,
     });
+<p style={{ marginTop: 6 }}>
+  Seller:{" "}
+  <Link
+    href={`/seller/${part.user_id}`}
+    style={{ color: "#2563eb", fontWeight: 600 }}
+  >
+    View profile
+  </Link>
 
+  {sellerRating && (
+    <span style={{ marginLeft: 8, color: "#f59e0b", fontWeight: 600 }}>
+      ⭐ {sellerRating}
+    </span>
+  )}
+</p>
     if (!error) {
       setMessages([
         ...messages,
