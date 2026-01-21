@@ -1,5 +1,6 @@
 "use client";
 
+import NavBar from "@/components/NavBar";
 import Link from "next/link";
 import { useUnreadMessages } from "@/app/hooks/useUnreadMessages";
 
