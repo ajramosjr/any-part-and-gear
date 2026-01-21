@@ -32,8 +32,17 @@ export default function PartMessagesPage() {
   }, []);
 
   // 🔹 Load messages
-  useEffect(() => {
-    if (!userId) return;
+  // 🔹 Mark messages as read when opening chat
+useEffect(() => {
+  if (!userId) return;
+
+  supabase
+    .from("messages")
+    .update({ read_at: new Date().toISOString() })
+    .eq("part_id", partId)
+    .eq("receiver_id", userId)
+    .is("read_at", null);
+}, [userId, partId]);
 
     const loadMessages = async () => {
       const { data, error } = await supabase
