@@ -11,7 +11,9 @@ type Message = {
   created_at: string;
   part_id: string;
   sender_id: string;
-  parts: { title: string } | null;
+  parts: {
+    title: string;
+  }[];
 };
 
 export default function InboxPage() {
@@ -24,23 +26,32 @@ export default function InboxPage() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from("messages")
-        .select(`
+        .select(
+          `
           id,
           content,
           created_at,
           part_id,
           sender_id,
-          parts:parts ( title )
-        `)
+          parts (
+            title
+          )
+        `
+        )
         .eq("receiver_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
-        setMessages(data as Message[]);
+      if (error) {
+        console.error(error);
+      } else if (data) {
+        setMessages(data);
       }
 
       setLoading(false);
@@ -51,7 +62,7 @@ export default function InboxPage() {
 
   return (
     <RequireAuth>
-      <main style={{ padding: 40, maxWidth: 800 }}>
+      <main style={{ padding: 40, maxWidth: 700 }}>
         <h1>Inbox</h1>
 
         {loading && <p>Loading messages…</p>}
@@ -65,33 +76,28 @@ export default function InboxPage() {
             key={msg.id}
             style={{
               background: "#fff",
-              padding: 18,
-              borderRadius: 14,
-              marginBottom: 18,
-              boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+              padding: 16,
+              borderRadius: 12,
+              marginBottom: 16,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
           >
-            <p style={{ fontWeight: 700 }}>
-              Part: {msg.parts?.title || "Unknown"}
+            <p style={{ fontWeight: 600 }}>
+              Part: {msg.parts?.[0]?.title || "Unknown"}
             </p>
 
-            <p style={{ marginTop: 6 }}>{msg.content}</p>
+            <p>{msg.content}</p>
 
-            <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
+            <p style={{ fontSize: 12, color: "#666" }}>
               {new Date(msg.created_at).toLocaleString()}
             </p>
 
-            <div style={{ marginTop: 12 }}>
-              <Link
-                href={`/messages/reply?partId=${msg.part_id}&to=${msg.sender_id}`}
-                style={{
-                  color: "#0f172a",
-                  fontWeight: 600,
-                }}
-              >
-                Reply
-              </Link>
-            </div>
+            <Link
+              href={`/parts/${msg.part_id}`}
+              style={{ color: "#2563eb", fontSize: 14 }}
+            >
+              View Part
+            </Link>
           </div>
         ))}
       </main>
