@@ -1,25 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/800x500?text=No+Image+Available";
 
+type Part = {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number | null;
+  image: string | null;
+  user_id: string;
+  created_at: string;
+};
+
 export default function PartDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const id = params.id as string;
 
-  const [part, setPart] = useState<any>(null);
+  const [part, setPart] = useState<Part | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // messaging state
-  const [showMessage, setShowMessage] = useState(false);
-  const [messageText, setMessageText] = useState("");
-  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -43,39 +47,13 @@ export default function PartDetailPage() {
     fetchPart();
   }, [id]);
 
-  const sendMessage = async () => {
-    setSending(true);
+  if (loading) {
+    return <p style={{ padding: 40 }}>Loading…</p>;
+  }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      alert("Please log in to message the seller.");
-      setSending(false);
-      return;
-    }
-
-    const { error } = await supabase.from("messages").insert({
-      content: messageText,
-      sender_id: user.id,
-      receiver_id: part.user_id,
-      part_id: part.id,
-    });
-
-    setSending(false);
-
-    if (error) {
-      alert("Failed to send message");
-    } else {
-      setShowMessage(false);
-      setMessageText("");
-      router.push("/inbox");
-    }
-  };
-
-  if (loading) return <p style={{ padding: 40 }}>Loading…</p>;
-  if (!part) return <p style={{ padding: 40 }}>Part not found</p>;
+  if (!part) {
+    return <p style={{ padding: 40 }}>Part not found</p>;
+  }
 
   return (
     <main style={{ padding: 40, maxWidth: 900 }}>
@@ -105,96 +83,39 @@ export default function PartDetailPage() {
         />
 
         <h1 style={{ fontSize: 28 }}>{part.title}</h1>
-        <p style={{ marginTop: 12 }}>{part.description}</p>
 
-        <div style={{ marginTop: 24 }}>
-          <button
-            onClick={() => setShowMessage(true)}
+        {/* ✅ SELLER PROFILE LINK */}
+        <p style={{ marginTop: 6 }}>
+          Seller:{" "}
+          <Link
+            href={`/seller/${part.user_id}`}
+            style={{ color: "#2563eb", fontWeight: 600 }}
+          >
+            View profile
+          </Link>
+        </p>
+
+        {part.price && (
+          <p
             style={{
-              padding: "14px 24px",
-              fontSize: 16,
-              borderRadius: 999,
-              border: "none",
-              cursor: "pointer",
-              background: "#0f172a",
-              color: "#fff",
+              marginTop: 12,
+              fontSize: 20,
+              fontWeight: 600,
             }}
           >
-            Message Seller
-          </button>
-        </div>
-
-        {part.created_at && (
-          <p style={{ color: "#666", marginTop: 16, fontSize: 14 }}>
-            Listed on {new Date(part.created_at).toLocaleDateString()}
+            ${part.price}
           </p>
         )}
+
+        {part.description && (
+          <p style={{ marginTop: 16 }}>{part.description}</p>
+        )}
+
+        <p style={{ color: "#6b7280", marginTop: 16 }}>
+          Listed on{" "}
+          {new Date(part.created_at).toLocaleDateString()}
+        </p>
       </div>
-
-      {/* MESSAGE MODAL */}
-      {showMessage && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              padding: 24,
-              borderRadius: 16,
-              width: "90%",
-              maxWidth: 400,
-            }}
-          >
-            <h3 style={{ marginBottom: 12 }}>Message Seller</h3>
-
-            <textarea
-              placeholder="Ask about condition, fitment, trades..."
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              style={{
-                width: "100%",
-                height: 120,
-                padding: 12,
-                borderRadius: 8,
-                border: "1px solid #ccc",
-                marginBottom: 16,
-              }}
-            />
-
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button
-                onClick={() => setShowMessage(false)}
-                style={{ marginRight: 12 }}
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={sendMessage}
-                disabled={!messageText || sending}
-                style={{
-                  background: "#0f172a",
-                  color: "#fff",
-                  border: "none",
-                  padding: "10px 16px",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                }}
-              >
-                {sending ? "Sending..." : "Send"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
