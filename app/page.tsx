@@ -14,8 +14,7 @@ export default function HomePage() {
           priority
           className="hero-logo"
         />
-
-        <h1 className="hero-title">
+  <h1 className="hero-title">
   A marketplace to buy, sell, and trade parts
 </h1>
 
