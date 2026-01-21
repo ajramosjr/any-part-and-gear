@@ -9,9 +9,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <NavBar/>
-        {children}
-      </body>
+      <body style={{ margin: 0, background: "#f8fafc" }}>
+  <NavBar />
+  {children}
+</body>
     </html>
   );
 }
