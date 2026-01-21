@@ -24,6 +24,17 @@ const [avg, setAvg] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const { data: reviews } = await supabase
+  .from("seller_reviews")
+  .select("rating, comment, created_at")
+  .eq("seller_id", sellerId);
+
+setReviews(reviews || []);
+
+if (reviews && reviews.length > 0) {
+  const total = reviews.reduce((s, r) => s + r.rating, 0);
+  setAvg(Number((total / reviews.length).toFixed(1)));
+}
     if (!sellerId) return;
 
     const load = async () => {
