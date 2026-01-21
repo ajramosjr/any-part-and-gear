@@ -22,9 +22,9 @@ export default function PartMessagesPage() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Load user + messages
+  // 🔹 Load user + initial messages
   useEffect(() => {
-    const loadConversation = async () => {
+    const init = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -33,7 +33,6 @@ export default function PartMessagesPage() {
 
       setUserId(user.id);
 
-      // 🔹 Fetch messages for this part
       const { data } = await supabase
         .from("messages")
         .select("*")
@@ -44,7 +43,7 @@ export default function PartMessagesPage() {
       setMessages(data ?? []);
       setLoading(false);
 
-      // ✅ MARK AS READ (THIS IS YOUR SNIPPET)
+      // ✅ Mark messages as read
       await supabase
         .from("messages")
         .update({ read: true })
@@ -52,14 +51,36 @@ export default function PartMessagesPage() {
         .eq("receiver_id", user.id);
     };
 
-    loadConversation();
+    init();
+  }, [partId]);
+
+  // 🔥 REALTIME SUBSCRIPTION
+  useEffect(() => {
+    const channel = supabase
+      .channel("messages-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `part_id=eq.${partId}`,
+        },
+        (payload) => {
+          setMessages((prev) => [...prev, payload.new as Message]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [partId]);
 
   // 🔹 Send message
   const sendMessage = async () => {
     if (!text.trim() || !userId) return;
 
-    // Get part owner
     const { data: part } = await supabase
       .from("parts")
       .select("user_id")
@@ -76,15 +97,6 @@ export default function PartMessagesPage() {
     });
 
     setText("");
-
-    // Reload messages
-    const { data } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("part_id", partId)
-      .order("created_at", { ascending: true });
-
-    setMessages(data ?? []);
   };
 
   return (
@@ -94,39 +106,44 @@ export default function PartMessagesPage() {
 
         {loading && <p>Loading conversation…</p>}
 
-        {!loading && (
-          <div
-            style={{
-              marginTop: 20,
-              background: "#fff",
-              padding: 20,
-              borderRadius: 12,
-            }}
-          >
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                style={{
-                  marginBottom: 12,
-                  padding: 12,
-                  borderRadius: 10,
-                  background:
-                    msg.sender_id === userId ? "#dbeafe" : "#f1f5f9",
-                  alignSelf:
-                    msg.sender_id === userId ? "flex-end" : "flex-start",
-                }}
-              >
-                <p style={{ margin: 0 }}>{msg.content}</p>
-                <span style={{ fontSize: 12, color: "#64748b" }}>
-                  {new Date(msg.created_at).toLocaleString()}
-                </span>
+        <div
+          style={{
+            marginTop: 20,
+            background: "#fff",
+            padding: 20,
+            borderRadius: 12,
+          }}
+        >
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              style={{
+                marginBottom: 10,
+                padding: 12,
+                borderRadius: 10,
+                maxWidth: "70%",
+                background:
+                  msg.sender_id === userId ? "#dbeafe" : "#f1f5f9",
+                marginLeft:
+                  msg.sender_id === userId ? "auto" : "0",
+              }}
+            >
+              <p style={{ margin: 0 }}>{msg.content}</p>
+              <div style={{ fontSize: 11, color: "#64748b" }}>
+                {new Date(msg.created_at).toLocaleTimeString()}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
 
-        {/* Send box */}
-        <div style={{ marginTop: 20, display: "flex", gap: 8 }}>
+        {/* Message input */}
+        <div
+          style={{
+            marginTop: 16,
+            display: "flex",
+            gap: 8,
+          }}
+        >
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
