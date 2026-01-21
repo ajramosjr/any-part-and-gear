@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { hasMessaged } from "@/lib/hasMessaged";
 
 type Review = {
   rating: number;
@@ -17,6 +18,7 @@ export default function SellerPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [canReview, setCanReview] = useState(false);
 
   // 🔹 Load logged-in user
   useEffect(() => {
