@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { getSellerRating } from "@/lib/getSellerRating";
+import { getSellerStats } from "@/lib/getSellerStats";
 
 type Part = {
-  id: string;
+  id: number;
   title: string;
   description: string;
   price: number;
@@ -19,8 +19,12 @@ export default function PartPage() {
   const partId = params.id as string;
 
   const [part, setPart] = useState<Part | null>(null);
-  const [sellerRating, setSellerRating] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sellerStats, setSellerStats] = useState<{
+    average: number | null;
+    count: number;
+    isTopSeller: boolean;
+  } | null>(null);
 
   useEffect(() => {
     const loadPart = async () => {
@@ -33,31 +37,32 @@ export default function PartPage() {
       if (!error && data) {
         setPart(data);
 
-        // 🔹 Load seller rating AFTER part exists
-        const rating = await getSellerRating(data.user_id);
-        setSellerRating(rating);
+        // load seller stats
+        const stats = await getSellerStats(data.user_id);
+        setSellerStats(stats);
       }
 
       setLoading(false);
     };
 
-    loadPart();
+    if (partId) {
+      loadPart();
+    }
   }, [partId]);
 
-  if (loading) return <p style={{ padding: 40 }}>Loading…</p>;
-  if (!part) return <p style={{ padding: 40 }}>Part not found</p>;
+  if (loading) {
+    return <p style={{ padding: 40 }}>Loading part…</p>;
+  }
+
+  if (!part) {
+    return <p style={{ padding: 40 }}>Part not found.</p>;
+  }
 
   return (
-    <main style={{ padding: 40, maxWidth: 700 }}>
+    <main style={{ padding: 40, maxWidth: 800 }}>
       <h1>{part.title}</h1>
 
-      <p style={{ marginTop: 12 }}>{part.description}</p>
-
-      <p style={{ marginTop: 12, fontWeight: 600 }}>
-        Price: ${part.price}
-      </p>
-
-      {/* ✅ Seller section with rating */}
+      {/* Seller Info */}
       <p style={{ marginTop: 6 }}>
         Seller:{" "}
         <Link
@@ -66,18 +71,47 @@ export default function PartPage() {
         >
           View profile
         </Link>
+      </p>
 
-        {sellerRating && (
-          <span
-            style={{
-              marginLeft: 8,
-              color: "#f59e0b",
-              fontWeight: 600,
-            }}
-          >
-            ⭐ {sellerRating}
-          </span>
-        )}
+      {/* ⭐ Seller Rating + Badge */}
+      {sellerStats && (
+        <div style={{ marginTop: 8 }}>
+          {sellerStats.isTopSeller && (
+            <span
+              style={{
+                background: "#facc15",
+                color: "#78350f",
+                padding: "6px 12px",
+                borderRadius: 999,
+                fontWeight: 700,
+                fontSize: 13,
+                marginRight: 10,
+              }}
+            >
+              ⭐ Top Seller
+            </span>
+          )}
+
+          {sellerStats.average && (
+            <span style={{ color: "#475569", fontSize: 14 }}>
+              ⭐ {sellerStats.average} ({sellerStats.count} reviews)
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Description */}
+      <p style={{ marginTop: 20 }}>{part.description}</p>
+
+      {/* Price */}
+      <p
+        style={{
+          marginTop: 20,
+          fontSize: 22,
+          fontWeight: 700,
+        }}
+      >
+        ${part.price}
       </p>
     </main>
   );
