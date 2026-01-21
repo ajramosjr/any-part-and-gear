@@ -5,71 +5,48 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
 
-type InboxItem = {
+type Message = {
+  id: string;
+  content: string;
+  created_at: string;
   part_id: string;
-  part_title: string;
-  last_message: string;
-  last_time: string;
-  unread_count: number;
+  sender_id: string;
+  parts: { title: string } | null;
 };
 
 export default function InboxPage() {
-  const [items, setItems] = useState<InboxItem[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadInbox = async () => {
+    const fetchMessages = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (!user) return;
 
-      // 1️⃣ Get messages
       const { data, error } = await supabase
         .from("messages")
-        .select(
-          `
+        .select(`
           id,
           content,
           created_at,
           part_id,
-          read_at,
-          parts ( title )
-        `
-        )
+          sender_id,
+          parts:parts ( title )
+        `)
         .eq("receiver_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (error || !data) {
-        setLoading(false);
-        return;
+      if (!error && data) {
+        setMessages(data as Message[]);
       }
 
-      // 2️⃣ Group by part
-      const map = new Map<string, InboxItem>();
-
-      data.forEach((m: any) => {
-        if (!map.has(m.part_id)) {
-          map.set(m.part_id, {
-            part_id: m.part_id,
-            part_title: m.parts?.title ?? "Unknown Part",
-            last_message: m.content,
-            last_time: m.created_at,
-            unread_count: 0,
-          });
-        }
-
-        if (!m.read_at) {
-          map.get(m.part_id)!.unread_count++;
-        }
-      });
-
-      setItems(Array.from(map.values()));
       setLoading(false);
     };
 
-    loadInbox();
+    fetchMessages();
   }, []);
 
   return (
@@ -77,60 +54,45 @@ export default function InboxPage() {
       <main style={{ padding: 40, maxWidth: 800 }}>
         <h1>Inbox</h1>
 
-        {loading && <p>Loading…</p>}
+        {loading && <p>Loading messages…</p>}
 
-        {!loading && items.length === 0 && (
+        {!loading && messages.length === 0 && (
           <p>No messages yet.</p>
         )}
 
-        {items.map((item) => (
-          <Link
-            key={item.part_id}
-            href={`/parts/${item.part_id}/messages`}
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
             style={{
-              display: "block",
-              padding: 16,
-              borderRadius: 12,
               background: "#fff",
-              marginBottom: 14,
-              textDecoration: "none",
-              color: "inherit",
-              boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
+              padding: 18,
+              borderRadius: 14,
+              marginBottom: 18,
+              boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 6,
-              }}
-            >
-              <strong>{item.part_title}</strong>
-              <span style={{ fontSize: 12, color: "#666" }}>
-                {new Date(item.last_time).toLocaleString()}
-              </span>
-            </div>
+            <p style={{ fontWeight: 700 }}>
+              Part: {msg.parts?.title || "Unknown"}
+            </p>
 
-            <div style={{ color: "#374151" }}>
-              {item.last_message}
-            </div>
+            <p style={{ marginTop: 6 }}>{msg.content}</p>
 
-            {item.unread_count > 0 && (
-              <div
+            <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
+              {new Date(msg.created_at).toLocaleString()}
+            </p>
+
+            <div style={{ marginTop: 12 }}>
+              <Link
+                href={`/messages/reply?partId=${msg.part_id}&to=${msg.sender_id}`}
                 style={{
-                  marginTop: 8,
-                  display: "inline-block",
-                  background: "#0f172a",
-                  color: "#fff",
-                  borderRadius: 999,
-                  padding: "4px 10px",
-                  fontSize: 12,
+                  color: "#0f172a",
+                  fontWeight: 600,
                 }}
               >
-                {item.unread_count} unread
-              </div>
-            )}
-          </Link>
+                Reply
+              </Link>
+            </div>
+          </div>
         ))}
       </main>
     </RequireAuth>
