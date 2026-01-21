@@ -1,44 +1,59 @@
+export const dynamic = "force-dynamic";
+
 "use client";
 
 import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function PurchaseSuccessPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const buyerId = searchParams.get("buyerId");
-  const sellerId = searchParams.get("sellerId");
-  const partId = searchParams.get("partId");
+  const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
-    if (!buyerId || !sellerId || !partId) return;
-
-    const requestReview = async () => {
-      await fetch("/api/reviews/request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          buyerId,
-          sellerId,
-          partId,
-        }),
-      });
-    };
-
-    requestReview();
-  }, [buyerId, sellerId, partId]);
+    if (!sessionId) {
+      // If someone lands here directly, send them home
+      router.replace("/");
+    }
+  }, [sessionId, router]);
 
   return (
-    <main style={{ padding: 40, maxWidth: 600, margin: "0 auto" }}>
-      <h1>✅ Purchase Complete</h1>
+    <main
+      style={{
+        padding: 60,
+        textAlign: "center",
+      }}
+    >
+      <h1 style={{ fontSize: 28, marginBottom: 12 }}>
+        ✅ Purchase Successful
+      </h1>
 
-      <p style={{ marginTop: 12 }}>
-        Thank you for your purchase! The seller has been notified.
+      <p style={{ fontSize: 16, color: "#475569" }}>
+        Thank you for your purchase!
       </p>
 
-      <p style={{ marginTop: 12, color: "#16a34a", fontWeight: 600 }}>
-        A review request has been sent to your inbox.
-      </p>
+      {sessionId && (
+        <p style={{ marginTop: 16, fontSize: 14, color: "#64748b" }}>
+          Order reference: <strong>{sessionId}</strong>
+        </p>
+      )}
+
+      <button
+        onClick={() => router.push("/")}
+        style={{
+          marginTop: 32,
+          padding: "12px 20px",
+          borderRadius: 8,
+          background: "#2563eb",
+          color: "#fff",
+          border: "none",
+          cursor: "pointer",
+          fontSize: 15,
+        }}
+      >
+        Go Home
+      </button>
     </main>
   );
 }
