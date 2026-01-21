@@ -63,6 +63,12 @@ export default function SellerProfilePage() {
               marginTop: 10,
             }}
           >
+            <span style={{ color: "#f59e0b" }}>
+  {"★".repeat(Math.round(sellerRating))}
+</span>
+<span style={{ color: "#64748b", marginLeft: 4 }}>
+  {sellerRating}
+</span>
             <strong>{r.rating} ⭐</strong>
             {r.comment && <p style={{ marginTop: 6 }}>{r.comment}</p>}
           </div>
