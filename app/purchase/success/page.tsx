@@ -1,6 +1,6 @@
-export const dynamic = "force-dynamic";
-
 "use client";
+
+export const dynamic = "force-dynamic";
 
 import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -13,7 +13,6 @@ export default function PurchaseSuccessPage() {
 
   useEffect(() => {
     if (!sessionId) {
-      // If someone lands here directly, send them home
       router.replace("/");
     }
   }, [sessionId, router]);
