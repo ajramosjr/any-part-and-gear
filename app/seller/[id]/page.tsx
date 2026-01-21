@@ -14,7 +14,8 @@ type Review = {
 export default function SellerProfilePage() {
   const params = useParams();
   const sellerId = params.id as string;
-
+  
+const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [avg, setAvg] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
