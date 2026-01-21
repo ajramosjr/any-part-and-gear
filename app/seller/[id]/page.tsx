@@ -14,6 +14,8 @@ type Part = {
 };
 
 export default function SellerProfilePage() {
+  const [reviews, setReviews] = useState<any[]>([]);
+const [avg, setAvg] = useState<number | null>(null);
   const { id: sellerId } = useParams();
   const router = useRouter();
 
