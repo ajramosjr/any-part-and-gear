@@ -1,21 +1,22 @@
-"use client";
-
 export const dynamic = "force-dynamic";
 
-import { useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+type PageProps = {
+  searchParams: {
+    session_id?: string;
+  };
+};
 
-export default function PurchaseSuccessPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+export default function PurchaseSuccessPage({ searchParams }: PageProps) {
+  const sessionId = searchParams.session_id;
 
-  const sessionId = searchParams.get("session_id");
-
-  useEffect(() => {
-    if (!sessionId) {
-      router.replace("/");
-    }
-  }, [sessionId, router]);
+  if (!sessionId) {
+    return (
+      <main style={{ padding: 60, textAlign: "center" }}>
+        <h1>Invalid Purchase</h1>
+        <p>No session was found.</p>
+      </main>
+    );
+  }
 
   return (
     <main
@@ -32,27 +33,26 @@ export default function PurchaseSuccessPage() {
         Thank you for your purchase!
       </p>
 
-      {sessionId && (
-        <p style={{ marginTop: 16, fontSize: 14, color: "#64748b" }}>
-          Order reference: <strong>{sessionId}</strong>
-        </p>
-      )}
+      <p style={{ marginTop: 16, fontSize: 14, color: "#64748b" }}>
+        Order reference: <strong>{sessionId}</strong>
+      </p>
 
-      <button
-        onClick={() => router.push("/")}
+      <a
+        href="/"
         style={{
+          display: "inline-block",
           marginTop: 32,
           padding: "12px 20px",
           borderRadius: 8,
           background: "#2563eb",
           color: "#fff",
-          border: "none",
-          cursor: "pointer",
+          textDecoration: "none",
           fontSize: 15,
+          fontWeight: 600,
         }}
       >
         Go Home
-      </button>
+      </a>
     </main>
   );
 }
