@@ -1,94 +1,70 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { useUnreadMessages } from "@/app/hooks/useUnreadMessages";
 
 export default function NavBar() {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    const load = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) return;
-
-      setUserId(user.id);
-
-      const { count } = await supabase
-        .from("messages")
-        .select("*", { count: "exact", head: true })
-        .eq("receiver_id", user.id)
-        .eq("read", false);
-
-      setUnreadCount(count ?? 0);
-    };
-
-    load();
-  }, []);
+  const unread = useUnreadMessages();
 
   return (
-    <header
+    <nav
       style={{
-        padding: "14px 32px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        padding: "16px 40px",
         borderBottom: "1px solid #e5e7eb",
+        background: "#fff",
       }}
     >
-      {/* LEFT */}
+      {/* Left */}
       <Link
         href="/"
         style={{
-          fontWeight: 800,
           fontSize: 20,
-          textDecoration: "none",
+          fontWeight: 700,
           color: "#0f172a",
+          textDecoration: "none",
         }}
       >
         Any-Part & Gear
       </Link>
 
-      {/* RIGHT */}
-      <nav
+      {/* Right */}
+      <div
         style={{
           display: "flex",
-          gap: 28,
           alignItems: "center",
+          gap: 28,
+          fontWeight: 500,
         }}
       >
         <Link href="/browse">Browse</Link>
         <Link href="/sell">Sell</Link>
 
-        {userId && (
-          <Link href="/inbox" style={{ position: "relative" }}>
-            Inbox
-            {unreadCount > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: -6,
-                  right: -12,
-                  background: "#facc15",
-                  color: "#0f172a",
-                  fontSize: 12,
-                  fontWeight: 800,
-                  padding: "2px 6px",
-                  borderRadius: 999,
-                }}
-              >
-                {unreadCount}
-              </span>
-            )}
-          </Link>
-        )}
+        <Link href="/inbox" style={{ position: "relative" }}>
+          Inbox
+          {unread > 0 && (
+            <span
+              style={{
+                position: "absolute",
+                top: -6,
+                right: -14,
+                background: "#2563eb",
+                color: "#fff",
+                borderRadius: 999,
+                padding: "2px 7px",
+                fontSize: 11,
+                fontWeight: 700,
+              }}
+            >
+              {unread}
+            </span>
+          )}
+        </Link>
 
-        {!userId && <Link href="/login">Login</Link>}
-      </nav>
-    </header>
+        <Link href="/login">Login</Link>
+      </div>
+    </nav>
   );
 }
