@@ -31,6 +31,26 @@ const [avg, setAvg] = useState<number | null>(null);
 
 setReviews(reviews || []);
 
+    <h2 style={{ marginTop: 40 }}>
+  Seller Rating: {avg ? `${avg} ⭐` : "No reviews yet"}
+</h2>
+
+{reviews.map((r, i) => (
+  <div
+    key={i}
+    style={{
+      border: "1px solid #e5e7eb",
+      padding: 12,
+      borderRadius: 8,
+      marginTop: 10,
+    }}
+  >
+    <strong>{r.rating} ⭐</strong>
+    {r.comment && <p>{r.comment}</p>}
+  </div>
+))}
+
+<SellerReviewForm sellerId={sellerId as string} />
 if (reviews && reviews.length > 0) {
   const total = reviews.reduce((s, r) => s + r.rating, 0);
   setAvg(Number((total / reviews.length).toFixed(1)));
