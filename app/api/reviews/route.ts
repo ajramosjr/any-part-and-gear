@@ -1,59 +1,36 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: Request) {
-  const { sellerId, rating, comment } = await req.json();
+  const body = await req.json();
+  const { seller_id, rating, comment, part_id, reviewer_id } = body;
 
-  const supabase = createServerClient(
+  if (!seller_id || !rating || !reviewer_id) {
+    return NextResponse.json(
+      { error: "Missing required fields" },
+      { status: 400 }
+    );
+  }
+
+  // ✅ Service role client (NO cookies)
+  const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies }
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json("Unauthorized", { status: 401 });
-  }
-
-  // 🚫 Block self-reviews
-  if (user.id === sellerId) {
-    return NextResponse.json(
-      "You cannot review yourself",
-      { status: 403 }
-    );
-  }
-
-  // ✅ Must have messaged seller
-  const { data } = await supabase
-    .from("messages")
-    .select("id")
-    .or(
-      `and(sender_id.eq.${user.id},receiver_id.eq.${sellerId}),
-       and(sender_id.eq.${sellerId},receiver_id.eq.${user.id})`
-    )
-    .limit(1);
-
-  if (!data || data.length === 0) {
-    return NextResponse.json(
-      "You must message the seller before reviewing",
-      { status: 403 }
-    );
-  }
-
-  // ✅ Insert review
   const { error } = await supabase.from("seller_reviews").insert({
-    seller_id: sellerId,
-    reviewer_id: user.id,
+    seller_id,
     rating,
     comment,
+    part_id,
+    reviewer_id,
   });
 
   if (error) {
-    return NextResponse.json(error.message, { status: 500 });
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ success: true });
