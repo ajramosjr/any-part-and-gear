@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useUnreadMessages } from "@/app/hooks/useUnreadMessages";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
 export default function NavBar() {
   const unread = useUnreadMessages();
