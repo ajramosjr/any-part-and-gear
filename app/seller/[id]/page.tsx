@@ -27,7 +27,11 @@ const [currentUserId, setCurrentUserId] = useState<string | null>(null);
         .select("rating, comment, created_at")
         .eq("seller_id", sellerId)
         .order("created_at", { ascending: false });
-
+useEffect(() => {
+  supabase.auth.getUser().then(({ data }) => {
+    setCurrentUserId(data.user?.id ?? null);
+  });
+}, []);
       if (!error && data) {
         setReviews(data);
 
@@ -42,7 +46,15 @@ const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
     loadReviews();
   }, [sellerId]);
+{currentUserId !== sellerId && (
+  <ReviewForm sellerId={sellerId} />
+)}
 
+{currentUserId === sellerId && (
+  <p style={{ marginTop: 12, color: "#64748b" }}>
+    You can’t review yourself.
+  </p>
+)}
   return (
     <main style={{ padding: 40 }}>
       <h1>Seller Profile</h1>
