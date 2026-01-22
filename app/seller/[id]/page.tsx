@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { getSellerLevel } from "@/lib/getSellerLevel";
+import { getSellerRating } from "@/lib/getSellerRating";
 
 type Review = {
   rating: number;
-  comment: string | null;
+  comment: string;
   created_at: string;
 };
 
@@ -16,30 +16,30 @@ export default function SellerProfilePage() {
   const sellerId = params.id as string;
 
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [level, setLevel] = useState<"Gold" | "Silver" | "Bronze">("Bronze");
+  const [rating, setRating] = useState<number>(0);
   const [loading, setLoading] = useState(true);
-
-  const isVerified = level === "Gold";
 
   useEffect(() => {
     if (!sellerId) return;
 
-    const loadSellerData = async () => {
-      const { data } = await supabase
+    const loadSeller = async () => {
+      // Reviews
+      const { data: reviewData } = await supabase
         .from("seller_reviews")
         .select("rating, comment, created_at")
         .eq("seller_id", sellerId)
         .order("created_at", { ascending: false });
 
-      setReviews(data || []);
+      setReviews(reviewData || []);
 
-      const sellerLevel = await getSellerLevel(sellerId);
-      setLevel(sellerLevel as "Gold" | "Silver" | "Bronze");
+      // ⭐ Average rating
+      const avgRating = await getSellerRating(sellerId);
+      setRating(avgRating);
 
       setLoading(false);
     };
 
-    loadSellerData();
+    loadSeller();
   }, [sellerId]);
 
   if (loading) {
@@ -50,42 +50,12 @@ export default function SellerProfilePage() {
     <main style={{ padding: 40, maxWidth: 800 }}>
       <h1>Seller Profile</h1>
 
-      {/* Seller Status */}
-      <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 12 }}>
-        <span
-          style={{
-            fontWeight: 700,
-            color:
-              level === "Gold"
-                ? "#d97706"
-                : level === "Silver"
-                ? "#64748b"
-                : "#92400e",
-          }}
-        >
-          {level} Seller
-        </span>
+      {/* ⭐ RATING */}
+      <p style={{ marginTop: 8, fontSize: 18, fontWeight: 700 }}>
+        ⭐ {rating > 0 ? rating : "No ratings yet"}
+      </p>
 
-        {isVerified && (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: "#dcfce7",
-              color: "#166534",
-              padding: "4px 10px",
-              borderRadius: 999,
-              fontSize: 13,
-              fontWeight: 700,
-            }}
-          >
-            ✔ Verified Seller
-          </span>
-        )}
-      </div>
-
-      {/* Reviews */}
+      {/* REVIEWS */}
       <h3 style={{ marginTop: 32 }}>Reviews</h3>
 
       {reviews.length === 0 && <p>No reviews yet.</p>}
@@ -102,7 +72,7 @@ export default function SellerProfilePage() {
           }}
         >
           <strong>⭐ {r.rating}/5</strong>
-          {r.comment && <p>{r.comment}</p>}
+          <p>{r.comment}</p>
           <p style={{ fontSize: 12, color: "#666" }}>
             {new Date(r.created_at).toLocaleDateString()}
           </p>
