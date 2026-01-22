@@ -1,63 +1,97 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export async function POST(req: Request) {
   try {
-    const { imageUrl, userId } = await req.json();
+    const body = await req.json();
+    const { imageUrl, userId } = body;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `Identify the vehicle. Return JSON only:
-{
-  make,
-  model,
-  year,
-  confidence
-}`,
-            },
-            {
-              type: "image_url",
-              image_url: { url: imageUrl },
-            },
-          ],
-        },
-      ],
-    });
+    if (!imageUrl || !userId) {
+      return NextResponse.json(
+        { error: "Missing imageUrl or userId" },
+        { status: 400 }
+      );
+    }
 
-    const raw = response.choices[0].message.content!;
-    const data = JSON.parse(raw);
+    // Supabase service-role client (server only)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
-    await supabase.from("vehicle_scans").insert({
+    /* -------------------------------------------------
+       1️⃣ Run AI scan (mocked for now)
+       Replace later with real AI / vision model
+    -------------------------------------------------- */
+
+    const aiResult = {
+      vehicle: "2018 Ford F-150",
+      part: "Front bumper",
+      condition: "Good",
+      confidence: 0.78,
+    };
+
+    let confidence = aiResult.confidence;
+
+    /* -------------------------------------------------
+       2️⃣ Check seller verification
+    -------------------------------------------------- */
+
+    const { data: seller, error: sellerError } = await supabase
+      .from("profiles")
+      .select("verified")
+      .eq("id", userId)
+      .single();
+
+    if (sellerError) {
+      console.error("Seller lookup error:", sellerError);
+    }
+
+    const sellerIsVerified = seller?.verified === true;
+
+    if (sellerIsVerified) {
+      confidence += 0.05;
+    }
+
+    confidence = Math.min(confidence, 1);
+
+    /* -------------------------------------------------
+       3️⃣ Save scan result
+    -------------------------------------------------- */
+
+    const { error: insertError } = await supabase.from("ai_scans").insert({
       user_id: userId,
       image_url: imageUrl,
-      make: data.make,
-      model: data.model,
-      year: data.year,
-      confidence: data.confidence,
+      vehicle: aiResult.vehicle,
+      part: aiResult.part,
+      condition: aiResult.condition,
+      confidence,
+      verified_boost: sellerIsVerified,
     });
-await supabase.rpc("decrement_ai_credit", { uid: userId });
-    
-    return NextResponse.json(data);
+
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      return NextResponse.json(
+        { error: "Failed to save scan" },
+        { status: 500 }
+      );
+    }
+
+    /* -------------------------------------------------
+       4️⃣ Return result to client
+    -------------------------------------------------- */
+
+    return NextResponse.json({
+      vehicle: aiResult.vehicle,
+      part: aiResult.part,
+      condition: aiResult.condition,
+      confidence,
+      verifiedBoostApplied: sellerIsVerified,
+    });
   } catch (err) {
-    console.error(err);
+    console.error("AI Scan Error:", err);
     return NextResponse.json(
-      { error: "AI scan failed" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
