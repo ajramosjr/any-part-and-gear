@@ -7,12 +7,7 @@ export default function AiScanPage() {
   const [image, setImage] = useState<File | null>(null);
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-
-  const runScan = async () => {
-    if (!image) return;
-
-    setLoading(true);
-
+  
     const runScan = async () => {
   if (!image) return;
   setLoading(true);
