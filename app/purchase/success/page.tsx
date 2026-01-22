@@ -1,44 +1,57 @@
-"use client";
-
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { CheckCircle } from "lucide-react";
 
 export default function PurchaseSuccessPage() {
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session_id");
-
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (sessionId) {
-      // Optional: verify purchase with API
-      setLoading(false);
-    }
-  }, [sessionId]);
-
   return (
-    <main style={{ padding: 40, maxWidth: 700, margin: "0 auto" }}>
-      <h1>✅ Purchase Successful</h1>
+    <main
+      style={{
+        minHeight: "70vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 520,
+          textAlign: "center",
+          background: "#fff",
+          padding: 32,
+          borderRadius: 12,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+        }}
+      >
+        <CheckCircle size={64} color="#16a34a" style={{ marginBottom: 16 }} />
 
-      {loading ? (
-        <p>Finalizing your purchase…</p>
-      ) : (
-        <>
-          <p style={{ marginTop: 12 }}>
-            Thank you for your purchase! Your transaction has been completed
-            successfully.
-          </p>
+        <h1 style={{ fontSize: 28, fontWeight: 700 }}>
+          Purchase Successful
+        </h1>
 
-          <div style={{ marginTop: 24 }}>
-            <Link href="/dashboard">
-              Go to Dashboard
-            </Link>
-          </div>
-        </>
-      )}
+        <p style={{ marginTop: 12, color: "#555" }}>
+          Your payment was completed successfully.
+          The seller has been notified and your order is now processing.
+        </p>
+
+        <div style={{ marginTop: 24 }}>
+          <Link
+            href="/inbox"
+            style={{
+              display: "inline-block",
+              padding: "10px 18px",
+              background: "#111827",
+              color: "#fff",
+              borderRadius: 8,
+              textDecoration: "none",
+              fontWeight: 600,
+            }}
+          >
+            Go to Messages
+          </Link>
+        </div>
+      </div>
     </main>
   );
 }
