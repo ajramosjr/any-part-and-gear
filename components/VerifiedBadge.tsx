@@ -1,5 +1,5 @@
 type VerifiedBadgeProps = {
-  verified: boolean;
+  verified?: boolean;
 };
 
 export default function VerifiedBadge({ verified }: VerifiedBadgeProps) {
@@ -8,18 +8,16 @@ export default function VerifiedBadge({ verified }: VerifiedBadgeProps) {
   return (
     <span
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "4px 10px",
+        marginLeft: 8,
+        padding: "2px 8px",
         borderRadius: 999,
-        background: "#dcfce7",
-        color: "#166534",
+        background: "#16a34a",
+        color: "#fff",
         fontSize: 12,
-        fontWeight: 700,
+        fontWeight: 600,
       }}
     >
-      ✅ Verified Seller
+      ✔ Verified
     </span>
   );
 }
