@@ -13,32 +13,31 @@ export default function AiScanPage() {
 
     setLoading(true);
 
-    // MOCK AI RESULT (replace later)
-    const fakeResult = {
-      make: "Ford",
-      model: "F-150",
-      year: 2018,
-      confidence: 0.86,
-      tips: [
-        "Check transmission service intervals",
-        "Brake pads commonly replaced at 50k miles",
-      ],
-    };
+    const runScan = async () => {
+  if (!image) return;
+  setLoading(true);
 
-    setTimeout(async () => {
-      setResult(fakeResult);
+  // Upload image to Supabase storage first
+  const { data } = await supabase.storage
+    .from("vehicle-images")
+    .upload(`scan-${Date.now()}.jpg`, image);
 
-      await supabase.from("vehicle_scans").insert({
-        image_url: "uploaded_image_url",
-        make: fakeResult.make,
-        model: fakeResult.model,
-        year: fakeResult.year,
-        confidence: fakeResult.confidence,
-      });
+  const imageUrl = supabase.storage
+    .from("vehicle-images")
+    .getPublicUrl(data!.path).data.publicUrl;
 
-      setLoading(false);
-    }, 1500);
-  };
+  const res = await fetch("/api/ai/scan", {
+    method: "POST",
+    body: JSON.stringify({
+      imageUrl,
+      userId: (await supabase.auth.getUser()).data.user?.id,
+    }),
+  });
+
+  const result = await res.json();
+  setResult(result);
+  setLoading(false);
+};
 
   return (
     <main style={{ padding: 40, maxWidth: 700 }}>
