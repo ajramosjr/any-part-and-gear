@@ -2,89 +2,120 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
+import { supabase } from "@/lib/supabase/client";
 import VerifiedBadge from "@/components/VerifiedBadge";
-import SellerBadge from "@/components/SellerBadge";
+
+type Profile = {
+  id: string;
+  username: string | null;
+  bio: string | null;
+  verified: boolean;
+};
+
+type Part = {
+  id: string;
+  title: string;
+  price: number;
+  image_urls: string[] | null;
+  trade_available: boolean;
+};
 
 export default function SellerProfilePage() {
-  const params = useParams();
-  const sellerId = params.id as string;
+  const { id } = useParams();
+  const sellerId = id as string;
 
-  const [verified, setVerified] = useState(false);
-  const [tier, setTier] = useState<"Bronze" | "Silver" | "Gold">("Bronze");
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!sellerId) return;
+    const fetchSeller = async () => {
+      setLoading(true);
 
-    const loadSeller = async () => {
-      // seller info
-      const { data: seller } = await supabase
+      const { data: profileData } = await supabase
         .from("profiles")
-        .select("verified, seller_tier")
+        .select("*")
         .eq("id", sellerId)
         .single();
 
-      setVerified(!!seller?.verified);
-      setTier(seller?.seller_tier ?? "Bronze");
-
-      // reviews
-      const { data: reviewData } = await supabase
-        .from("seller_reviews")
-        .select("rating, comment, created_at")
-        .eq("seller_id", sellerId)
+      const { data: partsData } = await supabase
+        .from("parts")
+        .select("*")
+        .eq("user_id", sellerId)
         .order("created_at", { ascending: false });
 
-      setReviews(reviewData || []);
+      setProfile(profileData);
+      setParts(partsData || []);
       setLoading(false);
     };
 
-    loadSeller();
+    fetchSeller();
   }, [sellerId]);
 
-  if (loading) {
-    return <p style={{ padding: 40 }}>Loading seller profile…</p>;
-  }
+  if (loading) return <p style={{ padding: 20 }}>Loading seller...</p>;
+  if (!profile) return <p style={{ padding: 20 }}>Seller not found</p>;
 
   return (
-    <main style={{ padding: 40, maxWidth: 800 }}>
-      <h1>Seller Profile</h1>
+    <div style={{ padding: 20 }}>
+      {/* SELLER HEADER */}
+      <div style={{ marginBottom: 24 }}>
+        <h1>
+          {profile.username || "Seller"}
+          {profile.verified && <VerifiedBadge />}
+        </h1>
 
-      {/* ✅ ALWAYS pass the prop */}
-      <div style={{ marginTop: 8 }}>
-        <SellerBadge tier={tier} />
-        <VerifiedBadge verified={verified} />
+        {profile.bio && (
+          <p style={{ color: "#666", marginTop: 8 }}>{profile.bio}</p>
+        )}
       </div>
 
-      {!verified && (
-        <p style={{ color: "#666", marginTop: 6 }}>
-          This seller has not yet been verified.
-        </p>
-      )}
+      {/* LISTINGS */}
+      <h2>Listings</h2>
 
-      <h3 style={{ marginTop: 32 }}>Reviews</h3>
+      {parts.length === 0 && <p>No listings yet</p>}
 
-      {reviews.length === 0 && <p>No reviews yet.</p>}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+          gap: 16,
+        }}
+      >
+        {parts.map((part) => (
+          <div
+            key={part.id}
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 8,
+              padding: 12,
+            }}
+          >
+            <Link href={`/parts/${part.id}`}>
+              {part.image_urls?.[0] && (
+                <img
+                  src={part.image_urls[0]}
+                  style={{
+                    width: "100%",
+                    height: 160,
+                    objectFit: "cover",
+                    borderRadius: 6,
+                  }}
+                />
+              )}
 
-      {reviews.map((r, i) => (
-        <div
-          key={i}
-          style={{
-            background: "#fff",
-            padding: 16,
-            borderRadius: 10,
-            marginBottom: 12,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-          }}
-        >
-          <strong>⭐ {r.rating}/5</strong>
-          <p>{r.comment}</p>
-          <p style={{ fontSize: 12, color: "#666" }}>
-            {new Date(r.created_at).toLocaleDateString()}
-          </p>
-        </div>
-      ))}
-    </main>
+              <h3>{part.title}</h3>
+              <p>${part.price}</p>
+
+              {part.trade_available && (
+                <small style={{ color: "#0d6efd" }}>
+                  Trade Available
+                </small>
+              )}
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
