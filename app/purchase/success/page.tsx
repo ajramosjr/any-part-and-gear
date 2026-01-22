@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { CheckCircle } from "lucide-react";
 
 export default function PurchaseSuccessPage() {
   return (
@@ -24,7 +23,23 @@ export default function PurchaseSuccessPage() {
           boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
         }}
       >
-        <CheckCircle size={64} color="#16a34a" style={{ marginBottom: 16 }} />
+        {/* Simple success indicator (no external libs) */}
+        <div
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: "50%",
+            background: "#16a34a",
+            color: "#fff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 32,
+            margin: "0 auto 16px",
+          }}
+        >
+          ✓
+        </div>
 
         <h1 style={{ fontSize: 28, fontWeight: 700 }}>
           Purchase Successful
