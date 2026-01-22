@@ -1,25 +1,20 @@
 import { supabase } from "@/lib/supabaseClient";
 
-export type SellerTier = "Bronze" | "Silver" | "Gold";
-
-export async function getSellerTier(
-  sellerId: string
-): Promise<SellerTier> {
-  const { data, error } = await supabase
+/**
+ * Returns Bronze | Silver | Gold
+ */
+export async function getSellerTier(sellerId: string) {
+  const { data } = await supabase
     .from("seller_reviews")
     .select("rating")
     .eq("seller_id", sellerId);
 
-  if (error || !data || data.length === 0) {
-    return "Bronze";
-  }
+  if (!data || data.length === 0) return "Bronze";
 
-  const count = data.length;
   const avg =
-    data.reduce((sum, r) => sum + r.rating, 0) / count;
+    data.reduce((sum, r) => sum + r.rating, 0) / data.length;
 
-  if (avg >= 4.5 && count >= 10) return "Gold";
-  if (avg >= 4.0 && count >= 5) return "Silver";
-
+  if (avg >= 4.8 && data.length >= 20) return "Gold";
+  if (avg >= 4.2 && data.length >= 5) return "Silver";
   return "Bronze";
 }
