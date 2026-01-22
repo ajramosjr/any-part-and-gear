@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase/server";
+import TradeRequestForm from "@/components/TradeRequestForm";
 
 interface PartPageProps {
   params: {
@@ -23,7 +24,14 @@ export default async function PartPage({ params }: PartPageProps) {
   if (error || !part) {
     notFound();
   }
-
+  
+{part.trade_available && (
+  <TradeRequestForm
+    partId={part.id}
+    receiverId={part.user_id}
+  />
+)}
+  
   return (
     <main className="max-w-4xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-4">{part.title}</h1>
