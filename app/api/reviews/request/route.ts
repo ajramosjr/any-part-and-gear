@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: Request) {
   const { buyerId, sellerId, partId } = await req.json();
@@ -9,12 +8,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing data" }, { status: 400 });
   }
 
-  const supabase = createServerClient(
+  // Server-only Supabase client
+  const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies,
-    }
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
   // Prevent self-reviews
@@ -25,7 +22,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // Ensure purchase exists
+  // Verify purchase
   const { data: purchase } = await supabase
     .from("orders")
     .select("id")
