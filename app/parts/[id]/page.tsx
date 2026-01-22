@@ -1,18 +1,21 @@
 import { supabase } from "@/lib/supabase/server";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
-interface PartPageProps {
+interface PageProps {
   params: {
     id: string;
   };
 }
 
-export default async function PartPage({ params }: PartPageProps) {
+export const dynamic = "force-dynamic";
+
+export default async function PartPage({ params }: PageProps) {
+  const { id } = params;
+
   const { data: part, error } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (error || !part) {
@@ -21,16 +24,9 @@ export default async function PartPage({ params }: PartPageProps) {
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10">
-      <Link
-        href="/browse"
-        className="text-sm text-blue-600 hover:underline"
-      >
-        ← Back to Browse
-      </Link>
-
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Image */}
-        <div className="bg-gray-100 rounded-lg overflow-hidden">
+        <div className="bg-gray-100 rounded-xl overflow-hidden">
           {part.image_url ? (
             <img
               src={part.image_url}
@@ -38,15 +34,15 @@ export default async function PartPage({ params }: PartPageProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="flex items-center justify-center h-64 text-gray-500">
+            <div className="flex items-center justify-center h-64 text-gray-400">
               No Image
             </div>
           )}
         </div>
 
-        {/* Details */}
+        {/* Info */}
         <div>
-          <h1 className="text-2xl font-bold mb-2">
+          <h1 className="text-3xl font-bold mb-2">
             {part.title}
           </h1>
 
@@ -55,40 +51,23 @@ export default async function PartPage({ params }: PartPageProps) {
           </p>
 
           {part.description && (
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 mb-6">
               {part.description}
             </p>
           )}
 
-          <div className="space-y-2 text-sm text-gray-600">
+          <div className="border-t pt-4 space-y-2 text-sm text-gray-600">
             {part.condition && (
-              <p>
-                <strong>Condition:</strong> {part.condition}
-              </p>
+              <p><strong>Condition:</strong> {part.condition}</p>
             )}
-
-            {part.category && (
-              <p>
-                <strong>Category:</strong> {part.category}
-              </p>
-            )}
-
-            {part.created_at && (
-              <p>
-                <strong>Listed:</strong>{" "}
-                {new Date(part.created_at).toLocaleDateString()}
-              </p>
+            {part.vehicle && (
+              <p><strong>Fits:</strong> {part.vehicle}</p>
             )}
           </div>
 
-          <div className="mt-6">
-            <button
-              disabled
-              className="w-full bg-gray-300 text-gray-600 py-3 rounded-lg cursor-not-allowed"
-            >
-              Purchase (Coming Soon)
-            </button>
-          </div>
+          <button className="mt-6 w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition">
+            Contact Seller
+          </button>
         </div>
       </div>
     </main>
