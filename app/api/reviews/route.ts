@@ -1,35 +1,51 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-export async function POST(req: Request) {
-  const body = await req.json();
-  const { seller_id, rating, comment, part_id, reviewer_id } = body;
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-  if (!seller_id || !rating || !reviewer_id) {
+export async function POST(req: Request) {
+  const { sellerId, buyerId, partId, rating, comment } =
+    await req.json();
+
+  // 1️⃣ Prevent self-review
+  if (sellerId === buyerId) {
     return NextResponse.json(
-      { error: "Missing required fields" },
-      { status: 400 }
+      { error: "You cannot review yourself." },
+      { status: 403 }
     );
   }
 
-  // ✅ Service role client (NO cookies)
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  // 2️⃣ Confirm purchase
+  const { data: purchase } = await supabase
+    .from("purchases")
+    .select("id")
+    .eq("buyer_id", buyerId)
+    .eq("part_id", partId)
+    .single();
 
+  if (!purchase) {
+    return NextResponse.json(
+      { error: "You must purchase before reviewing." },
+      { status: 403 }
+    );
+  }
+
+  // 3️⃣ Insert review (duplicate blocked by DB constraint)
   const { error } = await supabase.from("seller_reviews").insert({
-    seller_id,
+    seller_id: sellerId,
+    buyer_id: buyerId,
+    part_id: partId,
     rating,
     comment,
-    part_id,
-    reviewer_id,
   });
 
   if (error) {
     return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
+      { error: "Review already submitted." },
+      { status: 400 }
     );
   }
 
