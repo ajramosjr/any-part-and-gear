@@ -1,20 +1,25 @@
-"use client";
+type VerifiedBadgeProps = {
+  verified: boolean;
+};
 
-export default function VerifiedBadge() {
+export default function VerifiedBadge({ verified }: VerifiedBadgeProps) {
+  if (!verified) return null;
+
   return (
     <span
-      title="Verified Seller"
       style={{
-        marginLeft: 6,
-        background: "#2563eb",
-        color: "#fff",
-        padding: "2px 6px",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "4px 10px",
         borderRadius: 999,
-        fontSize: 11,
+        background: "#dcfce7",
+        color: "#166534",
+        fontSize: 12,
         fontWeight: 700,
       }}
     >
-      ✔ Verified
+      ✅ Verified Seller
     </span>
   );
 }
