@@ -10,20 +10,33 @@ type Message = {
   content: string;
   created_at: string;
   part_id: string;
-  sender_id: string | null;
-  parts: { title: string }[] | null;
+  sender_id: string;
+  parts: {
+    title: string;
+  } | null;
+};
+
+type ReviewRequest = {
+  id: string;
+  part_id: string;
+  seller_id: string;
 };
 
 export default function InboxPage() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [reviewRequests, setReviewRequests] = useState<ReviewRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchMessages = async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) return;
+    const loadInbox = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      const { data, error } = await supabase
+      if (!user) return;
+
+      // 📩 Messages
+      const { data: messageData } = await supabase
         .from("messages")
         .select(
           `
@@ -35,69 +48,92 @@ export default function InboxPage() {
           parts ( title )
         `
         )
-        .eq("receiver_id", auth.user.id)
+        .eq("receiver_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
-        setMessages(data);
-      }
+      setMessages((messageData || []) as unknown as Message[]);
+
+      // ⭐ Review requests
+      const { data: requestData } = await supabase
+        .from("review_requests")
+        .select("id, part_id, seller_id")
+        .eq("buyer_id", user.id)
+        .eq("completed", false);
+
+      setReviewRequests(requestData || []);
 
       setLoading(false);
     };
 
-    fetchMessages();
+    loadInbox();
   }, []);
+
+  if (loading) {
+    return <p style={{ padding: 40 }}>Loading inbox…</p>;
+  }
 
   return (
     <RequireAuth>
-      <main style={{ padding: 40, maxWidth: 700, margin: "0 auto" }}>
-        <h1>Inbox</h1>
+      <main style={{ padding: 40, maxWidth: 900 }}>
+        <h1 style={{ marginBottom: 24 }}>Inbox</h1>
 
-        {loading && <p>Loading messages…</p>}
+        {/* ⭐ Review Requests */}
+        {reviewRequests.length > 0 && (
+          <>
+            <h3 style={{ marginBottom: 12 }}>Pending Reviews</h3>
 
-        {!loading && messages.length === 0 && (
-          <p>No messages yet.</p>
-        )}
-
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            style={{
-              background: "#fff",
-              padding: 16,
-              borderRadius: 12,
-              marginBottom: 16,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            }}
-          >
-            <p style={{ fontWeight: 600 }}>
-              Part: {msg.parts?.[0]?.title || "Unknown"}
-            </p>
-
-            <p style={{ marginTop: 6 }}>{msg.content}</p>
-
-            <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
-              {new Date(msg.created_at).toLocaleString()}
-            </p>
-
-            <div style={{ marginTop: 10, display: "flex", gap: 16 }}>
-              <Link
-                href={`/parts/${msg.part_id}`}
-                style={{ color: "#2563eb", fontWeight: 600 }}
+            {reviewRequests.map((r) => (
+              <div
+                key={r.id}
+                style={{
+                  background: "#fef3c7",
+                  padding: 16,
+                  borderRadius: 10,
+                  marginBottom: 12,
+                  border: "1px solid #fde68a",
+                }}
               >
-                View Part
-              </Link>
-
-              {msg.sender_id && (
+                <p style={{ fontWeight: 600 }}>
+                  ⭐ Please review your recent purchase
+                </p>
                 <Link
-                  href={`/seller/${msg.sender_id}`}
-                  style={{ color: "#16a34a", fontWeight: 600 }}
+                  href={`/reviews/submit?partId=${r.part_id}&sellerId=${r.seller_id}`}
+                  style={{ color: "#2563eb", fontWeight: 600 }}
                 >
                   Leave Review →
                 </Link>
-              )}
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* 📩 Messages */}
+        <h3 style={{ marginTop: 32, marginBottom: 12 }}>Messages</h3>
+
+        {messages.length === 0 && <p>No messages yet.</p>}
+
+        {messages.map((m) => (
+          <Link
+            key={m.id}
+            href={`/messages/${m.part_id}`}
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                padding: 16,
+                borderRadius: 10,
+                marginBottom: 12,
+                boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+              }}
+            >
+              <strong>{m.parts?.title || "Part inquiry"}</strong>
+              <p style={{ marginTop: 6 }}>{m.content}</p>
+              <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
+                {new Date(m.created_at).toLocaleString()}
+              </p>
             </div>
-          </div>
+          </Link>
         ))}
       </main>
     </RequireAuth>
