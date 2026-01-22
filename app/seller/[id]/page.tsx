@@ -5,8 +5,10 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getSellerTier } from "@/lib/getSellerTier";
 import { isVerifiedSeller } from "@/lib/isVerifiedSeller";
+import { getTrustScore } from "@/lib/getTrustScore";
 import SellerBadge from "@/components/SellerBadge";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import TrustScore from "@/components/TrustScore";
 
 export default function SellerProfilePage() {
   const { id } = useParams();
@@ -16,6 +18,7 @@ export default function SellerProfilePage() {
   const [tier, setTier] =
     useState<"Bronze" | "Silver" | "Gold">("Bronze");
   const [verified, setVerified] = useState(false);
+  const [trust, setTrust] = useState(0);
 
   useEffect(() => {
     if (!sellerId) return;
@@ -30,6 +33,7 @@ export default function SellerProfilePage() {
       setReviews(data || []);
       setTier(await getSellerTier(sellerId));
       setVerified(await isVerifiedSeller(sellerId));
+      setTrust(await getTrustScore(sellerId));
     };
 
     load();
@@ -42,6 +46,7 @@ export default function SellerProfilePage() {
       <p style={{ marginTop: 6 }}>
         <SellerBadge tier={tier} />
         {verified && <VerifiedBadge />}
+        <TrustScore score={trust} />
       </p>
 
       <h3 style={{ marginTop: 32 }}>Reviews</h3>
