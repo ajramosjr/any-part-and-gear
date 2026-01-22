@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 
 type Part = {
@@ -26,8 +27,12 @@ const CATEGORIES = [
 ];
 
 export default function BrowsePage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const categoryFromUrl = searchParams.get("category") || "All";
+
   const [parts, setParts] = useState<Part[]>([]);
-  const [activeCategory, setActiveCategory] = useState("All");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,26 +49,34 @@ export default function BrowsePage() {
     fetchParts();
   }, []);
 
-  // 🔢 CATEGORY COUNTS
+  // 🔢 Category counts
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
 
     parts.forEach((part) => {
-      const category = part.category || "Other";
-      counts[category] = (counts[category] || 0) + 1;
+      const cat = part.category || "Other";
+      counts[cat] = (counts[cat] || 0) + 1;
     });
 
     counts["All"] = parts.length;
     return counts;
   }, [parts]);
 
+  // 🎯 Filter by URL category
   const filteredParts =
-    activeCategory === "All"
+    categoryFromUrl === "All"
       ? parts
       : parts.filter(
-          (part) =>
-            (part.category || "Other") === activeCategory
+          (part) => (part.category || "Other") === categoryFromUrl
         );
+
+  const setCategory = (category: string) => {
+    if (category === "All") {
+      router.push("/browse");
+    } else {
+      router.push(`/browse?category=${encodeURIComponent(category)}`);
+    }
+  };
 
   return (
     <main className="max-w-7xl mx-auto p-6">
@@ -71,23 +84,27 @@ export default function BrowsePage() {
 
       {/* CATEGORY FILTER BUTTONS */}
       <div className="flex flex-wrap gap-3 mb-8">
-        {CATEGORIES.map((category) => (
-          <button
-            key={category}
-            onClick={() => setActiveCategory(category)}
-            className={`px-4 py-2 rounded-full border text-sm font-medium transition
-              ${
-                activeCategory === category
-                  ? "bg-black text-white"
-                  : "bg-white text-black hover:bg-gray-100"
-              }`}
-          >
-            {category}{" "}
-            <span className="opacity-70">
-              ({categoryCounts[category] || 0})
-            </span>
-          </button>
-        ))}
+        {CATEGORIES.map((category) => {
+          const isActive = categoryFromUrl === category;
+
+          return (
+            <button
+              key={category}
+              onClick={() => setCategory(category)}
+              className={`px-4 py-2 rounded-full border text-sm font-medium transition
+                ${
+                  isActive
+                    ? "bg-black text-white"
+                    : "bg-white text-black hover:bg-gray-100"
+                }`}
+            >
+              {category}{" "}
+              <span className="opacity-70">
+                ({categoryCounts[category] || 0})
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* PARTS GRID */}
@@ -117,10 +134,8 @@ export default function BrowsePage() {
 
               <h3 className="font-semibold">{part.title}</h3>
 
-              {part.price && (
-                <p className="text-sm text-gray-600">
-                  ${part.price}
-                </p>
+              {part.price !== null && (
+                <p className="text-sm text-gray-600">${part.price}</p>
               )}
             </Link>
           ))}
