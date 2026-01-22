@@ -1,100 +1,51 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/server";
 
-type Part = {
-  id: number;
-  title: string;
-  price: number;
-  image: string | null;
-  created_at: string;
-};
+export const dynamic = "force-dynamic";
 
-export default function BrowsePage() {
-  const [parts, setParts] = useState<Part[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchParts = async () => {
-      const { data, error } = await supabase
-        .from("parts")
-        .select("id, title, price, image, created_at")
-        .order("created_at", { ascending: false });
-
-      if (!error && data) {
-        setParts(data);
-      }
-
-      setLoading(false);
-    };
-
-    fetchParts();
-  }, []);
-
-  if (loading) {
-    return <p style={{ padding: 40 }}>Loading parts…</p>;
-  }
+export default async function BrowsePage() {
+  const { data: parts } = await supabase
+    .from("parts")
+    .select("id, title, price, image_url")
+    .order("created_at", { ascending: false });
 
   return (
-    <main style={{ padding: 40 }}>
-      <h1 style={{ marginBottom: 24 }}>Browse Parts</h1>
+    <main className="max-w-6xl mx-auto px-4 py-10">
+      <h1 className="text-2xl font-bold mb-6">Browse Parts</h1>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-          gap: 20,
-        }}
-      >
-        {parts.map((part) => (
+      {!parts || parts.length === 0 && (
+        <p className="text-gray-500">No parts listed yet.</p>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {parts?.map((part) => (
           <Link
             key={part.id}
             href={`/parts/${part.id}`}
-            style={{
-              textDecoration: "none",
-              color: "inherit",
-            }}
+            className="border rounded-xl overflow-hidden bg-white hover:shadow-lg transition"
           >
-            <div
-              style={{
-                background: "#fff",
-                borderRadius: 16,
-                overflow: "hidden",
-                boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-                transition: "transform 0.15s ease",
-              }}
-            >
-              {part.image ? (
+            <div className="h-48 bg-gray-100">
+              {part.image_url ? (
                 <img
-                  src={part.image}
+                  src={part.image_url}
                   alt={part.title}
-                  style={{
-                    width: "100%",
-                    height: 180,
-                    objectFit: "cover",
-                  }}
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <div
-                  style={{
-                    height: 180,
-                    background: "#e5e7eb",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#6b7280",
-                  }}
-                >
+                <div className="flex items-center justify-center h-full text-gray-400">
                   No Image
                 </div>
               )}
+            </div>
 
-              <div style={{ padding: 16 }}>
-                <h3 style={{ marginBottom: 8 }}>{part.title}</h3>
-                <p style={{ fontWeight: 600 }}>${part.price}</p>
-              </div>
+            <div className="p-4">
+              <h3 className="font-semibold text-lg truncate">
+                {part.title}
+              </h3>
+
+              <p className="text-green-600 font-bold mt-1">
+                ${part.price}
+              </p>
             </div>
           </Link>
         ))}
