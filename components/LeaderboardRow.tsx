@@ -1,33 +1,35 @@
 import Link from "next/link";
-import TrustScore from "@/components/TrustScore";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
-export default function LeaderboardRow({
-  rank,
-  seller,
-}: {
-  rank: number;
-  seller: any;
-}) {
+type LeaderboardRowProps = {
+  seller: {
+    id: string;
+    username: string;
+    verified: boolean;
+    sales: number;
+    rating: number;
+  };
+};
+
+export default function LeaderboardRow({ seller }: LeaderboardRowProps) {
   return (
     <tr>
-      <td>#{rank}</td>
-
-      <td>
-        <Link
-          href={`/seller/${seller.id}`}
-          style={{ fontWeight: 600, color: "#2563eb" }}
-        >
+      <td style={{ padding: 12 }}>
+        <Link href={`/seller/${seller.id}`}>
           {seller.username}
         </Link>
-        {seller.verified && <VerifiedBadge />}
+
+        {/* ✅ ALWAYS pass verified */}
+        <VerifiedBadge verified={seller.verified} />
       </td>
 
-      <td>
-        <TrustScore score={seller.trust} />
+      <td style={{ padding: 12 }}>
+        {seller.sales}
       </td>
 
-      <td>{seller.sales}</td>
+      <td style={{ padding: 12 }}>
+        ⭐ {seller.rating.toFixed(1)}
+      </td>
     </tr>
   );
 }
