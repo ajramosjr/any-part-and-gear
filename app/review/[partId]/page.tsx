@@ -1,34 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function SubmitReviewPage() {
-  const { partId } = useParams();
+export default function ReviewPage() {
+  const params = useParams();
   const router = useRouter();
+  const partId = params.partId as string;
 
+  const [part, setPart] = useState<any | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      setUser(user);
+
+      const { data: partData } = await supabase
+        .from("parts")
+        .select("*")
+        .eq("id", partId)
+        .single();
+
+      if (!partData) {
+        router.push("/");
+        return;
+      }
+
+      setPart(partData);
+      setLoading(false);
+    };
+
+    loadData();
+  }, [partId, router]);
 
   const submitReview = async () => {
-    setError("");
+    if (!part || !user) return;
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    setSubmitting(true);
 
-    if (!user) return;
-
-    // Get part seller
-    const { data: part } = await supabase
-      .from("parts")
-      .select("user_id")
-      .eq("id", partId)
-      .single();
-
-    const res = await fetch("/api/reviews", {
+    await fetch("/api/reviews", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -40,45 +64,60 @@ export default function SubmitReviewPage() {
       }),
     });
 
-    const json = await res.json();
-
-    if (!res.ok) {
-      setError(json.error);
-    } else {
-      router.push(`/seller/${part.user_id}`);
-    }
+    router.push(`/parts/${partId}`);
   };
 
+  if (loading) {
+    return <p style={{ padding: 40 }}>Loading review form…</p>;
+  }
+
   return (
-    <main style={{ padding: 40, maxWidth: 500 }}>
+    <main style={{ padding: 40, maxWidth: 600 }}>
       <h1>Leave a Review</h1>
 
-      <label>Rating</label>
-      <select
-        value={rating}
-        onChange={(e) => setRating(Number(e.target.value))}
+      <p style={{ color: "#555" }}>
+        Reviewing: <strong>{part.title}</strong>
+      </p>
+
+      <label style={{ display: "block", marginTop: 20 }}>
+        Rating
+        <select
+          value={rating}
+          onChange={(e) => setRating(Number(e.target.value))}
+          style={{ display: "block", marginTop: 6 }}
+        >
+          {[5, 4, 3, 2, 1].map((r) => (
+            <option key={r} value={r}>
+              {r} Stars
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label style={{ display: "block", marginTop: 20 }}>
+        Comment
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          rows={4}
+          style={{ display: "block", width: "100%", marginTop: 6 }}
+        />
+      </label>
+
+      <button
+        onClick={submitReview}
+        disabled={submitting}
+        style={{
+          marginTop: 24,
+          padding: "12px 16px",
+          background: "#0f172a",
+          color: "#fff",
+          borderRadius: 8,
+          border: "none",
+        }}
       >
-        {[5, 4, 3, 2, 1].map((n) => (
-          <option key={n}>{n}</option>
-        ))}
-      </select>
-
-      <br /><br />
-
-      <textarea
-        placeholder="Write your experience..."
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        style={{ width: "100%", height: 120 }}
-      />
-
-      <br /><br />
-
-      <button onClick={submitReview}>Submit Review</button>
-
-      {error && (
-        <p style={{ color: "red", marginTop: 12 }}>{error}</p>
-      )}
+        {submitting ? "Submitting…" : "Submit Review"}
+      </button>
     </main>
   );
 }
