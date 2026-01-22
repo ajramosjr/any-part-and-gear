@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+type Part = {
+  id: string;
+  platform: string;
+  category: string;
+  title: string;
+  description: string;
+  price: number;
+  trade_available: boolean;
+};
 
-const PLATFORMS = ["All", "Automotive", "Marine", "RC", "Universal"];
 const CATEGORIES = [
   "All",
   "Brakes",
@@ -18,130 +22,99 @@ const CATEGORIES = [
   "Electrical",
   "Body",
   "Interior",
+  "Drivetrain",
   "Other",
 ];
 
-export default function PartsMarketplacePage() {
-  const [parts, setParts] = useState<any[]>([]);
-  const [platform, setPlatform] = useState("All");
-  const [category, setCategory] = useState("All");
+export default function PartsPage() {
+  const supabase = createClient();
+
+  const [parts, setParts] = useState<Part[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchParts = async () => {
+      setLoading(true);
+
+      let query = supabase
+        .from("parts")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (selectedCategory !== "All") {
+        query = query.eq("category", selectedCategory);
+      }
+
+      const { data, error } = await query;
+
+      if (!error && data) {
+        setParts(data);
+      }
+
+      setLoading(false);
+    };
+
     fetchParts();
-  }, [platform, category]);
-
-  async function fetchParts() {
-    setLoading(true);
-
-    let query = supabase
-      .from("parts")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (platform !== "All") {
-      query = query.eq("platform", platform);
-    }
-
-    if (category !== "All") {
-      query = query.eq("category", category);
-    }
-
-    const { data, error } = await query;
-
-    if (!error) {
-      setParts(data || []);
-    }
-
-    setLoading(false);
-  }
+  }, [selectedCategory, supabase]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* HEADER */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">
-          Parts Marketplace
-        </h1>
-        <p className="text-gray-400">
-          Buy, sell, or trade parts across all platforms
-        </p>
+    <main className="max-w-6xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Marketplace Parts</h1>
+        <Link
+          href="/parts/new"
+          className="bg-black text-white px-4 py-2 rounded"
+        >
+          Post a Part
+        </Link>
       </div>
 
-      {/* PLATFORM FILTER */}
-      <div className="mb-6">
-        <h2 className="text-sm text-gray-400 mb-2">Platform</h2>
-        <div className="flex flex-wrap gap-2">
-          {PLATFORMS.map((p) => (
-            <button
-              key={p}
-              onClick={() => setPlatform(p)}
-              className={`px-4 py-2 rounded-full text-sm transition ${
-                platform === p
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* CATEGORY FILTER */}
-      <div className="mb-8">
-        <h2 className="text-sm text-gray-400 mb-2">Category</h2>
-        <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCategory(c)}
-              className={`px-4 py-2 rounded-full text-sm transition ${
-                category === c
-                  ? "bg-amber-500 text-black"
-                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+      {/* CATEGORY FILTERS */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-3 py-1 rounded border ${
+              selectedCategory === cat
+                ? "bg-black text-white"
+                : "bg-white text-black"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
 
       {/* PARTS GRID */}
       {loading ? (
-        <p className="text-gray-400">Loading parts...</p>
+        <p>Loading parts...</p>
       ) : parts.length === 0 ? (
-        <p className="text-gray-400">No parts found.</p>
+        <p>No parts found.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {parts.map((part) => (
             <Link
               key={part.id}
               href={`/parts/${part.id}`}
-              className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-blue-500 transition"
+              className="border rounded p-4 hover:shadow"
             >
-              <div className="mb-2">
-                <h3 className="text-lg font-semibold text-white">
-                  {part.title}
-                </h3>
-                <p className="text-sm text-gray-400">
-                  {part.platform} • {part.category}
-                </p>
+              <div className="text-sm text-gray-500 mb-1">
+                {part.platform} · {part.category}
               </div>
 
-              <p className="text-gray-300 text-sm line-clamp-2 mb-3">
+              <h2 className="font-semibold">{part.title}</h2>
+
+              <p className="text-sm text-gray-600 line-clamp-2 mt-1">
                 {part.description}
               </p>
 
-              <div className="flex justify-between items-center">
-                <span className="text-white font-bold">
-                  ${part.price}
-                </span>
-
+              <div className="flex justify-between items-center mt-3">
+                <span className="font-bold">${part.price}</span>
                 {part.trade_available && (
-                  <span className="text-xs bg-green-600 text-white px-2 py-1 rounded">
-                    Trade
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                    Trade OK
                   </span>
                 )}
               </div>
@@ -149,6 +122,6 @@ export default function PartsMarketplacePage() {
           ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }
