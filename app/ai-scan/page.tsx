@@ -7,32 +7,60 @@ export default function AiScanPage() {
   const [image, setImage] = useState<File | null>(null);
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  
-    const runScan = async () => {
-  if (!image) return;
-  setLoading(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Upload image to Supabase storage first
-  const { data } = await supabase.storage
-    .from("vehicle-images")
-    .upload(`scan-${Date.now()}.jpg`, image);
+  const runScan = async () => {
+    if (!image) return;
 
-  const imageUrl = supabase.storage
-    .from("vehicle-images")
-    .getPublicUrl(data!.path).data.publicUrl;
+    try {
+      setLoading(true);
+      setError(null);
 
-  const res = await fetch("/api/ai/scan", {
-    method: "POST",
-    body: JSON.stringify({
-      imageUrl,
-      userId: (await supabase.auth.getUser()).data.user?.id,
-    }),
-  });
+      const fileName = `scan-${Date.now()}.jpg`;
 
-  const result = await res.json();
-  setResult(result);
-  setLoading(false);
-};
+      // 1️⃣ Upload image
+      const { data, error: uploadError } = await supabase.storage
+        .from("vehicle-images")
+        .upload(fileName, image);
+
+      if (uploadError || !data) {
+        throw new Error("Image upload failed");
+      }
+
+      // 2️⃣ Get public URL
+      const imageUrl = supabase.storage
+        .from("vehicle-images")
+        .getPublicUrl(data.path).data.publicUrl;
+
+      // 3️⃣ Get user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      // 4️⃣ Call AI scan API
+      const res = await fetch("/api/ai/scan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imageUrl,
+          userId: user?.id ?? null,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("AI scan failed");
+      }
+
+      const scanResult = await res.json();
+      setResult(scanResult);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main style={{ padding: 40, maxWidth: 700 }}>
@@ -48,6 +76,8 @@ export default function AiScanPage() {
         onChange={(e) => setImage(e.target.files?.[0] || null)}
       />
 
+      <br />
+
       <button
         onClick={runScan}
         disabled={loading}
@@ -58,10 +88,17 @@ export default function AiScanPage() {
           background: "#0f172a",
           color: "#fff",
           border: "none",
+          cursor: "pointer",
         }}
       >
         {loading ? "Scanning…" : "Scan Vehicle"}
       </button>
+
+      {error && (
+        <p style={{ marginTop: 16, color: "red" }}>
+          {error}
+        </p>
+      )}
 
       {result && (
         <div
@@ -74,14 +111,18 @@ export default function AiScanPage() {
           }}
         >
           <h3>Scan Result</h3>
+
           <p><strong>Make:</strong> {result.make}</p>
           <p><strong>Model:</strong> {result.model}</p>
           <p><strong>Year:</strong> {result.year}</p>
-          <p><strong>Confidence:</strong> {(result.confidence * 100).toFixed(0)}%</p>
+          <p>
+            <strong>Confidence:</strong>{" "}
+            {(result.confidence * 100).toFixed(0)}%
+          </p>
 
           <h4 style={{ marginTop: 16 }}>Maintenance Tips</h4>
           <ul>
-            {result.tips.map((t: string, i: number) => (
+            {result.tips?.map((t: string, i: number) => (
               <li key={i}>{t}</li>
             ))}
           </ul>
@@ -94,6 +135,7 @@ export default function AiScanPage() {
               padding: "10px 14px",
               borderRadius: 8,
               border: "none",
+              cursor: "pointer",
             }}
           >
             Unlock Full Report ($2)
