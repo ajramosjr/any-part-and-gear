@@ -1,65 +1,68 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { getSellerTier } from "@/lib/getSellerTier";
-import { isVerifiedSeller } from "@/lib/isVerifiedSeller";
-import { getTrustScore } from "@/lib/getTrustScore";
 import SellerBadge from "@/components/SellerBadge";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import TrustScore from "@/components/TrustScore";
+import { getSellerTier } from "@/lib/getSellerTier";
+import { isVerifiedSeller } from "@/lib/isVerifiedSeller";
+import { getTrustScore } from "@/lib/getTrustScore";
 
-export default function PartPage() {
-  const { id } = useParams();
-  const [part, setPart] = useState<any>(null);
-  const [tier, setTier] =
-    useState<"Bronze" | "Silver" | "Gold">("Bronze");
-  const [verified, setVerified] = useState(false);
-  const [trust, setTrust] = useState(0);
+type PartPageProps = {
+  params: {
+    id: string;
+  };
+};
 
-  useEffect(() => {
-    if (!id) return;
+export default async function PartPage({ params }: PartPageProps) {
+  const partId = params.id;
 
-    const load = async () => {
-      const { data } = await supabase
-        .from("parts")
-        .select("*")
-        .eq("id", id)
-        .single();
+  const { data: part } = await supabase
+    .from("parts")
+    .select("*")
+    .eq("id", partId)
+    .single();
 
-      setPart(data);
+  if (!part) {
+    return <p style={{ padding: 40 }}>Part not found.</p>;
+  }
 
-      setTier(await getSellerTier(data.user_id));
-      setVerified(await isVerifiedSeller(data.user_id));
-      setTrust(await getTrustScore(data.user_id));
-    };
+  const sellerId = part.seller_id;
 
-    load();
-  }, [id]);
-
-  if (!part) return <p style={{ padding: 40 }}>Loading…</p>;
+  const tier = await getSellerTier(sellerId);
+  const verified = await isVerifiedSeller(sellerId);
+  const trust = await getTrustScore(sellerId);
 
   return (
-    <main style={{ padding: 40, maxWidth: 700 }}>
+    <main style={{ padding: 40, maxWidth: 900 }}>
       <h1>{part.title}</h1>
 
-      <p style={{ marginTop: 6 }}>
-        Seller:{" "}
-        <Link
-          href={`/seller/${part.user_id}`}
-          style={{ fontWeight: 600, color: "#2563eb" }}
-        >
-          View profile
-        </Link>
+      <p style={{ color: "#555", marginTop: 6 }}>{part.description}</p>
 
+      <p style={{ marginTop: 12, fontWeight: 600 }}>
+        Price: ${part.price}
+      </p>
+
+      <hr style={{ margin: "24px 0" }} />
+
+      <h3>Seller Info</h3>
+
+      <p style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <SellerBadge tier={tier} />
-        {verified && <VerifiedBadge />}
+        <VerifiedBadge verified={verified} />
         <TrustScore score={trust} />
       </p>
 
-      <p style={{ marginTop: 20 }}>{part.description}</p>
+      <button
+        style={{
+          marginTop: 24,
+          padding: "12px 18px",
+          background: "#0f172a",
+          color: "#fff",
+          borderRadius: 10,
+          border: "none",
+        }}
+      >
+        Message Seller
+      </button>
     </main>
   );
 }
