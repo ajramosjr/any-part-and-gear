@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getSellerRating } from "@/lib/getSellerRating";
+import { isVerifiedSeller } from "@/lib/isVerifiedSeller";
 
 type Review = {
   rating: number;
@@ -17,13 +18,13 @@ export default function SellerProfilePage() {
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [rating, setRating] = useState<number>(0);
+  const [verified, setVerified] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!sellerId) return;
 
     const loadSeller = async () => {
-      // Reviews
       const { data: reviewData } = await supabase
         .from("seller_reviews")
         .select("rating, comment, created_at")
@@ -32,9 +33,11 @@ export default function SellerProfilePage() {
 
       setReviews(reviewData || []);
 
-      // ⭐ Average rating
       const avgRating = await getSellerRating(sellerId);
       setRating(avgRating);
+
+      const isVerified = await isVerifiedSeller(sellerId);
+      setVerified(isVerified);
 
       setLoading(false);
     };
@@ -50,12 +53,32 @@ export default function SellerProfilePage() {
     <main style={{ padding: 40, maxWidth: 800 }}>
       <h1>Seller Profile</h1>
 
-      {/* ⭐ RATING */}
-      <p style={{ marginTop: 8, fontSize: 18, fontWeight: 700 }}>
+      {/* ⭐ Rating */}
+      <p style={{ marginTop: 6, fontSize: 18, fontWeight: 700 }}>
         ⭐ {rating > 0 ? rating : "No ratings yet"}
       </p>
 
-      {/* REVIEWS */}
+      {/* ✅ Verified Badge */}
+      {verified && (
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            marginTop: 8,
+            padding: "6px 12px",
+            borderRadius: 999,
+            background: "#ecfeff",
+            color: "#0369a1",
+            fontWeight: 700,
+            fontSize: 14,
+          }}
+        >
+          ✔ Verified Seller
+        </div>
+      )}
+
+      {/* Reviews */}
       <h3 style={{ marginTop: 32 }}>Reviews</h3>
 
       {reviews.length === 0 && <p>No reviews yet.</p>}
