@@ -1,68 +1,96 @@
-import { supabase } from "@/lib/supabaseClient";
-import SellerBadge from "@/components/SellerBadge";
-import VerifiedBadge from "@/components/VerifiedBadge";
-import TrustScore from "@/components/TrustScore";
-import { getSellerTier } from "@/lib/getSellerTier";
-import { isVerifiedSeller } from "@/lib/isVerifiedSeller";
-import { getTrustScore } from "@/lib/getTrustScore";
+import { supabase } from "@/lib/supabase/server";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
-type PartPageProps = {
+interface PartPageProps {
   params: {
     id: string;
   };
-};
+}
 
 export default async function PartPage({ params }: PartPageProps) {
-  const partId = params.id;
-
-  const { data: part } = await supabase
+  const { data: part, error } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", partId)
+    .eq("id", params.id)
     .single();
 
-  if (!part) {
-    return <p style={{ padding: 40 }}>Part not found.</p>;
+  if (error || !part) {
+    notFound();
   }
 
-  const sellerId = part.seller_id;
-
-  const tier = await getSellerTier(sellerId);
-  const verified = await isVerifiedSeller(sellerId);
-  const trust = await getTrustScore(sellerId);
-
   return (
-    <main style={{ padding: 40, maxWidth: 900 }}>
-      <h1>{part.title}</h1>
-
-      <p style={{ color: "#555", marginTop: 6 }}>{part.description}</p>
-
-      <p style={{ marginTop: 12, fontWeight: 600 }}>
-        Price: ${part.price}
-      </p>
-
-      <hr style={{ margin: "24px 0" }} />
-
-      <h3>Seller Info</h3>
-
-      <p style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <SellerBadge tier={tier} />
-        <VerifiedBadge verified={verified} />
-        <TrustScore score={trust} />
-      </p>
-
-      <button
-        style={{
-          marginTop: 24,
-          padding: "12px 18px",
-          background: "#0f172a",
-          color: "#fff",
-          borderRadius: 10,
-          border: "none",
-        }}
+    <main className="max-w-4xl mx-auto px-4 py-10">
+      <Link
+        href="/browse"
+        className="text-sm text-blue-600 hover:underline"
       >
-        Message Seller
-      </button>
+        ← Back to Browse
+      </Link>
+
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
+        {/* Image */}
+        <div className="bg-gray-100 rounded-lg overflow-hidden">
+          {part.image_url ? (
+            <img
+              src={part.image_url}
+              alt={part.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-64 text-gray-500">
+              No Image
+            </div>
+          )}
+        </div>
+
+        {/* Details */}
+        <div>
+          <h1 className="text-2xl font-bold mb-2">
+            {part.title}
+          </h1>
+
+          <p className="text-xl font-semibold text-green-600 mb-4">
+            ${part.price}
+          </p>
+
+          {part.description && (
+            <p className="text-gray-700 mb-4">
+              {part.description}
+            </p>
+          )}
+
+          <div className="space-y-2 text-sm text-gray-600">
+            {part.condition && (
+              <p>
+                <strong>Condition:</strong> {part.condition}
+              </p>
+            )}
+
+            {part.category && (
+              <p>
+                <strong>Category:</strong> {part.category}
+              </p>
+            )}
+
+            {part.created_at && (
+              <p>
+                <strong>Listed:</strong>{" "}
+                {new Date(part.created_at).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+
+          <div className="mt-6">
+            <button
+              disabled
+              className="w-full bg-gray-300 text-gray-600 py-3 rounded-lg cursor-not-allowed"
+            >
+              Purchase (Coming Soon)
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
