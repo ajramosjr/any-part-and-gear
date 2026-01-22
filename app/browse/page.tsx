@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 
@@ -32,17 +32,30 @@ export default function BrowsePage() {
 
   useEffect(() => {
     const fetchParts = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("parts")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (data) setParts(data);
+      if (!error && data) setParts(data);
       setLoading(false);
     };
 
     fetchParts();
   }, []);
+
+  // 🔢 CATEGORY COUNTS
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+
+    parts.forEach((part) => {
+      const category = part.category || "Other";
+      counts[category] = (counts[category] || 0) + 1;
+    });
+
+    counts["All"] = parts.length;
+    return counts;
+  }, [parts]);
 
   const filteredParts =
     activeCategory === "All"
@@ -69,7 +82,10 @@ export default function BrowsePage() {
                   : "bg-white text-black hover:bg-gray-100"
               }`}
           >
-            {category}
+            {category}{" "}
+            <span className="opacity-70">
+              ({categoryCounts[category] || 0})
+            </span>
           </button>
         ))}
       </div>
