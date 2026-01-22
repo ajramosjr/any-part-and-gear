@@ -5,12 +5,16 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { getSellerTier } from "@/lib/getSellerTier";
+import { isVerifiedSeller } from "@/lib/isVerifiedSeller";
 import SellerBadge from "@/components/SellerBadge";
+import VerifiedBadge from "@/components/VerifiedBadge";
 
 export default function PartPage() {
   const { id } = useParams();
   const [part, setPart] = useState<any>(null);
-  const [tier, setTier] = useState<"Bronze" | "Silver" | "Gold">("Bronze");
+  const [tier, setTier] =
+    useState<"Bronze" | "Silver" | "Gold">("Bronze");
+  const [verified, setVerified] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -26,6 +30,9 @@ export default function PartPage() {
 
       const sellerTier = await getSellerTier(data.user_id);
       setTier(sellerTier);
+
+      const isVerified = await isVerifiedSeller(data.user_id);
+      setVerified(isVerified);
     };
 
     load();
@@ -45,7 +52,9 @@ export default function PartPage() {
         >
           View profile
         </Link>
+
         <SellerBadge tier={tier} />
+        {verified && <VerifiedBadge />}
       </p>
 
       <p style={{ marginTop: 20 }}>{part.description}</p>
