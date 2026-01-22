@@ -51,7 +51,8 @@ export async function POST(req: Request) {
       year: data.year,
       confidence: data.confidence,
     });
-
+await supabase.rpc("decrement_ai_credit", { uid: userId });
+    
     return NextResponse.json(data);
   } catch (err) {
     console.error(err);
