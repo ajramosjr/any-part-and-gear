@@ -4,17 +4,21 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import RequireAuth from "@/components/RequireAuth";
+import { isVerifiedSeller } from "@/lib/isVerifiedSeller";
+import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Message = {
   id: string;
   content: string;
   created_at: string;
   part_id: string;
+  sender_id: string;
   type: string;
 };
 
 export default function InboxPage() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [verifiedMap, setVerifiedMap] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,11 +31,25 @@ export default function InboxPage() {
 
       const { data } = await supabase
         .from("messages")
-        .select("id, content, created_at, part_id, type")
+        .select(
+          "id, content, created_at, part_id, sender_id, type"
+        )
         .eq("receiver_id", user.id)
         .order("created_at", { ascending: false });
 
       setMessages(data || []);
+
+      // check verified sellers
+      const map: Record<string, boolean> = {};
+      for (const msg of data || []) {
+        if (!map[msg.sender_id]) {
+          map[msg.sender_id] = await isVerifiedSeller(
+            msg.sender_id
+          );
+        }
+      }
+
+      setVerifiedMap(map);
       setLoading(false);
     };
 
@@ -60,6 +78,14 @@ export default function InboxPage() {
               boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             }}
           >
+            {/* Seller line */}
+            <p style={{ fontWeight: 600, marginBottom: 6 }}>
+              Seller
+              {verifiedMap[msg.sender_id] && (
+                <VerifiedBadge />
+              )}
+            </p>
+
             <p>{msg.content}</p>
 
             {msg.type === "review_request" && (
