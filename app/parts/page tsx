@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 type Part = {
   id: string;
@@ -27,8 +27,6 @@ const categories = [
 ];
 
 export default function PartsPage() {
-  const supabase = createClient();
-
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
@@ -53,8 +51,10 @@ export default function PartsPage() {
 
       const { data, error } = await query;
 
-      if (!error && data) {
-        setParts(data);
+      if (error) {
+        console.error("Error loading parts:", error);
+      } else {
+        setParts(data || []);
       }
 
       setLoading(false);
@@ -96,7 +96,7 @@ export default function PartsPage() {
           ))}
         </div>
 
-        {/* Trade Toggle */}
+        {/* Trade-only toggle */}
         <label className="flex items-center gap-2 ml-auto cursor-pointer">
           <input
             type="checkbox"
