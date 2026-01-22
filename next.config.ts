@@ -1,14 +1,9 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
+import type { NextConfig } from "next";
 
-  // IMPORTANT:
-  // Do NOT use `output: "export"`
-  // This app requires server rendering (Stripe, Supabase, API routes)
-
+const nextConfig: NextConfig = {
   experimental: {
-    serverActions: true
-  }
+    // serverActions removed
+  },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
