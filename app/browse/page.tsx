@@ -33,6 +33,7 @@ export default function BrowsePage() {
   const categoryFromUrl = searchParams.get("category") || "All";
 
   const [parts, setParts] = useState<Part[]>([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function BrowsePage() {
     fetchParts();
   }, []);
 
-  // 🔢 Category counts
+  // 🔢 Category counts (ignores search)
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
 
@@ -62,13 +63,19 @@ export default function BrowsePage() {
     return counts;
   }, [parts]);
 
-  // 🎯 Filter by URL category
-  const filteredParts =
-    categoryFromUrl === "All"
-      ? parts
-      : parts.filter(
-          (part) => (part.category || "Other") === categoryFromUrl
-        );
+  // 🎯 Filter by category + search
+  const filteredParts = useMemo(() => {
+    return parts.filter((part) => {
+      const matchesCategory =
+        categoryFromUrl === "All" ||
+        (part.category || "Other") === categoryFromUrl;
+
+      const matchesSearch =
+        part.title.toLowerCase().includes(search.toLowerCase());
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [parts, categoryFromUrl, search]);
 
   const setCategory = (category: string) => {
     if (category === "All") {
@@ -81,6 +88,15 @@ export default function BrowsePage() {
   return (
     <main className="max-w-7xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Browse Parts</h1>
+
+      {/* SEARCH INPUT */}
+      <input
+        type="text"
+        placeholder="Search parts (brake pad, alternator, bumper...)"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full max-w-md mb-6 px-4 py-2 border rounded-lg"
+      />
 
       {/* CATEGORY FILTER BUTTONS */}
       <div className="flex flex-wrap gap-3 mb-8">
@@ -111,7 +127,7 @@ export default function BrowsePage() {
       {loading ? (
         <p>Loading parts...</p>
       ) : filteredParts.length === 0 ? (
-        <p>No parts found in this category.</p>
+        <p>No parts match your search.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {filteredParts.map((part) => (
