@@ -6,17 +6,15 @@ import { createClient } from "@/lib/supabase/client";
 
 type Part = {
   id: string;
+  title: string;
+  price: number;
   platform: string;
   category: string;
-  title: string;
-  description: string;
-  price: number;
   trade_available: boolean;
+  image_url: string | null;
 };
 
-const PLATFORMS = ["All", "Automotive", "Marine", "RC", "Universal"];
-
-const CATEGORIES = [
+const categories = [
   "All",
   "Brakes",
   "Engine",
@@ -32,10 +30,8 @@ export default function PartsPage() {
   const supabase = createClient();
 
   const [parts, setParts] = useState<Part[]>([]);
-  const [selectedPlatform, setSelectedPlatform] = useState("All");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState("All");
 
   useEffect(() => {
     const fetchParts = async () => {
@@ -46,18 +42,8 @@ export default function PartsPage() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (selectedPlatform !== "All") {
-        query = query.eq("platform", selectedPlatform);
-      }
-
-      if (selectedCategory !== "All") {
-        query = query.eq("category", selectedCategory);
-      }
-
-      if (search.trim() !== "") {
-        query = query.or(
-          `title.ilike.%${search}%,description.ilike.%${search}%`
-        );
+      if (activeCategory !== "All") {
+        query = query.eq("category", activeCategory);
       }
 
       const { data, error } = await query;
@@ -70,13 +56,13 @@ export default function PartsPage() {
     };
 
     fetchParts();
-  }, [selectedPlatform, selectedCategory, search, supabase]);
+  }, [activeCategory]);
 
   return (
-    <main className="max-w-6xl mx-auto p-6">
-      {/* HEADER */}
+    <main className="max-w-7xl mx-auto px-4 py-6">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Marketplace Parts</h1>
+        <h1 className="text-2xl font-bold">Marketplace</h1>
         <Link
           href="/parts/new"
           className="bg-black text-white px-4 py-2 rounded"
@@ -85,85 +71,56 @@ export default function PartsPage() {
         </Link>
       </div>
 
-      {/* SEARCH */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Search parts (brake pads, propeller, RC motor...)"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full border rounded px-4 py-2"
-        />
+      {/* Category Filters */}
+      <div className="flex gap-2 overflow-x-auto mb-6">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`px-4 py-2 rounded-full border whitespace-nowrap ${
+              activeCategory === cat
+                ? "bg-black text-white"
+                : "bg-white text-black"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
 
-      {/* PLATFORM FILTER */}
-      <div className="mb-4">
-        <h2 className="text-sm font-semibold mb-2">Platform</h2>
-        <div className="flex flex-wrap gap-2">
-          {PLATFORMS.map((platform) => (
-            <button
-              key={platform}
-              onClick={() => setSelectedPlatform(platform)}
-              className={`px-3 py-1 rounded border ${
-                selectedPlatform === platform
-                  ? "bg-black text-white"
-                  : "bg-white text-black"
-              }`}
-            >
-              {platform}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* CATEGORY FILTER */}
-      <div className="mb-6">
-        <h2 className="text-sm font-semibold mb-2">Category</h2>
-        <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1 rounded border ${
-                selectedCategory === cat
-                  ? "bg-black text-white"
-                  : "bg-white text-black"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* RESULTS */}
+      {/* Content */}
       {loading ? (
         <p>Loading parts...</p>
       ) : parts.length === 0 ? (
         <p>No parts found.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {parts.map((part) => (
             <Link
               key={part.id}
               href={`/parts/${part.id}`}
-              className="border rounded p-4 hover:shadow transition"
+              className="border rounded-lg p-3 hover:shadow transition"
             >
-              <div className="text-xs text-gray-500 mb-1">
-                {part.platform} · {part.category}
-              </div>
+              {part.image_url && (
+                <img
+                  src={part.image_url}
+                  alt={part.title}
+                  className="w-full h-40 object-cover rounded mb-3"
+                />
+              )}
 
               <h2 className="font-semibold">{part.title}</h2>
 
-              <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-                {part.description}
+              <p className="text-sm text-gray-500">
+                {part.platform} · {part.category}
               </p>
 
-              <div className="flex justify-between items-center mt-3">
+              <div className="flex justify-between items-center mt-2">
                 <span className="font-bold">${part.price}</span>
+
                 {part.trade_available && (
-                  <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                    Trade OK
+                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                    Trade
                   </span>
                 )}
               </div>
