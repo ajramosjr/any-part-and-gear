@@ -2,50 +2,114 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient"; // ✅ correct
+import { createClient } from "@/lib/supabaseClient";
+
+type Listing = {
+  id: number;
+  title: string;
+  description: string;
+  price: number | null;
+};
 
 export default function EditListing() {
+  const supabase = createClient();
   const router = useRouter();
-  const { id } = useParams();
+  const params = useParams();
 
-  const [title, setTitle] = useState("");
+  const id = Number(params.id);
+
+  const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPart = async () => {
-      const { data } = await supabase
+    if (isNaN(id)) return;
+
+    const fetchListing = async () => {
+      const { data, error } = await supabase
         .from("parts")
-        .select("title")
+        .select("id, title, description, price")
         .eq("id", id)
         .single();
 
-      if (data) setTitle(data.title);
+      if (error) {
+        console.error(error);
+        router.push("/my-listings");
+        return;
+      }
+
+      setListing(data);
       setLoading(false);
     };
 
-    fetchPart();
-  }, [id]);
+    fetchListing();
+  }, [id, router, supabase]);
 
-  async function updatePart() {
-    await supabase.from("parts").update({ title }).eq("id", id);
-    alert("Updated!");
+  const updateListing = async () => {
+    if (!listing) return;
+
+    const { error } = await supabase
+      .from("parts")
+      .update({
+        title: listing.title,
+        description: listing.description,
+        price: listing.price,
+      })
+      .eq("id", listing.id);
+
+    if (!error) {
+      router.push("/my-listings");
+    }
+  };
+
+  if (loading) {
+    return <p className="p-6">Loading…</p>;
   }
 
-  async function deletePart() {
-    if (!confirm("Delete this listing?")) return;
-
-    await supabase.from("parts").delete().eq("id", id);
-    router.push("/my-listings");
+  if (!listing) {
+    return <p className="p-6">Listing not found.</p>;
   }
-
-  if (loading) return <p>Loading…</p>;
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1>Edit Listing</h1>
-      <input value={title} onChange={(e) => setTitle(e.target.value)} />
-      <button onClick={updatePart}>Save</button>
-      <button onClick={deletePart}>Delete</button>
-    </div>
+    <main className="max-w-xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Edit Listing</h1>
+
+      <input
+        className="w-full border p-2 mb-3"
+        value={listing.title}
+        onChange={(e) =>
+          setListing({ ...listing, title: e.target.value })
+        }
+      />
+
+      <textarea
+        className="w-full border p-2 mb-3"
+        rows={5}
+        value={listing.description}
+        onChange={(e) =>
+          setListing({ ...listing, description: e.target.value })
+        }
+      />
+
+      <input
+        type="number"
+        className="w-full border p-2 mb-4"
+        value={listing.price ?? ""}
+        onChange={(e) =>
+          setListing({
+            ...listing,
+            price: e.target.value
+              ? Number(e.target.value)
+              : null,
+          })
+        }
+      />
+
+      <button
+        onClick={updateListing}
+        className="bg-black text-white px-4 py-2 rounded"
+      >
+        Save Changes
+      </button>
+    </main>
   );
 }
