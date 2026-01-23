@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import TradeRequestForm from "@/components/TradeRequestForm";
 
 type Profile = {
