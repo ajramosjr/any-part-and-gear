@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createServerClient } from "@/lib/supabaseServer";
+import { createServerClient } from "@supabase/ssr";
 import TradeRequestForm from "@/components/TradeRequestForm";
 
 interface PartPageProps {
