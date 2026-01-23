@@ -2,27 +2,36 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 export default function RequireAuth({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = createClient();
   const router = useRouter();
-  const [authorized, setAuthorized] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
-        router.replace("/login");
-      } else {
-        setAuthorized(true);
-      }
-    });
-  }, [router]);
+    const checkAuth = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-  if (!authorized) return null; // no flicker
+      if (!user) {
+        router.push("/login");
+      } else {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  if (loading) {
+    return <p className="p-6">Checking authentication…</p>;
+  }
 
   return <>{children}</>;
 }
