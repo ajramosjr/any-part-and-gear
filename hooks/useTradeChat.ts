@@ -14,7 +14,17 @@ export type TradeMessage = {
 export function useTradeChat(tradeRequestId: string) {
   const [messages, setMessages] = useState<TradeMessage[]>([]);
   const [loading, setLoading] = useState(true);
-
+export async function sendTradeMessage(
+  tradeRequestId: string,
+  senderId: string,
+  message: string
+) {
+  return supabase.from("trade_messages").insert({
+    trade_request_id: tradeRequestId,
+    sender_id: senderId,
+    message,
+  });
+}
   useEffect(() => {
     if (!tradeRequestId) return;
 
