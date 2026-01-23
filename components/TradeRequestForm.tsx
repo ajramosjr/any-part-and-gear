@@ -13,56 +13,49 @@ export default function TradeRequestForm({
   receiverId,
 }: TradeRequestFormProps) {
   const supabase = createClient();
+
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
-  const submitTrade = async () => {
-    setLoading(true);
-
+  const submitRequest = async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      alert("You must be logged in");
-      setLoading(false);
+      alert("You must be logged in to send a trade request");
       return;
     }
 
-    const { error } = await supabase.from("trades").insert({
+    await supabase.from("trade_requests").insert({
       part_id: partId,
       sender_id: user.id,
       receiver_id: receiverId,
       message,
+      status: "pending",
     });
 
-    setLoading(false);
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Trade request sent");
-      setMessage("");
-    }
+    setSent(true);
   };
 
-  return (
-    <div className="border rounded-lg p-4 mt-6">
-      <h3 className="font-semibold mb-2">Request a Trade</h3>
+  if (sent) {
+    return <p className="text-green-600 mt-4">Trade request sent ✅</p>;
+  }
 
+  return (
+    <div className="mt-6">
       <textarea
-        className="w-full border rounded p-2 mb-3"
-        placeholder="Message to seller"
+        className="w-full border rounded p-2"
+        placeholder="What do you want to trade?"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
 
       <button
-        onClick={submitTrade}
-        disabled={loading}
-        className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
+        onClick={submitRequest}
+        className="mt-3 px-4 py-2 bg-black text-white rounded"
       >
-        {loading ? "Sending..." : "Send Trade Request"}
+        Send Trade Request
       </button>
     </div>
   );
