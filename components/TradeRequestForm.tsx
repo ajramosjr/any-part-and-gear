@@ -1,96 +1,69 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
-import TradeRequestForm from "@/components/TradeRequestForm";
+import { useState } from "react";
+import { createClient } from "@/lib/supabaseClient";
 
-type Profile = {
-  id: string;
-  username: string;
-  verified: boolean;
-};
+interface TradeRequestFormProps {
+  partId: number;
+  receiverId: string;
+}
 
-type Part = {
-  id: string;
-  title: string;
-  description: string;
-};
+export default function TradeRequestForm({
+  partId,
+  receiverId,
+}: TradeRequestFormProps) {
+  const supabase = createClient();
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-export default function SellerPage() {
-  const params = useParams();
-  const sellerId = params.id as string;
+  const submitTrade = async () => {
+    setLoading(true);
 
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [parts, setParts] = useState<Part[]>([]);
-  const [loading, setLoading] = useState(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  useEffect(() => {
-    const loadSeller = async () => {
-      // Fetch seller profile
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("id, username, verified")
-        .eq("id", sellerId)
-        .single();
-
-      // Fetch seller parts
-      const { data: partsData } = await supabase
-        .from("parts")
-        .select("id, title, description")
-        .eq("owner_id", sellerId);
-
-      setProfile(profileData);
-      setParts(partsData || []);
+    if (!user) {
+      alert("You must be logged in");
       setLoading(false);
-    };
+      return;
+    }
 
-    loadSeller();
-  }, [sellerId]);
+    const { error } = await supabase.from("trades").insert({
+      part_id: partId,
+      sender_id: user.id,
+      receiver_id: receiverId,
+      message,
+    });
 
-  if (loading) {
-    return <p>Loading seller...</p>;
-  }
+    setLoading(false);
 
-  if (!profile) {
-    return <p>Seller not found</p>;
-  }
+    if (error) {
+      alert(error.message);
+    } else {
+      alert("Trade request sent");
+      setMessage("");
+    }
+  };
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: 16 }}>
-      <Link href="/">← Back</Link>
+    <div className="border rounded-lg p-4 mt-6">
+      <h3 className="font-semibold mb-2">Request a Trade</h3>
 
-      <h1 style={{ marginTop: 12 }}>
-        {profile.username}{" "}
-        {profile.verified && (
-          <span style={{ color: "gold" }}>✔ Verified</span>
-        )}
-      </h1>
+      <textarea
+        className="w-full border rounded p-2 mb-3"
+        placeholder="Message to seller"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
 
-      <h2 style={{ marginTop: 24 }}>Parts for Trade</h2>
-
-      {parts.length === 0 && <p>No parts listed</p>}
-
-      {parts.map((part) => (
-        <div
-          key={part.id}
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: 6,
-            padding: 12,
-            marginTop: 12,
-          }}
-        >
-          <h3>{part.title}</h3>
-          <p>{part.description}</p>
-
-          <TradeRequestForm
-            partId={part.id}
-            receiverId={profile.id}
-          />
-        </div>
-      ))}
+      <button
+        onClick={submitTrade}
+        disabled={loading}
+        className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
+      >
+        {loading ? "Sending..." : "Send Trade Request"}
+      </button>
     </div>
   );
 }
