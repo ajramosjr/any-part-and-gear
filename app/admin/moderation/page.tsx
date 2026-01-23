@@ -1,90 +1,75 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
+type ReportedPart = {
+  id: number;
+  title: string;
+  description: string;
+  reported: boolean;
+};
+
 export default function ModerationPage() {
+  const supabase = createClient();
+
+  const [parts, setParts] = useState<ReportedPart[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sellers, setSellers] = useState<any[]>([]);
 
   useEffect(() => {
-    const load = async () => {
-      const { data: auth } = await supabase.auth.getUser();
-
-      if (!auth.user) {
-        window.location.href = "/";
-        return;
-      }
-
-      // OPTIONAL: replace with admin check later
-      if (auth.user.email !== "admin@anypartinggear.com") {
-        window.location.href = "/";
-        return;
-      }
-
+    const fetchReportedParts = async () => {
       const { data } = await supabase
-        .from("profiles")
-        .select("id, email, verified")
+        .from("parts")
+        .select("id, title, description, reported")
+        .eq("reported", true)
         .order("created_at", { ascending: false });
 
-      setSellers(data || []);
+      setParts(data || []);
       setLoading(false);
     };
 
-    load();
+    fetchReportedParts();
   }, []);
 
-  if (loading) return <p style={{ padding: 40 }}>Loading moderation…</p>;
+  const approvePart = async (id: number) => {
+    await supabase
+      .from("parts")
+      .update({ reported: false })
+      .eq("id", id);
+
+    setParts((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  if (loading) {
+    return <p className="p-6">Loading moderation queue…</p>;
+  }
 
   return (
-    <main style={{ padding: 40, maxWidth: 900 }}>
-      <h1>🛡️ Seller Moderation</h1>
+    <main className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Moderation</h1>
 
-      {sellers.map((s) => (
+      {parts.length === 0 && (
+        <p className="text-gray-500">No reported items 🎉</p>
+      )}
+
+      {parts.map((part) => (
         <div
-          key={s.id}
-          style={{
-            background: "#fff",
-            padding: 16,
-            marginTop: 12,
-            borderRadius: 10,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
+          key={part.id}
+          className="border rounded-lg p-4 mb-4"
         >
-          <div>
-            <strong>{s.email}</strong>
-            <div style={{ marginTop: 4 }}>
-              <VerifiedBadge verified={s.verified} />
-            </div>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-lg">{part.title}</h3>
+            <VerifiedBadge />
           </div>
 
-          <button
-            onClick={async () => {
-              await supabase
-                .from("profiles")
-                .update({ verified: !s.verified })
-                .eq("id", s.id);
+          <p className="mt-2 text-gray-700">{part.description}</p>
 
-              setSellers((prev) =>
-                prev.map((p) =>
-                  p.id === s.id ? { ...p, verified: !p.verified } : p
-                )
-              );
-            }}
-            style={{
-              padding: "8px 14px",
-              borderRadius: 8,
-              border: "none",
-              background: s.verified ? "#dc2626" : "#16a34a",
-              color: "#fff",
-              cursor: "pointer",
-            }}
+          <button
+            onClick={() => approvePart(part.id)}
+            className="mt-4 px-4 py-2 bg-green-600 text-white rounded"
           >
-            {s.verified ? "Revoke" : "Verify"}
+            Approve
           </button>
         </div>
       ))}
