@@ -2,21 +2,24 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
 
 export default function SendMessagePage() {
-  const params = useSearchParams();
+  const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const partId = params.get("partId");
-  const sellerId = params.get("sellerId");
+  const partId = searchParams.get("partId");
+  const receiverId = searchParams.get("receiverId");
 
-  const [content, setContent] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
   const sendMessage = async () => {
-    setLoading(true);
+    if (!message.trim() || !partId || !receiverId) return;
+
+    setSending(true);
 
     const {
       data: { user },
@@ -24,53 +27,35 @@ export default function SendMessagePage() {
 
     if (!user) return;
 
-    const { error } = await supabase.from("messages").insert({
-      content,
-      sender_id: user.id,
-      receiver_id: sellerId,
+    await supabase.from("trade_messages").insert({
       part_id: partId,
+      sender_id: user.id,
+      receiver_id: receiverId,
+      message,
     });
 
-    if (!error) {
-      router.push("/inbox");
-    }
-
-    setLoading(false);
+    setSending(false);
+    router.push("/messages");
   };
 
   return (
     <RequireAuth>
-      <main style={{ padding: 40, maxWidth: 600 }}>
-        <h1>Message Seller</h1>
+      <main className="max-w-2xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-4">Send Message</h1>
 
         <textarea
-          placeholder="Write your message..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          style={{
-            width: "100%",
-            height: 120,
-            padding: 12,
-            borderRadius: 10,
-            marginTop: 16,
-          }}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Write your message…"
+          className="w-full border rounded-lg p-3 mb-4 min-h-[120px]"
         />
 
         <button
           onClick={sendMessage}
-          disabled={loading || !content}
-          style={{
-            marginTop: 16,
-            padding: "10px 16px",
-            borderRadius: 10,
-            background: "#0f172a",
-            color: "#facc15",
-            fontWeight: 600,
-            border: "none",
-            cursor: "pointer",
-          }}
+          disabled={sending}
+          className="px-4 py-2 rounded-lg bg-black text-white disabled:opacity-50"
         >
-          Send Message
+          {sending ? "Sending…" : "Send"}
         </button>
       </main>
     </RequireAuth>
