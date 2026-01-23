@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 type Trade = {
   id: string;
@@ -13,6 +13,8 @@ type Trade = {
 };
 
 export default function TradeRequestsPage() {
+  const supabase = createClient();
+
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,23 +29,22 @@ export default function TradeRequestsPage() {
         return;
       }
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("trade_requests")
-        .select(`
+        .select(
+          `
           id,
           message,
           status,
           parts (
             title
           )
-        `)
+        `
+        )
         .eq("receiver_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
-        setTrades(data);
-      }
-
+      setTrades(data || []);
       setLoading(false);
     };
 
