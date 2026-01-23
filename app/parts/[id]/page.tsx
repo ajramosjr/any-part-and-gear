@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { createServerClient } from "@supabase/ssr";
 import TradeRequestForm from "@/components/TradeRequestForm";
+import { createClient } from "@/lib/supabaseServer";
 
 interface PartPageProps {
   params: {
@@ -9,7 +9,7 @@ interface PartPageProps {
 }
 
 export default async function PartPage({ params }: PartPageProps) {
-  const supabase = createServerClient();
+  const supabase = createClient();
 
   const partId = Number(params.id);
   if (isNaN(partId)) notFound();
