@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/client";
 
 type Trade = {
   id: string;
   message: string;
-  status: "pending" | "accepted" | "declined";
+  status: string;
   parts: {
     title: string;
-  } | null;
+  }[];
 };
 
 export default function TradeRequestsPage() {
@@ -29,19 +29,19 @@ export default function TradeRequestsPage() {
 
       const { data, error } = await supabase
         .from("trade_requests")
-        .select(
-          `
+        .select(`
           id,
           message,
           status,
-          parts ( title )
-        `
-        )
+          parts (
+            title
+          )
+        `)
         .eq("receiver_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (!error) {
-        setTrades(data || []);
+      if (!error && data) {
+        setTrades(data);
       }
 
       setLoading(false);
@@ -50,80 +50,34 @@ export default function TradeRequestsPage() {
     fetchTrades();
   }, []);
 
-  const updateStatus = async (
-    tradeId: string,
-    status: "accepted" | "declined"
-  ) => {
-    await supabase
-      .from("trade_requests")
-      .update({ status })
-      .eq("id", tradeId);
-
-    setTrades((prev) =>
-      prev.map((trade) =>
-        trade.id === tradeId ? { ...trade, status } : trade
-      )
-    );
-  };
-
-  if (loading) return <p>Loading trade requests...</p>;
+  if (loading) {
+    return <p className="p-6">Loading trade requests…</p>;
+  }
 
   return (
-    <div style={{ padding: 20, maxWidth: 700 }}>
-      <h1>Trade Requests</h1>
+    <main className="max-w-3xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Trade Requests</h1>
 
-      {trades.length === 0 && <p>No trade requests yet.</p>}
+      {trades.length === 0 && (
+        <p className="text-gray-500">No trade requests yet.</p>
+      )}
 
       {trades.map((trade) => (
         <div
           key={trade.id}
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            padding: 14,
-            marginBottom: 14,
-          }}
+          className="border rounded-lg p-4 mb-4"
         >
-          <h3>{trade.parts?.title ?? "Unknown Part"}</h3>
-          <p>{trade.message}</p>
+          <h3 className="font-semibold text-lg">
+            {trade.parts?.[0]?.title ?? "Unknown Part"}
+          </h3>
 
-          <p>
-            <strong>Status:</strong>{" "}
-            {trade.status.charAt(0).toUpperCase() + trade.status.slice(1)}
+          <p className="mt-2">{trade.message}</p>
+
+          <p className="mt-2 text-sm text-gray-600">
+            Status: <strong>{trade.status}</strong>
           </p>
-
-          {trade.status === "pending" && (
-            <div style={{ marginTop: 10 }}>
-              <button
-                onClick={() => updateStatus(trade.id, "accepted")}
-                style={{
-                  marginRight: 8,
-                  padding: "6px 10px",
-                  background: "green",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 4,
-                }}
-              >
-                Accept
-              </button>
-
-              <button
-                onClick={() => updateStatus(trade.id, "declined")}
-                style={{
-                  padding: "6px 10px",
-                  background: "crimson",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 4,
-                }}
-              >
-                Decline
-              </button>
-            </div>
-          )}
         </div>
       ))}
-    </div>
+    </main>
   );
 }
