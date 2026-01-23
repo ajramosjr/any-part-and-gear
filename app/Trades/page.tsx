@@ -10,6 +10,11 @@ type Trade = {
   parts: { title: string };
 };
 
+await supabase
+  .from("trade_requests")
+  .update({ status: "accepted" })
+  .eq("id", tradeId);
+
 export default function TradeRequestsPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
