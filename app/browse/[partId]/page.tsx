@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
 import PartCard from "@/components/PartCard";
+import { createClient } from "@/lib/supabaseClient";
+
 
 export default function PartDetailPage() {
   const { partId } = useParams();
   const [part, setPart] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
+const supabase = createClient();
   useEffect(() => {
     if (!partId) return;
 
