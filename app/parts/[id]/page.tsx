@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
+import { createServerClient } from "@supabase/ssr";
 import TradeRequestForm from "@/components/TradeRequestForm";
-import { createClient } from "@/lib/supabaseServer";
+import { cookies } from "next/headers";
 
 interface PartPageProps {
   params: {
@@ -9,7 +10,13 @@ interface PartPageProps {
 }
 
 export default async function PartPage({ params }: PartPageProps) {
-  const supabase = await createClient(); // ✅ FIX IS HERE
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies,
+    }
+  );
 
   const partId = Number(params.id);
   if (isNaN(partId)) notFound();
