@@ -2,21 +2,24 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
 
 export default function ReplyPage() {
-  const params = useSearchParams();
+  const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const receiverId = params.get("to");
-  const partId = params.get("partId");
+  const partId = searchParams.get("partId");
+  const receiverId = searchParams.get("receiverId");
 
-  const [content, setContent] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const sendReply = async () => {
-    setLoading(true);
+  const sendMessage = async () => {
+    if (!message.trim() || !partId || !receiverId) return;
+
+    setSending(true);
 
     const {
       data: { user },
@@ -24,53 +27,35 @@ export default function ReplyPage() {
 
     if (!user) return;
 
-    const { error } = await supabase.from("messages").insert({
+    await supabase.from("trade_messages").insert({
+      part_id: partId,
       sender_id: user.id,
       receiver_id: receiverId,
-      part_id: partId,
-      content,
+      message,
     });
 
-    if (!error) {
-      router.push("/inbox");
-    }
-
-    setLoading(false);
+    setSending(false);
+    router.push("/messages");
   };
 
   return (
     <RequireAuth>
-      <main style={{ padding: 40, maxWidth: 600 }}>
-        <h1>Reply</h1>
+      <main className="max-w-2xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-4">Reply</h1>
 
         <textarea
-          placeholder="Write your reply..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          style={{
-            width: "100%",
-            height: 140,
-            padding: 14,
-            borderRadius: 12,
-            marginTop: 16,
-          }}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Type your message…"
+          className="w-full border rounded-lg p-3 mb-4 min-h-[120px]"
         />
 
         <button
-          onClick={sendReply}
-          disabled={!content || loading}
-          style={{
-            marginTop: 16,
-            padding: "12px 18px",
-            borderRadius: 12,
-            background: "#0f172a",
-            color: "#facc15",
-            fontWeight: 700,
-            border: "none",
-            cursor: "pointer",
-          }}
+          onClick={sendMessage}
+          disabled={sending}
+          className="px-4 py-2 rounded-lg bg-black text-white disabled:opacity-50"
         >
-          Send Reply
+          {sending ? "Sending…" : "Send"}
         </button>
       </main>
     </RequireAuth>
