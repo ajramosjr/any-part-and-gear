@@ -2,128 +2,78 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 type Conversation = {
   part_id: string;
   part_title: string;
-  other_user_id: string;
-  other_user_email: string;
   last_message: string;
-  last_message_time: string;
-  unread_count: number;
+  updated_at: string;
 };
 
-export default function MessagesInboxPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+export default function MessagesPage() {
+  const supabase = createClient();
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Get logged-in user
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id ?? null);
-    });
-  }, []);
+    const fetchConversations = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-  // 🔹 Load inbox
-  useEffect(() => {
-    if (!userId) return;
-
-    const loadInbox = async () => {
-      /**
-       * This query assumes:
-       * - messages table
-       * - parts table (id, title)
-       * - sender_id / receiver_id
-       */
-      const { data, error } = await supabase.rpc("get_message_inbox", {
-        current_user_id: userId,
-      });
-
-      if (error) {
-        console.error(error);
+      if (!user) {
         setLoading(false);
         return;
       }
 
-      setConversations(data ?? []);
+      /**
+       * This assumes you have a view or query that groups messages by part.
+       * If you DON’T yet, this will still compile safely.
+       */
+      const { data, error } = await supabase
+        .from("trade_conversations")
+        .select("*")
+        .order("updated_at", { ascending: false });
+
+      if (!error && data) {
+        setConversations(data);
+      }
+
       setLoading(false);
     };
 
-    loadInbox();
-  }, [userId]);
+    fetchConversations();
+  }, [supabase]);
 
-  if (loading) return <p style={{ padding: 40 }}>Loading inbox…</p>;
-  if (!userId) return <p style={{ padding: 40 }}>Please sign in</p>;
+  if (loading) {
+    return <p className="p-6">Loading messages…</p>;
+  }
 
   return (
-    <main style={{ padding: 40, maxWidth: 900 }}>
-      <h1>Inbox</h1>
+    <main className="max-w-3xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Messages</h1>
 
       {conversations.length === 0 && (
-        <p style={{ marginTop: 20 }}>No messages yet</p>
+        <p className="text-gray-500">No conversations yet.</p>
       )}
 
-      <div style={{ marginTop: 20 }}>
-        {conversations.map((c) => (
-          <Link
-            key={`${c.part_id}-${c.other_user_id}`}
-            href={`/parts/${c.part_id}/messages`}
-            style={{
-              display: "block",
-              padding: 16,
-              borderRadius: 10,
-              border: "1px solid #e5e7eb",
-              marginBottom: 12,
-              textDecoration: "none",
-              color: "inherit",
-              background: c.unread_count > 0 ? "#eff6ff" : "#fff",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 6,
-              }}
-            >
-              <strong>{c.part_title}</strong>
-              <span style={{ fontSize: 12, color: "#666" }}>
-                {new Date(c.last_message_time).toLocaleString()}
-              </span>
-            </div>
-
-            <div style={{ color: "#374151" }}>{c.last_message}</div>
-
-            <div
-              style={{
-                marginTop: 6,
-                fontSize: 12,
-                color: "#6b7280",
-              }}
-            >
-              With: {c.other_user_email}
-            </div>
-
-            {c.unread_count > 0 && (
-              <div
-                style={{
-                  marginTop: 6,
-                  display: "inline-block",
-                  background: "#2563eb",
-                  color: "#fff",
-                  borderRadius: 999,
-                  padding: "2px 8px",
-                  fontSize: 12,
-                }}
-              >
-                {c.unread_count} new
-              </div>
-            )}
-          </Link>
-        ))}
-      </div>
+      {conversations.map((conv) => (
+        <Link
+          key={conv.part_id}
+          href={`/messages/${conv.part_id}`}
+          className="block border rounded-lg p-4 mb-4 hover:bg-gray-50"
+        >
+          <h3 className="font-semibold">{conv.part_title}</h3>
+          <p className="text-sm text-gray-600 truncate">
+            {conv.last_message}
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            {new Date(conv.updated_at).toLocaleString()}
+          </p>
+        </Link>
+      ))}
     </main>
   );
 }
