@@ -9,7 +9,7 @@ interface PartPageProps {
 }
 
 export default async function PartPage({ params }: PartPageProps) {
-  const supabase = createClient();
+  const supabase = await createClient(); // ✅ FIX IS HERE
 
   const partId = Number(params.id);
   if (isNaN(partId)) notFound();
