@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabaseServer";
+import supabase from "@/lib/supabaseServer";
 import TradeRequestForm from "@/components/TradeRequestForm";
 
 interface PartPageProps {
@@ -9,9 +9,9 @@ interface PartPageProps {
 }
 
 export default async function PartPage({ params }: PartPageProps) {
-  const partId = Number(params.id);
+  const partId = params.id;
 
-  if (isNaN(partId)) {
+  if (!partId) {
     notFound();
   }
 
@@ -24,14 +24,7 @@ export default async function PartPage({ params }: PartPageProps) {
   if (error || !part) {
     notFound();
   }
-  
-{part.trade_available && (
-  <TradeRequestForm
-    partId={part.id}
-    receiverId={part.user_id}
-  />
-)}
-  
+
   return (
     <main className="max-w-4xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-4">{part.title}</h1>
@@ -47,9 +40,16 @@ export default async function PartPage({ params }: PartPageProps) {
       <p className="text-gray-700 mb-4">{part.description}</p>
 
       {part.price && (
-        <p className="text-xl font-semibold">
-          ${part.price}
-        </p>
+        <p className="text-xl font-semibold mb-4">${part.price}</p>
+      )}
+
+      {part.trade_available && (
+        <div className="mt-6">
+          <TradeRequestForm
+            partId={part.id}
+            receiverId={part.user_id}
+          />
+        </div>
       )}
     </main>
   );
