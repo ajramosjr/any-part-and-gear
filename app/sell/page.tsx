@@ -1,106 +1,87 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
 
 export default function SellPage() {
+  const supabase = createClient();
+  const router = useRouter();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const submit = async () => {
-    setMessage("");
+  const submitListing = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setMessage("Not authenticated");
+      setLoading(false);
       return;
     }
 
-    let imageUrl: string | null = null;
-
-    // 🔹 Upload image if selected
-    if (image) {
-      const fileName = `${user.id}-${Date.now()}-${image.name}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("part-images")
-        .upload(fileName, image);
-
-      if (uploadError) {
-        setMessage(uploadError.message);
-        return;
-      }
-
-      const { data } = supabase.storage
-        .from("part-images")
-        .getPublicUrl(fileName);
-
-      imageUrl = data.publicUrl;
-    }
-
-    // 🔹 Insert listing
     const { error } = await supabase.from("parts").insert({
-      user_id: user.id,
       title,
       description,
       price: price ? Number(price) : null,
-      image: imageUrl,
+      user_id: user.id,
+      trade_available: true,
     });
 
-    if (error) {
-      setMessage(error.message);
+    setLoading(false);
+
+    if (!error) {
+      router.push("/my-listings");
     } else {
-      setTitle("");
-      setDescription("");
-      setPrice("");
-      setImage(null);
-      setMessage("✅ Part listed successfully!");
+      alert(error.message);
     }
   };
 
   return (
     <RequireAuth>
-      <main style={{ padding: 40, maxWidth: 500 }}>
-        <h1>Sell a Part</h1>
+      <main className="max-w-xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">Sell a Part</h1>
 
-        <input
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <br /><br />
+        <form onSubmit={submitListing} className="space-y-4">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Part title"
+            required
+            className="w-full border rounded p-2"
+          />
 
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <br /><br />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Description"
+            required
+            className="w-full border rounded p-2"
+          />
 
-        <input
-          placeholder="Price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-        <br /><br />
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="Price (optional)"
+            className="w-full border rounded p-2"
+          />
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImage(e.target.files?.[0] || null)}
-        />
-        <br /><br />
-
-        <button onClick={submit}>Post Listing</button>
-
-        {message && <p style={{ marginTop: 12 }}>{message}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
+          >
+            {loading ? "Posting…" : "Post Listing"}
+          </button>
+        </form>
       </main>
     </RequireAuth>
   );
