@@ -5,14 +5,15 @@ import { createClient } from "@/lib/supabaseClient";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Message = {
+type Message = {
   id: string;
   content: string;
   sender_id: string;
   created_at: string;
-  profiles?: {
+  profiles: {
     username: string;
     verified: boolean;
-  };
+  }[];
 };
 
 export default function InboxPage() {
