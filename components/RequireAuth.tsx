@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabaseBrowser";
+import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 export default function RequireAuth({
   children,
@@ -10,9 +10,10 @@ export default function RequireAuth({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
+    const supabase = createSupabaseBrowser();
+
     const checkAuth = async () => {
       const {
         data: { user },
@@ -24,7 +25,7 @@ export default function RequireAuth({
     };
 
     checkAuth();
-  }, [router, supabase]);
+  }, [router]);
 
   return <>{children}</>;
 }
