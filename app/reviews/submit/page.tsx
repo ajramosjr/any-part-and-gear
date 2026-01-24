@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
+import supabase from "@/lib/supabaseBrowser";
 import RequireAuth from "@/components/RequireAuth";
 
 export default function SubmitReviewPage() {
-  const supabase = createSupabaseBrowser();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -48,14 +47,10 @@ export default function SubmitReviewPage() {
         <h1 className="text-2xl font-bold mb-4">Leave a Review</h1>
 
         {error && (
-          <p className="mb-3 text-sm text-red-500">
-            {error}
-          </p>
+          <p className="mb-3 text-sm text-red-500">{error}</p>
         )}
 
-        <label className="block mb-2 font-medium">
-          Rating
-        </label>
+        <label className="block mb-2 font-medium">Rating</label>
         <select
           className="w-full mb-4 p-2 border rounded"
           value={rating}
@@ -68,9 +63,7 @@ export default function SubmitReviewPage() {
           ))}
         </select>
 
-        <label className="block mb-2 font-medium">
-          Comment
-        </label>
+        <label className="block mb-2 font-medium">Comment</label>
         <textarea
           className="w-full mb-4 p-2 border rounded"
           rows={4}
