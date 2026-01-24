@@ -18,7 +18,11 @@ export default function TradeChat({
 
   const send = async () => {
     if (!text.trim()) return;
-    await sendTradeMessage(tradeRequestId, userId, text);
+    await sendTradeMessage({
+  tradeId: tradeRequestId,
+  receiverId: userId,
+  message: text,
+});
     setText("");
   };
 
