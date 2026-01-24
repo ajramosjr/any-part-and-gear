@@ -2,122 +2,93 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
+import RequireAuth from "@/app/components/RequireAuth";
 
 export default function ReviewPage() {
+  const supabase = createClient();
   const params = useParams();
   const router = useRouter();
-  const partId = params.partId as string;
 
-  const [part, setPart] = useState<any | null>(null);
-  const [user, setUser] = useState<any | null>(null);
+  const partId = Number(params.partId);
+
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const loadData = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
-      setUser(user);
-
-      const { data: partData } = await supabase
-        .from("parts")
-        .select("*")
-        .eq("id", partId)
-        .single();
-
-      if (!partData) {
-        router.push("/");
-        return;
-      }
-
-      setPart(partData);
-      setLoading(false);
-    };
-
-    loadData();
+    if (isNaN(partId)) {
+      router.push("/");
+    }
   }, [partId, router]);
 
-  const submitReview = async () => {
-    if (!part || !user) return;
+  const submitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-    setSubmitting(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    await fetch("/api/reviews", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sellerId: part.user_id,
-        buyerId: user.id,
-        partId,
-        rating,
-        comment,
-      }),
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.from("reviews").insert({
+      part_id: partId,
+      user_id: user.id,
+      rating,
+      comment,
     });
 
-    router.push(`/parts/${partId}`);
+    setLoading(false);
+
+    if (!error) {
+      router.push(`/parts/${partId}`);
+    } else {
+      alert(error.message);
+    }
   };
 
-  if (loading) {
-    return <p style={{ padding: 40 }}>Loading review form…</p>;
-  }
-
   return (
-    <main style={{ padding: 40, maxWidth: 600 }}>
-      <h1>Leave a Review</h1>
+    <RequireAuth>
+      <main className="max-w-xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">Leave a Review</h1>
 
-      <p style={{ color: "#555" }}>
-        Reviewing: <strong>{part.title}</strong>
-      </p>
+        <form onSubmit={submitReview} className="space-y-4">
+          <label className="block">
+            <span className="text-sm font-medium">Rating</span>
+            <select
+              value={rating}
+              onChange={(e) => setRating(Number(e.target.value))}
+              className="w-full border rounded p-2 mt-1"
+            >
+              {[5, 4, 3, 2, 1].map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      <label style={{ display: "block", marginTop: 20 }}>
-        Rating
-        <select
-          value={rating}
-          onChange={(e) => setRating(Number(e.target.value))}
-          style={{ display: "block", marginTop: 6 }}
-        >
-          {[5, 4, 3, 2, 1].map((r) => (
-            <option key={r} value={r}>
-              {r} Stars
-            </option>
-          ))}
-        </select>
-      </label>
+          <textarea
+            placeholder="Write your review…"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            required
+            className="w-full border rounded p-2"
+          />
 
-      <label style={{ display: "block", marginTop: 20 }}>
-        Comment
-        <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          rows={4}
-          style={{ display: "block", width: "100%", marginTop: 6 }}
-        />
-      </label>
-
-      <button
-        onClick={submitReview}
-        disabled={submitting}
-        style={{
-          marginTop: 24,
-          padding: "12px 16px",
-          background: "#0f172a",
-          color: "#fff",
-          borderRadius: 8,
-          border: "none",
-        }}
-      >
-        {submitting ? "Submitting…" : "Submit Review"}
-      </button>
-    </main>
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
+          >
+            {loading ? "Submitting…" : "Submit Review"}
+          </button>
+        </form>
+      </main>
+    </RequireAuth>
   );
 }
