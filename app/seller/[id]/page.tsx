@@ -3,27 +3,25 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Profile = {
   id: string;
   username: string | null;
-  bio: string | null;
   verified: boolean;
 };
 
 type Part = {
-  id: string;
+  id: number;
   title: string;
-  price: number;
-  image_urls: string[] | null;
-  trade_available: boolean;
+  price: number | null;
 };
 
 export default function SellerProfilePage() {
-  const { id } = useParams();
-  const sellerId = id as string;
+  const supabase = createClient();
+  const params = useParams();
+  const sellerId = params.id as string;
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [parts, setParts] = useState<Part[]>([]);
@@ -31,91 +29,65 @@ export default function SellerProfilePage() {
 
   useEffect(() => {
     const fetchSeller = async () => {
-      setLoading(true);
-
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, username, verified")
         .eq("id", sellerId)
         .single();
 
       const { data: partsData } = await supabase
         .from("parts")
-        .select("*")
+        .select("id, title, price")
         .eq("user_id", sellerId)
         .order("created_at", { ascending: false });
 
-      setProfile(profileData);
-      setParts(partsData || []);
+      setProfile(profileData ?? null);
+      setParts(partsData ?? []);
       setLoading(false);
     };
 
-    fetchSeller();
-  }, [sellerId]);
+    if (sellerId) fetchSeller();
+  }, [sellerId, supabase]);
 
-  if (loading) return <p style={{ padding: 20 }}>Loading seller...</p>;
-  if (!profile) return <p style={{ padding: 20 }}>Seller not found</p>;
+  if (loading) {
+    return <p className="p-6">Loading seller…</p>;
+  }
+
+  if (!profile) {
+    return <p className="p-6">Seller not found.</p>;
+  }
 
   return (
-    <div style={{ padding: 20 }}>
-      {/* SELLER HEADER */}
-      <div style={{ marginBottom: 24 }}>
-        <h1>
-          {profile.username || "Seller"}
-          {profile.verified && <VerifiedBadge />}
+    <main className="max-w-3xl mx-auto p-6">
+      <div className="flex items-center gap-2 mb-6">
+        <h1 className="text-2xl font-bold">
+          {profile.username ?? "Seller"}
         </h1>
-
-        {profile.bio && (
-          <p style={{ color: "#666", marginTop: 8 }}>{profile.bio}</p>
-        )}
+        {profile.verified && <VerifiedBadge />}
       </div>
 
-      {/* LISTINGS */}
-      <h2>Listings</h2>
+      <h2 className="text-lg font-semibold mb-4">Listings</h2>
 
-      {parts.length === 0 && <p>No listings yet</p>}
+      {parts.length === 0 && (
+        <p className="text-gray-500">No listings yet.</p>
+      )}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          gap: 16,
-        }}
-      >
+      <ul className="space-y-3">
         {parts.map((part) => (
-          <div
+          <li
             key={part.id}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: 8,
-              padding: 12,
-            }}
+            className="border rounded p-3 flex justify-between"
           >
-            <Link href={`/parts/${part.id}`}>
-              {part.image_urls?.[0] && (
-                <img
-                  src={part.image_urls[0]}
-                  style={{
-                    width: "100%",
-                    height: 160,
-                    objectFit: "cover",
-                    borderRadius: 6,
-                  }}
-                />
-              )}
-
-              <h3>{part.title}</h3>
-              <p>${part.price}</p>
-
-              {part.trade_available && (
-                <small style={{ color: "#0d6efd" }}>
-                  Trade Available
-                </small>
-              )}
+            <Link
+              href={`/parts/${part.id}`}
+              className="font-medium hover:underline"
+            >
+              {part.title}
             </Link>
-          </div>
+            {part.price && <span>${part.price}</span>}
+          </li>
         ))}
-      </div>
-    </div>
+      </ul>
+    </main>
   );
 }
