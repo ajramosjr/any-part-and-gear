@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 export default function RequireAuth({
   children,
@@ -10,24 +10,33 @@ export default function RequireAuth({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const supabase = createSupabaseBrowser();
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getUser();
+    async function checkAuth() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      if (!data.user) {
-        router.replace("/login");
-      } else {
-        setLoading(false);
+      if (!user) {
+        router.push("/login");
+        return;
       }
-    };
+
+      setLoading(false);
+    }
 
     checkAuth();
-  }, [router]);
+  }, [router, supabase]);
 
   if (loading) {
-    return <p style={{ padding: 40 }}>Loading…</p>;
+    return (
+      <div className="flex justify-center items-center py-20">
+        <p>Checking authentication…</p>
+      </div>
+    );
   }
 
   return <>{children}</>;
