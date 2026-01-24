@@ -1,30 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 export default function SellClient() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-const handleSubmit = async () => {
-    await supabase.from("parts").insert({ title: "Test" });
-  };
+
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
+    const supabase = createSupabaseBrowser();
+
+    const loadUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      setUser(user);
       setLoading(false);
-    });
+    };
+
+    loadUser();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-
-  if (!user) {
-    return <p>Please log in to sell items.</p>;
-  }
+  if (loading) return <p>Loading…</p>;
+  if (!user) return <p>You must be logged in to sell.</p>;
 
   return (
     <div>
-      {/* your sell form here */}
+      <h1 className="text-xl font-bold mb-4">Sell a Part</h1>
+      {/* form goes here */}
     </div>
   );
 }
