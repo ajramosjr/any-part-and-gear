@@ -1,57 +1,46 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 export type TradeMessage = {
   id: string;
-  trade_request_id: string;
-  sender_id: string;
   message: string;
+  sender_id: string;
   created_at: string;
 };
 
-export function useTradeChat(tradeRequestId: string) {
+export function useTradeChat(tradeId: string) {
+  const supabase = createSupabaseBrowser();
   const [messages, setMessages] = useState<TradeMessage[]>([]);
   const [loading, setLoading] = useState(true);
-export async function sendTradeMessage(
-  tradeRequestId: string,
-  senderId: string,
-  message: string
-) {
-  return supabase.from("trade_messages").insert({
-    trade_request_id: tradeRequestId,
-    sender_id: senderId,
-    message,
-  });
-}
-  useEffect(() => {
-    if (!tradeRequestId) return;
 
-    // 1️⃣ Load existing messages
-    const loadMessages = async () => {
-      const { data } = await supabase
+  useEffect(() => {
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
         .from("trade_messages")
         .select("*")
-        .eq("trade_request_id", tradeRequestId)
+        .eq("trade_id", tradeId)
         .order("created_at", { ascending: true });
 
-      setMessages(data || []);
+      if (!error && data) {
+        setMessages(data);
+      }
+
       setLoading(false);
     };
 
-    loadMessages();
+    fetchMessages();
 
-    // 2️⃣ Realtime subscription
     const channel = supabase
-      .channel(`trade-chat-${tradeRequestId}`)
+      .channel(`trade-chat-${tradeId}`)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
           table: "trade_messages",
-          filter: `trade_request_id=eq.${tradeRequestId}`,
+          filter: `trade_id=eq.${tradeId}`,
         },
         (payload) => {
           setMessages((prev) => [...prev, payload.new as TradeMessage]);
@@ -62,7 +51,7 @@ export async function sendTradeMessage(
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tradeRequestId]);
+  }, [tradeId, supabase]);
 
   return { messages, loading };
 }
