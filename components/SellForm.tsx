@@ -2,80 +2,89 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseBrowser";
+import { useRouter } from "next/navigation";
+import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 export default function SellForm() {
+  const router = useRouter();
+  const supabase = createSupabaseBrowser();
+
   const [title, setTitle] = useState("");
+  const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitListing = async () => {
     setLoading(true);
     setError(null);
-    setSuccess(false);
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setError("You must be logged in to post a part.");
-      setLoading(false);
+      router.push("/login");
       return;
     }
 
     const { error } = await supabase.from("parts").insert({
       title,
       description,
-      user_id: user.id,
+      price: Number(price),
+      seller_id: user.id,
     });
+
+    setLoading(false);
 
     if (error) {
       setError(error.message);
-    } else {
-      setSuccess(true);
-      setTitle("");
-      setDescription("");
+      return;
     }
 
-    setLoading(false);
+    router.push("/my-listings");
   };
 
   return (
-    <main style={{ padding: 40, maxWidth: 600, margin: "0 auto" }}>
-      <Link href="/" style={{ display: "block", marginBottom: 20 }}>
-        ← Back Home
+    <div className="max-w-xl mx-auto space-y-4">
+      <h1 className="text-2xl font-bold">Sell a Part</h1>
+
+      {error && <p className="text-red-500">{error}</p>}
+
+      <input
+        className="border p-2 w-full rounded"
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+
+      <input
+        className="border p-2 w-full rounded"
+        placeholder="Price"
+        type="number"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+      />
+
+      <textarea
+        className="border p-2 w-full rounded"
+        placeholder="Description"
+        rows={4}
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+
+      <button
+        onClick={submitListing}
+        disabled={loading}
+        className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
+      >
+        {loading ? "Posting..." : "Post Listing"}
+      </button>
+
+      <Link href="/my-listings" className="block text-sm text-blue-600">
+        Cancel
       </Link>
-
-      <h1>Sell a Part</h1>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>Listing posted!</p>}
-
-      <form onSubmit={handleSubmit}>
-        <input
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          style={{ width: "100%", marginBottom: 12, padding: 8 }}
-        />
-
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={4}
-          style={{ width: "100%", marginBottom: 12, padding: 8 }}
-        />
-
-        <button disabled={loading}>
-          {loading ? "Posting..." : "Post Listing"}
-        </button>
-      </form>
-    </main>
+    </div>
   );
 }
