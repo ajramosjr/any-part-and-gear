@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabaseServer";
 
 export async function getSellerLevel(sellerId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Count completed sales
   const { count: completedSales, error: salesError } = await supabase
@@ -14,7 +14,7 @@ export async function getSellerLevel(sellerId: string) {
     console.error("Error fetching completed sales:", salesError);
   }
 
-  // Get seller reviews
+  // Fetch seller reviews
   const { data: reviews, error: reviewsError } = await supabase
     .from("seller_reviews")
     .select("rating")
