@@ -1,59 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 export function useUnreadMessages() {
+  const supabase = createClient();
+
   const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let channel: any;
-
-    const load = async () => {
+    const fetchUnreadCount = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-      // Initial unread count
-      const { count } = await supabase
+      const { count, error } = await supabase
         .from("messages")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("receiver_id", user.id)
         .eq("read", false);
 
-      setCount(count ?? 0);
+      if (!error && typeof count === "number") {
+        setCount(count);
+      }
 
-      // Real-time updates
-      channel = supabase
-        .channel("unread-messages")
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "messages",
-          },
-          async () => {
-            const { count } = await supabase
-              .from("messages")
-              .select("*", { count: "exact", head: true })
-              .eq("receiver_id", user.id)
-              .eq("read", false);
-
-            setCount(count ?? 0);
-          }
-        )
-        .subscribe();
+      setLoading(false);
     };
 
-    load();
+    fetchUnreadCount();
+  }, [supabase]);
 
-    return () => {
-      if (channel) supabase.removeChannel(channel);
-    };
-  }, []);
-
-  return count;
+  return { count, loading };
 }
