@@ -73,10 +73,10 @@ export default function InboxPage() {
           key={msg.id}
           className="border rounded-lg p-4 mb-4"
         >
-          <div className="flex items-center gap-2 mb-1">
-            <strong>{msg.profiles?.username ?? "Unknown"}</strong>
-            {msg.profiles?.verified && <VerifiedBadge />}
-          </div>
+         <div className="flex items-center gap-2 mb-1">
+  <strong>{msg.profiles?.[0]?.username ?? "Unknown"}</strong>
+  {msg.profiles?.[0]?.verified && <VerifiedBadge />}
+</div> 
 
           <p className="mb-2">{msg.content}</p>
 
