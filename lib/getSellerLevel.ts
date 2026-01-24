@@ -1,14 +1,16 @@
-import { supabase } from "@/lib/supabaseClient";
+import { createSupabaseServer } from "@/lib/supabaseServer";
 
 export async function getSellerLevel(sellerId: string) {
+  const supabase = createSupabaseServer();
+
   // completed sales
   const { count: sales } = await supabase
-    .from("orders")
+    .from("trades")
     .select("*", { count: "exact", head: true })
     .eq("seller_id", sellerId)
     .eq("status", "completed");
 
-  // average rating
+  // seller rating
   const { data: reviews } = await supabase
     .from("seller_reviews")
     .select("rating")
@@ -19,7 +21,9 @@ export async function getSellerLevel(sellerId: string) {
       ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length
       : 0;
 
-  if ((sales ?? 0) >= 15 && avgRating >= 4.5) return "Gold";
-  if ((sales ?? 0) >= 5 && avgRating >= 4.0) return "Silver";
-  return "Bronze";
+  if ((sales ?? 0) >= 50 && avgRating >= 4.8) return "Elite Seller";
+  if ((sales ?? 0) >= 10 && avgRating >= 4.5) return "Trusted Seller";
+  if ((sales ?? 0) >= 3) return "Active Seller";
+
+  return "New Seller";
 }
