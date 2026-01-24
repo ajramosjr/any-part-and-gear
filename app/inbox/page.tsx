@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabaseClient";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Message = {
-type Message = {
   id: string;
   content: string;
   sender_id: string;
