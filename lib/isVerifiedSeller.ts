@@ -1,25 +1,18 @@
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
-export async function isVerifiedSeller(sellerId: string) {
-  // total sales
-  const { data: sales } = await supabase
-    .from("purchases")
-    .select("id")
-    .eq("seller_id", sellerId);
+export async function isVerifiedSeller(sellerId: string): Promise<boolean> {
+  const supabase = createClient();
 
-  if (!sales || sales.length < 10) return false;
+  const { count, error } = await supabase
+    .from("parts")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", sellerId)
+    .eq("sold", true);
 
-  // ratings
-  const { data: reviews } = await supabase
-    .from("seller_reviews")
-    .select("rating")
-    .eq("seller_id", sellerId);
+  if (error) {
+    return false;
+  }
 
-  if (!reviews || reviews.length === 0) return false;
-
-  const avg =
-    reviews.reduce((sum, r) => sum + r.rating, 0) /
-    reviews.length;
-
-  return avg >= 4.5;
+  // Example rule: verified if 5+ completed sales
+  return (count ?? 0) >= 5;
 }
