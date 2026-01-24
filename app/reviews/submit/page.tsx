@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import supabase from "@/lib/supabaseBrowser";
+import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 import RequireAuth from "@/components/RequireAuth";
 
 export default function SubmitReviewPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const supabase = createSupabaseBrowser();
 
   const partId = searchParams.get("part");
 
@@ -46,9 +47,7 @@ export default function SubmitReviewPage() {
       <div className="max-w-xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-4">Leave a Review</h1>
 
-        {error && (
-          <p className="mb-3 text-sm text-red-500">{error}</p>
-        )}
+        {error && <p className="mb-3 text-sm text-red-500">{error}</p>}
 
         <label className="block mb-2 font-medium">Rating</label>
         <select
