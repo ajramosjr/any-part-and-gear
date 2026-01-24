@@ -1,23 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
-export default function SellerReviewForm({ sellerId }: { sellerId: string }) {
+export default function SellerReviewForm({
+  sellerId,
+}: {
+  sellerId: string;
+}) {
+  const router = useRouter();
+  const supabase = createSupabaseBrowser();
+
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const submit = async () => {
+  const submitReview = async () => {
     setLoading(true);
+    setError(null);
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
 
-    await supabase.from("seller_reviews").upsert({
+    const { error } = await supabase.from("seller_reviews").insert({
       seller_id: sellerId,
       reviewer_id: user.id,
       rating,
@@ -25,51 +38,47 @@ export default function SellerReviewForm({ sellerId }: { sellerId: string }) {
     });
 
     setLoading(false);
-    location.reload();
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    router.refresh();
   };
 
   return (
-    <div style={{ marginTop: 24 }}>
-      <h3>Leave a Review</h3>
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Leave a Review</h3>
+
+      {error && <p className="text-red-500">{error}</p>}
 
       <select
+        className="border p-2 rounded w-full"
         value={rating}
         onChange={(e) => setRating(Number(e.target.value))}
-        style={{ padding: 8 }}
       >
         {[5, 4, 3, 2, 1].map((r) => (
           <option key={r} value={r}>
-            {r} ⭐
+            {r} Star{r !== 1 && "s"}
           </option>
         ))}
       </select>
 
       <textarea
+        className="border p-2 rounded w-full"
         placeholder="Optional comment"
+        rows={4}
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        style={{
-          width: "100%",
-          marginTop: 10,
-          padding: 10,
-          minHeight: 80,
-        }}
       />
 
       <button
-        onClick={submit}
+        onClick={submitReview}
         disabled={loading}
-        style={{
-          marginTop: 10,
-          background: "#2563eb",
-          color: "#fff",
-          padding: "8px 14px",
-          borderRadius: 8,
-          border: "none",
-          cursor: "pointer",
-        }}
+        className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
       >
-        Submit Review
+        {loading ? "Submitting..." : "Submit Review"}
       </button>
     </div>
   );
