@@ -44,7 +44,7 @@ export default function NavBar() {
 
         <Link href="/inbox" style={{ position: "relative" }}>
           Inbox
-          {unread > 0 && (
+         {unread.count > 0 && (
             <span
               style={{
                 position: "absolute",
