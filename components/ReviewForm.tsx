@@ -1,69 +1,86 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
-export default function ReviewForm({
-  sellerId,
-  partId,
-}: {
-  sellerId: string;
-  partId: string;
-}) {
+export default function ReviewForm({ partId }: { partId: string }) {
+  const router = useRouter();
+  const supabase = createSupabaseBrowser();
+
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const submitReview = async () => {
     setLoading(true);
+    setError(null);
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
 
-    await supabase.from("seller_reviews").insert({
-      seller_id: sellerId,
-      buyer_id: user.id,
+    const { error } = await supabase.from("reviews").insert({
       part_id: partId,
+      user_id: user.id,
       rating,
       comment,
     });
 
-    setDone(true);
     setLoading(false);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    router.refresh();
+    setComment("");
   };
 
-  if (done) {
-    return <p>✅ Review submitted. Thank you!</p>;
-  }
-
   return (
-    <div style={{ marginTop: 24 }}>
-      <h3>Leave a review</h3>
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Leave a Review</h2>
 
-      <select
-        value={rating}
-        onChange={(e) => setRating(Number(e.target.value))}
+      {error && <p className="text-red-500">{error}</p>}
+
+      <div>
+        <label className="block mb-1">Rating</label>
+        <select
+          value={rating}
+          onChange={(e) => setRating(Number(e.target.value))}
+          className="border p-2 rounded w-full"
+        >
+          {[5, 4, 3, 2, 1].map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block mb-1">Comment</label>
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          className="border p-2 rounded w-full"
+          rows={4}
+        />
+      </div>
+
+      <button
+        onClick={submitReview}
+        disabled={loading}
+        className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
       >
-        {[5, 4, 3, 2, 1].map((n) => (
-          <option key={n} value={n}>
-            {n} Stars
-          </option>
-        ))}
-      </select>
-
-      <textarea
-        placeholder="Optional comment"
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        style={{ width: "100%", marginTop: 12 }}
-      />
-
-      <button onClick={submitReview} disabled={loading}>
-        Submit Review
+        {loading ? "Submitting..." : "Submit Review"}
       </button>
     </div>
   );
