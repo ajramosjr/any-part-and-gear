@@ -58,7 +58,7 @@ export default function NavBar() {
                 fontWeight: 700,
               }}
             >
-              {unread}
+              {unread.count}
             </span>
           )}
         </Link>
