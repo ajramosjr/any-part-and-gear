@@ -1,26 +1,31 @@
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseServer";
 
 export async function getSellerStats(sellerId: string) {
-  const { data, error } = await supabase
-    .from("seller_reviews")
-    .select("rating")
+  const supabase = await createClient();
+
+  // total trades
+  const { count: totalTrades } = await supabase
+    .from("trades")
+    .select("*", { count: "exact", head: true })
     .eq("seller_id", sellerId);
 
-  if (error || !data || data.length === 0) {
-    return {
-      average: null,
-      count: 0,
-      isTopSeller: false,
-    };
-  }
+  // completed trades
+  const { count: completedTrades } = await supabase
+    .from("trades")
+    .select("*", { count: "exact", head: true })
+    .eq("seller_id", sellerId)
+    .eq("status", "completed");
 
-  const count = data.length;
-  const average =
-    data.reduce((sum, r) => sum + r.rating, 0) / count;
+  // cancelled trades
+  const { count: cancelledTrades } = await supabase
+    .from("trades")
+    .select("*", { count: "exact", head: true })
+    .eq("seller_id", sellerId)
+    .eq("status", "cancelled");
 
   return {
-    average: Number(average.toFixed(2)),
-    count,
-    isTopSeller: average >= 4.5 && count >= 5,
+    totalTrades: totalTrades ?? 0,
+    completedTrades: completedTrades ?? 0,
+    cancelledTrades: cancelledTrades ?? 0,
   };
 }
