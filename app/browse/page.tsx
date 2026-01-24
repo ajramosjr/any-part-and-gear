@@ -1,9 +1,9 @@
 "use client";
 
 export const dynamic = "force-dynamic";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
 
 type Part = {
@@ -17,9 +17,6 @@ export default function BrowsePage() {
   const supabase = createClient();
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const searchParams = useSearchParams();
-  const router = useRouter();
 
   useEffect(() => {
     const fetchParts = async () => {
@@ -36,10 +33,14 @@ export default function BrowsePage() {
     };
 
     fetchParts();
-  }, []);
+  }, [supabase]);
 
   if (loading) {
-    return <p className="p-6">Loading parts…</p>;
+    return (
+      <main className="p-6">
+        <p>Loading parts…</p>
+      </main>
+    );
   }
 
   return (
@@ -50,12 +51,12 @@ export default function BrowsePage() {
         <p className="text-gray-500">No parts available.</p>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {parts.map((part) => (
           <Link
             key={part.id}
             href={`/parts/${part.id}`}
-            className="border rounded-lg p-4 hover:shadow"
+            className="border rounded-lg p-4 hover:shadow transition"
           >
             {part.images?.[0] && (
               <img
@@ -67,7 +68,7 @@ export default function BrowsePage() {
 
             <h3 className="font-semibold">{part.title}</h3>
 
-            {part.price && (
+            {part.price !== null && (
               <p className="text-sm text-gray-600 mt-1">
                 ${part.price}
               </p>
