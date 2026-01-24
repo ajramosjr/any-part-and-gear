@@ -6,7 +6,7 @@ export default async function PartPage({
 }: {
   params: { id: string };
 }) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,15 +26,19 @@ export default async function PartPage({
     }
   );
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("parts")
     .select("*")
     .eq("id", params.id)
     .single();
 
+  if (error) {
+    return <div>Part not found</div>;
+  }
+
   return (
     <div>
-      <h1>{data?.title ?? "Part"}</h1>
+      <h1>{data.title}</h1>
     </div>
   );
 }
