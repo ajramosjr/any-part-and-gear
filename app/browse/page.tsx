@@ -58,13 +58,11 @@ export default function BrowsePage() {
             href={`/parts/${part.id}`}
             className="border rounded-lg p-4 hover:shadow transition"
           >
-            {part.images?.[0] && (
-              <img
-                src={part.images[0]}
-                alt={part.title}
-                className="w-full h-40 object-cover rounded mb-3"
-              />
-            )}
+         <img
+  src={part.images?.[0] || "/placeholder-part.png"}
+  alt={part.title}
+  className="w-full h-40 object-cover rounded mb-3"
+/>   
 
             <h3 className="font-semibold">{part.title}</h3>
 
