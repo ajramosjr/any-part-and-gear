@@ -60,11 +60,12 @@ export default function BrowsePage() {
           >
             
          <img
-       src={part.images?.[0] || "/placeholder-part.png"}
-      alt={part.title}
-      className="w-full h-40 object-cover rounded mb-3"
-     />   
-
+       <img
+  src={part.images?.[0] || "/images/apg-placeholder.png"}
+  alt={part.title}
+  className="w-full h-40 object-contain bg-white rounded mb-3 p-3"
+/>
+            
             <h3 className="font-semibold">{part.title}</h3>
 
             {part.price !== null && (
