@@ -37,45 +37,63 @@ export default function BrowsePage() {
 
   if (loading) {
     return (
-      <main className="p-6">
-        <p>Loading parts…</p>
+      <main className="max-w-6xl mx-auto p-6">
+        <p className="text-gray-500">Loading parts…</p>
       </main>
     );
   }
 
   return (
     <main className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Browse Parts</h1>
+      <h1 className="text-2xl font-bold mb-6 text-[#1e2a44]">
+        Browse Parts
+      </h1>
 
+      {/* EMPTY STATE */}
       {parts.length === 0 && (
-        <p className="text-gray-500">No parts available.</p>
+        <div className="text-center py-20">
+          <img
+            src="/placeholder-part.png"
+            alt="Any-Part & Gear"
+            className="mx-auto h-24 mb-6"
+          />
+          <p className="text-lg font-semibold text-[#1e2a44]">
+            No parts listed yet
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Be the first to post a part on Any-Part & Gear
+          </p>
+        </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {parts.map((part) => (
-          <Link
-            key={part.id}
-            href={`/parts/${part.id}`}
-            className="border rounded-lg p-4 hover:shadow transition"
-          >
-            
-         <img
-       <img
-  src={part.images?.[0] || "/images/apg-placeholder.png"}
-  alt={part.title}
-  className="w-full h-40 object-contain bg-white rounded mb-3 p-3"
-/>
-            
-            <h3 className="font-semibold">{part.title}</h3>
+      {/* PART GRID */}
+      {parts.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {parts.map((part) => (
+            <Link
+              key={part.id}
+              href={`/parts/${part.id}`}
+              className="border rounded-lg p-4 hover:shadow-md transition bg-white"
+            >
+              <img
+                src={part.images?.[0] || "/placeholder-part.png"}
+                alt={part.title}
+                className="w-full h-40 object-cover rounded mb-3"
+              />
 
-            {part.price !== null && (
-              <p className="text-sm text-gray-600 mt-1">
-                ${part.price}
-              </p>
-            )}
-          </Link>
-        ))}
-      </div>
+              <h3 className="font-semibold text-[#1e2a44]">
+                {part.title}
+              </h3>
+
+              {part.price !== null && (
+                <p className="text-sm text-gray-600 mt-1">
+                  ${part.price}
+                </p>
+              )}
+            </Link>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
