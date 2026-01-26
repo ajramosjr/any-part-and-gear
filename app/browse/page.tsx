@@ -53,7 +53,7 @@ export default function BrowsePage() {
       {parts.length === 0 && (
         <div className="text-center py-20">
           <img
-            src="/placeholder-part.png"
+            src="/images/apg-placeholder.png"
             alt="Any-Part & Gear"
             className="mx-auto h-24 mb-6"
           />
@@ -76,7 +76,7 @@ export default function BrowsePage() {
               className="border rounded-lg p-4 hover:shadow-md transition bg-white"
             >
               <img
-                src={part.images?.[0] || "/placeholder-part.png"}
+                src={part.images?.[0] || "/images/apg-placeholder.png"}
                 alt={part.title}
                 className="w-full h-40 object-cover rounded mb-3"
               />
