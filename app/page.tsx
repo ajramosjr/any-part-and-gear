@@ -22,21 +22,24 @@ export default function HomePage() {
         </p>
 
         {/* CTA BUTTONS */}
-        <div className="flex justify-center gap-4">
-          <Link
-            href="/browse"
-            className="bg-[#0b1f3b] text-white px-6 py-3 rounded-md font-medium hover:opacity-90 transition"
-          >
-            Browse Parts
-          </Link>
+      <div className="flex flex-wrap gap-4 mt-6">
+  <Link href="/browse" className="btn-primary">
+    Browse Parts
+  </Link>
 
-          <Link
-            href="/sell"
-            className="border border-[#0b1f3b] text-[#0b1f3b] px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition"
-          >
-            Sell a Part
-          </Link>
-        </div>
+  <Link href="/sell" className="btn-secondary">
+    Sell a Part
+  </Link>
+
+  <Link
+    href="/browse?mode=trade"
+    className="border border-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition"
+  >
+    Trade a Part
+  </Link>
+</div>   
+            
+        
       </section>
 
       {/* LATEST PARTS */}
