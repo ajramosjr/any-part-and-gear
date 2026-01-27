@@ -10,7 +10,6 @@ type Part = {
   title: string;
   price: number | null;
   image_url: string | null;
-  created_at: string;
 };
 
 export default function HomePage() {
@@ -22,7 +21,7 @@ export default function HomePage() {
     const fetchLatestParts = async () => {
       const { data, error } = await supabase
         .from("parts")
-        .select("id, title, price, image_url, created_at")
+        .select("id, title, price, image_url")
         .order("created_at", { ascending: false })
         .limit(6);
 
@@ -44,12 +43,12 @@ export default function HomePage() {
           <Image
             src="/logo.png"
             alt="Any-Part & Gear"
-            width={300}
-            height={300}
+            width={120}
+            height={120}
           />
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+        <h1 className="text-3xl md:text-4xl font-bold mb-4">
           A marketplace to buy, sell, and trade parts
         </h1>
 
@@ -58,85 +57,63 @@ export default function HomePage() {
         </p>
 
         <div className="flex justify-center gap-4">
-          <Link
-            href="/browse"
-            className="px-6 py-3 bg-slate-900 text-white rounded-lg font-medium"
-          >
+          <Link href="/browse" className="px-6 py-3 bg-slate-900 text-white rounded-lg">
             Browse Parts
           </Link>
-
-          <Link
-            href="/sell"
-            className="px-6 py-3 border border-slate-300 rounded-lg font-medium"
-          >
+          <Link href="/sell" className="px-6 py-3 border rounded-lg">
             Sell a Part
-          </Link>
-
-          <Link
-            href="/trade"
-            className="px-6 py-3 border border-slate-900 rounded-lg font-medium"
-          >
-            Trade a Part
           </Link>
         </div>
       </section>
 
       {/* LATEST PARTS */}
       <section>
-        <h2 className="text-2xl font-semibold mb-2">Latest Parts</h2>
-        <p className="text-slate-500 mb-6">
-          Recently added listings
-        </p>
+        <h2 className="text-2xl font-bold mb-6">Latest Parts</h2>
 
-        {loading && (
-          <p className="text-slate-500">Loading parts…</p>
-        )}
+        {loading && <p>Loading parts…</p>}
 
         {!loading && parts.length === 0 && (
-          <p className="text-slate-500">
-            No listings yet. Be the first to sell a part.
-          </p>
+          <p className="text-gray-500">No parts listed yet.</p>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {parts.map((part) => (
-            <Link
+            <div
               key={part.id}
-              href={`/parts/${part.id}`}
-              className="border rounded-xl overflow-hidden hover:shadow-md transition"
+              className="border rounded-lg p-4 hover:shadow-md transition"
             >
-              <div className="relative h-48 bg-gray-100">
-                <Image
-                  src={part.image_url || "/images/apg-placeholder.png"}
-                  alt={part.title}
-                  fill
-                  className="object-cover"
-                />
-              </div>
+              <Image
+                src={part.image_url || "/images/apg-placeholder.png"}
+                alt={part.title}
+                width={400}
+                height={300}
+                className="rounded mb-3 object-cover"
+              />
 
-              <div className="p-4">
-                <h3 className="font-medium text-slate-900 mb-1">
-                  {part.title}
-                </h3>
+              <h3 className="font-semibold">{part.title}</h3>
 
-                <p className="text-slate-700 font-semibold">
-                  {part.price ? `$${part.price}` : "Trade / Offer"}
-                </p>
+              {part.price !== null && (
+                <p className="text-slate-700">${part.price}</p>
+              )}
+
+              <div className="flex gap-2 mt-3">
+                <Link
+                  href={`/parts/${part.id}`}
+                  className="flex-1 text-center border rounded py-2"
+                >
+                  View
+                </Link>
+
+                <Link
+                  href={`/trade/${part.id}`}
+                  className="flex-1 text-center bg-slate-900 text-white rounded py-2"
+                >
+                  Trade
+                </Link>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
-
-        {parts.length > 0 && (
-          <div className="text-center mt-8">
-            <Link
-              href="/browse"
-              className="text-slate-900 font-medium underline"
-            >
-              View all parts →
-            </Link>
-          </div>
-        )}
       </section>
     </main>
   );
