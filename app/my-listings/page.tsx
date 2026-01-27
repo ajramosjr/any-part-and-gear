@@ -57,6 +57,12 @@ export default function MyListingsPage() {
               height={300}
               className="rounded mb-3"
             />
+            <Link
+  href={`/trade/${part.id}`}
+  className="bg-slate-900 text-white px-4 py-2 rounded text-center"
+>
+  Trade
+</Link>
 
             <h3 className="font-semibold">{part.title}</h3>
           </div>
