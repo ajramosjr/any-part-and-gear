@@ -44,8 +44,8 @@ export default function HomePage() {
           <Image
             src="/logo.png"
             alt="Any-Part & Gear"
-            width={120}
-            height={120}
+            width={200}
+            height={200}
           />
         </div>
 
