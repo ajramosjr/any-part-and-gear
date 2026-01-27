@@ -42,7 +42,7 @@ export default function HomePage() {
       <section className="text-center mb-16">
         <div className="flex justify-center mb-6">
           <Image
-            src="/public/1749054959874.jpg"
+            src="/public/logo.png"
             alt="Any-Part & Gear"
             width={120}
             height={120}
