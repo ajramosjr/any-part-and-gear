@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { createClient } from "@/lib/supabaseClient";
 
 type Part = {
@@ -22,7 +23,10 @@ export default function MyListingsPage() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       const { data } = await supabase
         .from("parts")
@@ -44,27 +48,44 @@ export default function MyListingsPage() {
       {loading && <p>Loading…</p>}
 
       {!loading && parts.length === 0 && (
-        <p className="text-gray-500">You haven’t listed anything yet.</p>
+        <p className="text-gray-500">
+          You haven’t listed anything yet.
+        </p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {parts.map((part) => (
-          <div key={part.id} className="border rounded-lg p-4">
+          <div
+            key={part.id}
+            className="border rounded-lg p-4 flex flex-col"
+          >
             <Image
               src={part.image_url || "/images/apg-placeholder.png"}
               alt={part.title}
               width={400}
               height={300}
-              className="rounded mb-3"
+              className="rounded mb-3 object-cover"
             />
-            <Link
-  href={`/trade/${part.id}`}
-  className="bg-slate-900 text-white px-4 py-2 rounded text-center"
->
-  Trade
-</Link>
 
-            <h3 className="font-semibold">{part.title}</h3>
+            <h3 className="font-semibold mb-3">
+              {part.title}
+            </h3>
+
+            <div className="flex gap-2 mt-auto">
+              <Link
+                href={`/parts/${part.id}`}
+                className="flex-1 border text-center px-4 py-2 rounded"
+              >
+                View
+              </Link>
+
+              <Link
+                href={`/sell/${part.id}`}
+                className="flex-1 bg-slate-900 text-white text-center px-4 py-2 rounded"
+              >
+                Edit
+              </Link>
+            </div>
           </div>
         ))}
       </div>
