@@ -41,7 +41,7 @@ export default function NavBar() {
       >
         <Link href="/browse">Browse</Link>
         <Link href="/sell">Sell</Link>
-
+        <Link href="/my-listings">My Listings</Link>
         <Link href="/inbox" style={{ position: "relative" }}>
           Inbox
          {unread.count > 0 && (
