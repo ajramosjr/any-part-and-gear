@@ -28,13 +28,16 @@ export default function MyListingsPage() {
         return;
       }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("parts")
         .select("id, title, image_url, created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      setParts(data || []);
+      if (!error && data) {
+        setParts(data);
+      }
+
       setLoading(false);
     };
 
@@ -42,7 +45,7 @@ export default function MyListingsPage() {
   }, [supabase]);
 
   return (
-    <main className="max-w-4xl mx-auto p-6">
+    <main className="max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">My Listings</h1>
 
       {loading && <p>Loading…</p>}
@@ -53,41 +56,48 @@ export default function MyListingsPage() {
         </p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {parts.map((part) => (
-          <div
-            key={part.id}
-            className="border rounded-lg p-4 flex flex-col"
-          >
-            <Image
-              src={part.image_url || "/images/apg-placeholder.png"}
-              alt={part.title}
-              width={400}
-              height={300}
-              className="rounded mb-3 object-cover"
-            />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {parts.map((part) => {
+          const imageSrc =
+            part.image_url && part.image_url.trim() !== ""
+              ? part.image_url
+              : "/logo.png"; // or "/images/apg-placeholder.png"
 
-            <h3 className="font-semibold mb-3">
-              {part.title}
-            </h3>
+          return (
+            <div
+              key={part.id}
+              className="border rounded-lg p-4 flex flex-col hover:shadow transition"
+            >
+              <Image
+                src={imageSrc}
+                alt={part.title}
+                width={400}
+                height={300}
+                className="rounded mb-3 object-contain bg-gray-50"
+              />
 
-            <div className="flex gap-2 mt-auto">
-              <Link
-                href={`/parts/${part.id}`}
-                className="flex-1 border text-center px-4 py-2 rounded"
-              >
-                View
-              </Link>
+              <h3 className="font-semibold mb-4">
+                {part.title}
+              </h3>
 
-              <Link
-                href={`/sell/${part.id}`}
-                className="flex-1 bg-slate-900 text-white text-center px-4 py-2 rounded"
-              >
-                Edit
-              </Link>
+              <div className="flex gap-2 mt-auto">
+                <Link
+                  href={`/parts/${part.id}`}
+                  className="flex-1 border text-center px-4 py-2 rounded hover:bg-gray-50"
+                >
+                  View
+                </Link>
+
+                <Link
+                  href={`/sell/${part.id}`}
+                  className="flex-1 bg-slate-900 text-white text-center px-4 py-2 rounded hover:bg-slate-800"
+                >
+                  Edit
+                </Link>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </main>
   );
