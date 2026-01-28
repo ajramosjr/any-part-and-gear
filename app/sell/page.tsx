@@ -1,85 +1,43 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabaseClient";
 
 export default function SellPage() {
-  const supabase = createClient();
-  const router = useRouter();
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      alert("You must be logged in");
-      setLoading(false);
+    if (!imageFile) {
+      alert("Please upload an image");
       return;
     }
 
-    let imageUrl: string | null = null;
-
-    // 🔹 Upload image if selected
-    if (imageFile) {
-      const fileExt = imageFile.name.split(".").pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = fileName;
-
-      const { error: uploadError } = await supabase.storage
-        .from("part-images")
-        .upload(filePath, imageFile);
-
-      if (uploadError) {
-        alert("Image upload failed");
-        setLoading(false);
-        return;
-      }
-
-      const { data } = supabase.storage
-        .from("part-images")
-        .getPublicUrl(filePath);
-
-      imageUrl = data.publicUrl;
-    }
-
-    const { error } = await supabase.from("parts").insert({
-      title,
-      description,
-      price: price ? Number(price) : null,
-      image_url: imageUrl,
-      user_id: user.id,
-      trade_available: true,
-    });
-
-    if (error) {
-      alert(error.message);
-      setLoading(false);
-      return;
-    }
-
-    router.push("/my-listings");
-  };
+    // Upload logic comes next (Step 2)
+    console.log("Ready to upload:", imageFile);
+  }
 
   return (
-    <main className="max-w-xl mx-auto p-6">
+    <div className="max-w-xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Sell a Part</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
           placeholder="Part title"
-          className="w-full border rounded p-3"
+          className="w-full border rounded p-2"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
@@ -87,38 +45,47 @@ export default function SellPage() {
 
         <textarea
           placeholder="Description"
-          className="w-full border rounded p-3"
-          rows={4}
+          className="w-full border rounded p-2"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          required
         />
 
         <input
           type="number"
           placeholder="Price (optional)"
-          className="w-full border rounded p-3"
+          className="w-full border rounded p-2"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
         />
 
-        {/* ✅ IMAGE UPLOAD */}
+        {/* IMAGE UPLOAD */}
         <input
           type="file"
           accept="image/*"
+          onChange={handleImageChange}
           className="w-full"
-          onChange={(e) =>
-            setImageFile(e.target.files?.[0] || null)
-          }
         />
+
+        {/* IMAGE PREVIEW */}
+        {previewUrl && (
+          <div className="mt-4">
+            <p className="text-sm mb-2">Image preview:</p>
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="w-full max-h-64 object-contain rounded border"
+            />
+          </div>
+        )}
 
         <button
           type="submit"
-          disabled={loading}
-          className="bg-black text-white px-6 py-3 rounded"
+          className="bg-black text-white px-4 py-2 rounded"
         >
-          {loading ? "Posting..." : "Post Listing"}
+          Post Listing
         </button>
       </form>
-    </main>
+    </div>
   );
 }
