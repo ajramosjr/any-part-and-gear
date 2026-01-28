@@ -1,119 +1,58 @@
+import { createClient } from "@/lib/supabase/server";
 import Image from "next/image";
-import Link from "next/link";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
 
-export default async function PartPage({
-  params,
-}: {
+interface PageProps {
   params: { id: string };
-}) {
-  const cookieStore = await cookies();
+}
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: any) {
-          cookieStore.set({ name, value: "", ...options });
-        },
-      },
-    }
-  );
+export default async function PartDetailPage({ params }: PageProps) {
+  const supabase = createClient();
 
-  // Get logged-in user (optional, used to prevent trading own item later)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // ✅ Convert id to number
+  const partId = Number(params.id);
+
+  if (Number.isNaN(partId)) {
+    notFound();
+  }
 
   const { data: part, error } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", params.id)
-    .single();
+    .eq("id", partId)
+    .maybeSingle(); // ✅ safer than single()
 
   if (error || !part) {
-    return (
-      <main className="max-w-4xl mx-auto p-6">
-        <h1 className="text-xl font-semibold">Part not found</h1>
-      </main>
-    );
+    notFound();
   }
 
-  const imageSrc =
-    part.image_url && part.image_url.trim() !== ""
-      ? part.image_url
-      : "/images/apg-placeholder.png";
-
-  const isOwner = user && user.id === part.user_id;
-
   return (
-    <main className="max-w-4xl mx-auto p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Image */}
-        <div className="relative w-full h-[350px] bg-gray-100 rounded">
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">{part.title}</h1>
+
+      {part.image_url && (
+        <div className="mb-6">
           <Image
-            src={imageSrc}
+            src={part.image_url}
             alt={part.title}
-            fill
-            className="object-cover rounded"
-            priority
+            width={600}
+            height={400}
+            className="rounded-lg"
           />
         </div>
+      )}
 
-        {/* Details */}
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-bold mb-3">
-            {part.title}
-          </h1>
+      <div className="space-y-2">
+        <p className="text-lg font-semibold">${part.price}</p>
+        <p className="text-gray-700">{part.description}</p>
 
-          {part.description && (
-            <p className="text-gray-700 mb-4">
-              {part.description}
-            </p>
-          )}
-
-          {part.price && (
-            <p className="text-lg font-semibold mb-6">
-              ${part.price}
-            </p>
-          )}
-
-          <div className="mt-auto flex gap-3">
-            <Link
-              href="/"
-              className="border px-4 py-2 rounded text-center"
-            >
-              Back
-            </Link>
-
-            {!isOwner && (
-              <Link
-                href={`/trade/${part.id}`}
-                className="bg-slate-900 text-white px-4 py-2 rounded text-center"
-              >
-                Propose Trade
-              </Link>
-            )}
-
-            {isOwner && (
-              <Link
-                href={`/sell/${part.id}`}
-                className="bg-slate-900 text-white px-4 py-2 rounded text-center"
-              >
-                Edit Listing
-              </Link>
-            )}
-          </div>
-        </div>
+        {part.condition && (
+          <p>
+            <span className="font-medium">Condition:</span>{" "}
+            {part.condition}
+          </p>
+        )}
       </div>
-    </main>
+    </div>
   );
 }
