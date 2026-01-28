@@ -1,15 +1,34 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
-interface PageProps {
+export default async function PartPage({
+  params,
+}: {
   params: { id: string };
-}
+}) {
+  const cookieStore = cookies();
 
-export default async function PartDetailPage({ params }: PageProps) {
-  const supabase = createClient();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: any) {
+          cookieStore.set({ name, value: "", ...options });
+        },
+      },
+    }
+  );
 
-  // ✅ Convert id to number
+  // ✅ Convert route param to number (VERY IMPORTANT)
   const partId = Number(params.id);
 
   if (Number.isNaN(partId)) {
@@ -20,39 +39,37 @@ export default async function PartDetailPage({ params }: PageProps) {
     .from("parts")
     .select("*")
     .eq("id", partId)
-    .maybeSingle(); // ✅ safer than single()
+    .maybeSingle();
 
   if (error || !part) {
     notFound();
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <main className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">{part.title}</h1>
 
-      {part.image_url && (
-        <div className="mb-6">
-          <Image
-            src={part.image_url}
-            alt={part.title}
-            width={600}
-            height={400}
-            className="rounded-lg"
-          />
-        </div>
+      <Image
+        src={part.image_url || "/images/apg-placeholder.png"}
+        alt={part.title}
+        width={600}
+        height={400}
+        className="rounded mb-6 object-cover"
+      />
+
+      {part.description && (
+        <p className="text-gray-700 mb-4">{part.description}</p>
       )}
 
-      <div className="space-y-2">
-        <p className="text-lg font-semibold">${part.price}</p>
-        <p className="text-gray-700">{part.description}</p>
+      {part.price && (
+        <p className="text-lg font-semibold mb-4">
+          Price: ${part.price}
+        </p>
+      )}
 
-        {part.condition && (
-          <p>
-            <span className="font-medium">Condition:</span>{" "}
-            {part.condition}
-          </p>
-        )}
-      </div>
-    </div>
+      <button className="bg-slate-900 text-white px-6 py-3 rounded">
+        Trade
+      </button>
+    </main>
   );
 }
