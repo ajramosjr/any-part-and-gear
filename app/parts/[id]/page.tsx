@@ -28,6 +28,11 @@ export default async function PartPage({
     }
   );
 
+  // Get logged-in user (optional, used to prevent trading own item later)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { data: part, error } = await supabase
     .from("parts")
     .select("*")
@@ -36,9 +41,9 @@ export default async function PartPage({
 
   if (error || !part) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <p className="text-red-500">Part not found.</p>
-      </div>
+      <main className="max-w-4xl mx-auto p-6">
+        <h1 className="text-xl font-semibold">Part not found</h1>
+      </main>
     );
   }
 
@@ -47,23 +52,27 @@ export default async function PartPage({
       ? part.image_url
       : "/images/apg-placeholder.png";
 
+  const isOwner = user && user.id === part.user_id;
+
   return (
     <main className="max-w-4xl mx-auto p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Image */}
-        <div>
+        <div className="relative w-full h-[350px] bg-gray-100 rounded">
           <Image
             src={imageSrc}
             alt={part.title}
-            width={600}
-            height={400}
-            className="rounded-lg object-cover"
+            fill
+            className="object-cover rounded"
+            priority
           />
         </div>
 
         {/* Details */}
         <div className="flex flex-col">
-          <h1 className="text-2xl font-bold mb-3">{part.title}</h1>
+          <h1 className="text-2xl font-bold mb-3">
+            {part.title}
+          </h1>
 
           {part.description && (
             <p className="text-gray-700 mb-4">
@@ -72,25 +81,36 @@ export default async function PartPage({
           )}
 
           {part.price && (
-            <p className="text-lg font-semibold mb-4">
+            <p className="text-lg font-semibold mb-6">
               ${part.price}
             </p>
           )}
 
-          <div className="flex gap-3 mt-auto">
-            <Link
-              href={`/trade/${part.id}`}
-              className="flex-1 bg-slate-900 text-white text-center px-4 py-2 rounded"
-            >
-              Propose Trade
-            </Link>
-
+          <div className="mt-auto flex gap-3">
             <Link
               href="/"
-              className="flex-1 border text-center px-4 py-2 rounded"
+              className="border px-4 py-2 rounded text-center"
             >
               Back
             </Link>
+
+            {!isOwner && (
+              <Link
+                href={`/trade/${part.id}`}
+                className="bg-slate-900 text-white px-4 py-2 rounded text-center"
+              >
+                Propose Trade
+              </Link>
+            )}
+
+            {isOwner && (
+              <Link
+                href={`/sell/${part.id}`}
+                className="bg-slate-900 text-white px-4 py-2 rounded text-center"
+              >
+                Edit Listing
+              </Link>
+            )}
           </div>
         </div>
       </div>
