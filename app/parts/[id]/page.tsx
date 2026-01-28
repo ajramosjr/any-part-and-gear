@@ -8,7 +8,6 @@ export default async function PartPage({
 }: {
   params: { id: string };
 }) {
-  // ✅ FIX: cookies() must be awaited
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -29,17 +28,10 @@ export default async function PartPage({
     }
   );
 
-  // ✅ Ensure ID is numeric (Supabase expects this)
-  const partId = Number(params.id);
-
-  if (Number.isNaN(partId)) {
-    notFound();
-  }
-
   const { data: part, error } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", partId)
+    .eq("id", params.id) // ✅ UUID SAFE
     .maybeSingle();
 
   if (error || !part) {
@@ -69,7 +61,7 @@ export default async function PartPage({
       )}
 
       <button className="bg-slate-900 text-white px-6 py-3 rounded">
-        Trade
+        Request Trade
       </button>
     </main>
   );
