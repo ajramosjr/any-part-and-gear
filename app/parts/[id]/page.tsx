@@ -8,7 +8,8 @@ export default async function PartPage({
 }: {
   params: { id: string };
 }) {
-  const cookieStore = cookies();
+  // ✅ FIX: cookies() must be awaited
+  const cookieStore = await cookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,7 +29,7 @@ export default async function PartPage({
     }
   );
 
-  // ✅ Convert route param to number (VERY IMPORTANT)
+  // ✅ Ensure ID is numeric (Supabase expects this)
   const partId = Number(params.id);
 
   if (Number.isNaN(partId)) {
@@ -62,7 +63,7 @@ export default async function PartPage({
       )}
 
       {part.price && (
-        <p className="text-lg font-semibold mb-4">
+        <p className="text-lg font-semibold mb-6">
           Price: ${part.price}
         </p>
       )}
