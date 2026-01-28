@@ -1,91 +1,76 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase/supabaseBrowser";
 
 export default function SellPage() {
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImageFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-  }
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setLoading(true);
 
     if (!imageFile) {
-      alert("Please upload an image");
+      alert("Please select an image");
+      setLoading(false);
       return;
     }
 
-    // Upload logic comes next (Step 2)
-    console.log("Ready to upload:", imageFile);
+    // 🔹 Upload image
+    const ext = imageFile.name.split(".").pop();
+    const fileName = `${crypto.randomUUID()}.${ext}`;
+    const filePath = `parts/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("part-images") // ✅ matches your bucket
+      .upload(filePath, imageFile);
+
+    if (uploadError) {
+      console.error(uploadError);
+      alert("Upload failed");
+      setLoading(false);
+      return;
+    }
+
+    const { data } = supabase.storage
+      .from("part-images")
+      .getPublicUrl(filePath);
+
+    const imageUrl = data.publicUrl;
+
+    console.log("IMAGE URL:", imageUrl);
+
+    // ⛔️ Do NOT insert into parts table yet
+    // We’ll do that safely next
+
+    setLoading(false);
   }
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Sell a Part</h1>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <input
+        type="text"
+        placeholder="Part title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="border p-2 w-full"
+      />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Part title"
-          className="w-full border rounded p-2"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+      />
 
-        <textarea
-          placeholder="Description"
-          className="w-full border rounded p-2"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-        />
-
-        <input
-          type="number"
-          placeholder="Price (optional)"
-          className="w-full border rounded p-2"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-
-        {/* IMAGE UPLOAD */}
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="w-full"
-        />
-
-        {/* IMAGE PREVIEW */}
-        {previewUrl && (
-          <div className="mt-4">
-            <p className="text-sm mb-2">Image preview:</p>
-            <img
-              src={previewUrl}
-              alt="Preview"
-              className="w-full max-h-64 object-contain rounded border"
-            />
-          </div>
-        )}
-
-        <button
-          type="submit"
-          className="bg-black text-white px-4 py-2 rounded"
-        >
-          Post Listing
-        </button>
-      </form>
-    </div>
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-black text-white px-4 py-2"
+      >
+        {loading ? "Uploading..." : "Submit"}
+      </button>
+    </form>
   );
 }
