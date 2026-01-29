@@ -1,13 +1,31 @@
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabaseServer";
-import { NextResponse } from "next/server";
 
 export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const supabase = createClient();
 
-  await supabase.from("parts").delete().eq("id", params.id);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return NextResponse.redirect(new URL("/parts", req.url));
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { error } = await supabase
+    .from("parts")
+    .delete()
+    .eq("id", id)
+    .eq("seller_id", user.id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ success: true });
 }
