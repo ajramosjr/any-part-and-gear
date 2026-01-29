@@ -7,7 +7,7 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  const supabase = createClient();
+  const supabase = await createClient(); // 🔥 FIX IS HERE
 
   const {
     data: { user },
