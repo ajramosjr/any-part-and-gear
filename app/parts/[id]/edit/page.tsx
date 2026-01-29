@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabaseServer";
 import { redirect, notFound } from "next/navigation";
 
 export default async function EditPartPage({
