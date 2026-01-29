@@ -1,77 +1,72 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabaseServer";
-import { redirect, notFound } from "next/navigation";
 
-export default async function EditPartPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createClient();
+interface EditPartPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function EditPartPage({ params }: EditPartPageProps) {
+  const supabase = await createClient(); // ✅ FIX
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) {
+    redirect("/login");
+  }
 
-  const { data: part } = await supabase
+  const { data: part, error } = await supabase
     .from("parts")
     .select("*")
     .eq("id", params.id)
     .single();
 
-  if (!part) notFound();
-  if (part.user_id !== user.id) redirect("/");
+  if (error || !part) {
+    redirect("/my-listings");
+  }
 
-  async function updatePart(formData: FormData) {
-    "use server";
-
-    const title = formData.get("title") as string;
-    const price = Number(formData.get("price"));
-    const description = formData.get("description") as string;
-
-    const supabase = createClient();
-
-    await supabase
-      .from("parts")
-      .update({
-        title,
-        price,
-        description,
-      })
-      .eq("id", params.id);
-
-    redirect(`/parts/${params.id}`);
+  // Ownership check
+  if (part.seller_id !== user.id) {
+    redirect("/my-listings");
   }
 
   return (
-    <form action={updatePart} className="max-w-xl space-y-4">
-      <h1 className="text-2xl font-bold">Edit Listing</h1>
+    <div className="max-w-xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Edit Part</h1>
 
-      <input
-        name="title"
-        defaultValue={part.title}
-        required
-        className="w-full border p-2"
-      />
+      <form action={`/api/parts/${part.id}/update`} method="POST">
+        <input
+          type="text"
+          name="title"
+          defaultValue={part.title}
+          className="w-full border p-2 mb-3"
+          required
+        />
 
-      <input
-        name="price"
-        type="number"
-        defaultValue={part.price}
-        required
-        className="w-full border p-2"
-      />
+        <input
+          type="number"
+          name="price"
+          defaultValue={part.price}
+          className="w-full border p-2 mb-3"
+          required
+        />
 
-      <textarea
-        name="description"
-        defaultValue={part.description}
-        className="w-full border p-2"
-      />
+        <textarea
+          name="description"
+          defaultValue={part.description}
+          className="w-full border p-2 mb-3"
+        />
 
-      <button className="bg-black text-white px-4 py-2">
-        Save Changes
-      </button>
-    </form>
+        <button
+          type="submit"
+          className="bg-black text-white px-4 py-2 rounded"
+        >
+          Save Changes
+        </button>
+      </form>
+    </div>
   );
 }
