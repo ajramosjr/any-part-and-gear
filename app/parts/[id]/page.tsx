@@ -59,7 +59,22 @@ export default async function PartPage({
           Price: ${part.price}
         </p>
       )}
+{user?.id === part.user_id && (
+  <div className="flex gap-4 mt-4">
+    <a
+      href={`/parts/${part.id}/edit`}
+      className="border px-3 py-1"
+    >
+      ✏️ Edit
+    </a>
 
+    <form action={`/parts/${part.id}/delete`} method="post">
+      <button className="border px-3 py-1">
+        🗑 Delete
+      </button>
+    </form>
+  </div>
+)}
       <button className="bg-slate-900 text-white px-6 py-3 rounded">
         Request Trade
       </button>
