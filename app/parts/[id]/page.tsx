@@ -1,83 +1,50 @@
-import { createClient } from "@/lib/supabaseClient";
-import { cookies } from "next/headers";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabaseServer";
 
-export default async function PartPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const cookieStore = await cookies();
+interface PartPageProps {
+  params: {
+    id: string;
+  };
+}
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: any) {
-          cookieStore.set({ name, value: "", ...options });
-        },
-      },
-    }
-  );
+export default async function PartPage({ params }: PartPageProps) {
+  const supabase = await createClient(); // ✅ FIXED
 
   const { data: part, error } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", params.id) // ✅ UUID SAFE
-    .maybeSingle();
+    .eq("id", params.id)
+    .single();
 
   if (error || !part) {
     notFound();
   }
 
-  return (
-    <main className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">{part.title}</h1>
+  const imageSrc =
+    part.image_url && part.image_url.trim() !== ""
+      ? part.image_url
+      : "/logo.png";
 
-      <Image
-        src={part.image_url || "/images/apg-placeholder.png"}
-        alt={part.title}
-        width={600}
-        height={400}
-        className="rounded mb-6 object-cover"
-      />
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="mb-6">
+        <Image
+          src={imageSrc}
+          alt={part.title}
+          width={600}
+          height={400}
+          className="rounded"
+        />
+      </div>
+
+      <h1 className="text-3xl font-bold mb-2">{part.title}</h1>
+
+      <p className="text-xl font-semibold mb-4">${part.price}</p>
 
       {part.description && (
-        <p className="text-gray-700 mb-4">{part.description}</p>
+        <p className="text-gray-700">{part.description}</p>
       )}
-
-      {part.price && (
-        <p className="text-lg font-semibold mb-6">
-          Price: ${part.price}
-        </p>
-      )}
-{user?.id === part.user_id && (
-  <div className="flex gap-4 mt-4">
-    <a
-      href={`/parts/${part.id}/edit`}
-      className="border px-3 py-1"
-    >
-      ✏️ Edit
-    </a>
-
-    <form action={`/parts/${part.id}/delete`} method="post">
-      <button className="border px-3 py-1">
-        🗑 Delete
-      </button>
-    </form>
-  </div>
-)}
-      <button className="bg-slate-900 text-white px-6 py-3 rounded">
-        Request Trade
-      </button>
-    </main>
+    </div>
   );
 }
