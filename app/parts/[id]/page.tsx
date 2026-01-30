@@ -11,12 +11,12 @@ interface PartPageProps {
 export default async function PartPage({ params }: PartPageProps) {
   const supabase = await createClient(); // ✅ FIXED
 
-  const { data: part, error } = await supabase
-    .from("parts")
-    .select("*")
-    .eq("id", params.id)
-    .single();
-
+ const { data: part, error } = await supabase
+  .from("parts")
+  .select("*")
+  .eq("id", Number(params.id)) // ✅ REQUIRED
+  .single();
+  
   if (error || !part) {
     notFound();
   }
