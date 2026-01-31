@@ -59,10 +59,9 @@ export default function MyListingsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {parts.map((part) => {
           const imageSrc =
-            part.image_url && part.image_url.trim() !== ""
-              ? part.image_url
-              : "/logo.png"; // or "/images/apg-placeholder.png"
-
+  part.image_url?.startsWith("http")
+    ? part.image_url
+    : "/logo.png";
           return (
             <div
               key={part.id}
