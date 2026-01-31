@@ -1,4 +1,4 @@
-"use client";
+    "use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -13,7 +13,7 @@ type Profile = {
 };
 
 type Part = {
-  id: number;
+  id: string;
   title: string;
   price: number | null;
 };
@@ -21,13 +21,15 @@ type Part = {
 export default function SellerProfilePage() {
   const supabase = createClient();
   const params = useParams();
-  const sellerId = params.id as string;
+  const sellerId = params?.id as string | undefined;
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!sellerId) return;
+
     const fetchSeller = async () => {
       const { data: profileData } = await supabase
         .from("profiles")
@@ -46,7 +48,7 @@ export default function SellerProfilePage() {
       setLoading(false);
     };
 
-    if (sellerId) fetchSeller();
+    fetchSeller();
   }, [sellerId, supabase]);
 
   if (loading) {
@@ -59,12 +61,18 @@ export default function SellerProfilePage() {
 
   return (
     <main className="max-w-3xl mx-auto p-6">
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center gap-2 mb-2">
         <h1 className="text-2xl font-bold">
           {profile.username ?? "Seller"}
         </h1>
         {profile.verified && <VerifiedBadge />}
       </div>
+
+      <p className="text-sm text-gray-500 mb-6">
+        {profile.verified
+          ? "Verified seller on Any-Part & Gear"
+          : "Seller on Any-Part & Gear"}
+      </p>
 
       <h2 className="text-lg font-semibold mb-4">Listings</h2>
 
@@ -76,7 +84,7 @@ export default function SellerProfilePage() {
         {parts.map((part) => (
           <li
             key={part.id}
-            className="border rounded p-3 flex justify-between"
+            className="border rounded p-3 flex justify-between items-center"
           >
             <Link
               href={`/parts/${part.id}`}
@@ -84,7 +92,9 @@ export default function SellerProfilePage() {
             >
               {part.title}
             </Link>
-            {part.price && <span>${part.price}</span>}
+            {part.price !== null && (
+              <span className="text-gray-700">${part.price}</span>
+            )}
           </li>
         ))}
       </ul>
