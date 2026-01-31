@@ -1,25 +1,32 @@
+import Image from "next/image";
+import Link from "next/link";
+
 type Part = {
-  id?: string;
+  id: string;
   title: string;
   price: number;
-  fitment?: string;
-  image?: string;
+  fitment?: string | null;
+  image_url?: string | null;
 };
 
 export default function PartCard({ part }: { part: Part }) {
+  const imageSrc =
+    part.image_url && part.image_url.startsWith("http")
+      ? part.image_url
+      : "/logo.png";
+
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition">
-      <div className="h-40 bg-gray-100 flex items-center justify-center">
-        {part.image ? (
-          <img
-            src={part.image}
+      <Link href={`/parts/${part.id}`} className="block">
+        <div className="h-40 bg-gray-100 relative">
+          <Image
+            src={imageSrc}
             alt={part.title}
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
           />
-        ) : (
-          <span className="text-gray-400 text-sm">No Image</span>
-        )}
-      </div>
+        </div>
+      </Link>
 
       <div className="p-4 space-y-2">
         <h3 className="text-lg font-semibold text-gray-900">
@@ -37,9 +44,12 @@ export default function PartCard({ part }: { part: Part }) {
             ${part.price}
           </span>
 
-          <button className="px-3 py-1 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-500">
+          <Link
+            href={`/parts/${part.id}`}
+            className="px-3 py-1 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-500"
+          >
             View Part
-          </button>
+          </Link>
         </div>
       </div>
     </div>
