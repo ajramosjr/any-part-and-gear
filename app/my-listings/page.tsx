@@ -59,9 +59,10 @@ export default function MyListingsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {parts.map((part) => {
           const imageSrc =
-  part.image_url?.startsWith("http")
-    ? part.image_url
-    : "/logo.png";
+            part.image_url?.startsWith("http")
+              ? part.image_url
+              : "/logo.png";
+
           return (
             <div
               key={part.id}
@@ -72,6 +73,7 @@ export default function MyListingsPage() {
                 alt={part.title}
                 width={400}
                 height={300}
+                sizes="(max-width: 768px) 100vw, 33vw"
                 className="rounded mb-3 object-contain bg-gray-50"
               />
 
@@ -86,7 +88,7 @@ export default function MyListingsPage() {
                 >
                   View
                 </Link>
-             <Link href="/my-listings">My Listings</Link>
+
                 <Link
                   href={`/sell/${part.id}`}
                   className="flex-1 bg-slate-900 text-white text-center px-4 py-2 rounded hover:bg-slate-800"
