@@ -14,7 +14,9 @@ export default async function PartPage({
     .select("*")
     .eq("id", params.id)
     .single();
-
+  
+console.log("PART ID:", part.id, typeof part.id);
+  
   if (error || !part) {
     return <p className="p-6">Part not found.</p>;
   }
