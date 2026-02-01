@@ -19,12 +19,13 @@ export default function PartCard({ part }: { part: Part }) {
     <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition">
       <Link href={`/parts/${part.id}`} className="block">
         <div className="h-40 bg-gray-100 relative">
-          <Image
-            src={imageSrc}
-            alt={part.title}
-            fill
-            className="object-cover"
-          />
+        <Image
+  src={imageSrc}
+  alt={part.title}
+  fill
+  sizes="(max-width: 768px) 100vw, 33vw"
+  className="object-cover"
+/>  
         </div>
       </Link>
 
