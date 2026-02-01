@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabaseServer";
+import { createClient } from "@/lib/supabaseClient";
+
 
 export default async function PartPage({
   params,
