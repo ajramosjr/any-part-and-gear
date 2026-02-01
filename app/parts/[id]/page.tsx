@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabaseServer";
 
 export default async function PartPage({
@@ -6,19 +7,20 @@ export default async function PartPage({
 }: {
   params: { id: string };
 }) {
-  // ✅ MUST await this
-  const supabase = await createClient();
+  const supabase = createClient(); // ❌ no await
+
+  if (!params.id || typeof params.id !== "string") {
+    notFound();
+  }
 
   const { data: part, error } = await supabase
     .from("parts")
     .select("*")
     .eq("id", params.id)
     .single();
-  
-console.log("PART ID:", part.id, typeof part.id);
-  
+
   if (error || !part) {
-    return <p className="p-6">Part not found.</p>;
+    notFound();
   }
 
   const imageSrc =
@@ -33,22 +35,15 @@ console.log("PART ID:", part.id, typeof part.id);
         alt={part.title}
         width={600}
         height={400}
-        className="rounded mb-4 object-contain bg-gray-50"
+        className="rounded mb-4"
       />
 
-      <h1 className="text-2xl font-bold mb-2">
-        {part.title}
-      </h1>
+      <h1 className="text-3xl font-bold">{part.title}</h1>
+      <p className="text-xl font-semibold mt-2">${part.price}</p>
 
-      {part.price && (
-        <p className="text-xl font-semibold text-blue-600 mb-4">
-          ${part.price}
-        </p>
+      {part.description && (
+        <p className="mt-4 text-gray-700">{part.description}</p>
       )}
-
-      <p className="text-gray-700">
-        {part.description}
-      </p>
     </main>
   );
 }
