@@ -1,50 +1,76 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabaseClient";
+import Image from "next/image";
+import { createClient } from "@/lib/supabase/server";
 
+type PartPageProps = {
+  params: {
+    id: string;
+  };
+};
 
-export default async function PartPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createClient(); // ❌ no await
-
-  if (!params.id || typeof params.id !== "string") {
+export default async function PartPage({ params }: PartPageProps) {
+  // 🔒 HARD GUARD: only allow numeric IDs
+  const partId = Number(params.id);
+  if (Number.isNaN(partId)) {
     notFound();
   }
+
+  const supabase = createClient();
 
   const { data: part, error } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", partId)
     .single();
 
   if (error || !part) {
     notFound();
   }
 
-  const imageSrc =
-    part.image_url?.startsWith("http")
-      ? part.image_url
-      : "/logo.png";
+  const images: string[] = Array.isArray(part.images) ? part.images : [];
 
   return (
-    <main className="max-w-4xl mx-auto p-6">
-      <Image
-        src={imageSrc}
-        alt={part.title}
-        width={600}
-        height={400}
-        className="rounded mb-4"
-      />
+    <main className="max-w-5xl mx-auto px-4 py-8">
+      {/* Title */}
+      <h1 className="text-3xl font-bold mb-4">
+        {part.title ?? "Untitled Part"}
+      </h1>
 
-      <h1 className="text-3xl font-bold">{part.title}</h1>
-      <p className="text-xl font-semibold mt-2">${part.price}</p>
-
-      {part.description && (
-        <p className="mt-4 text-gray-700">{part.description}</p>
+      {/* Images */}
+      {images.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {images.map((src, index) => (
+            <div
+              key={index}
+              className="relative w-full aspect-square rounded-lg overflow-hidden border"
+            >
+              <Image
+                src={src}
+                alt={`Part image ${index + 1}`}
+                fill
+                className="object-cover"
+              />
+            </div>
+          ))}
+        </div>
       )}
+
+      {/* Details */}
+      <div className="space-y-3">
+        {part.price && (
+          <p className="text-xl font-semibold">
+            ${Number(part.price).toLocaleString()}
+          </p>
+        )}
+
+        {part.description && (
+          <p className="text-gray-700">{part.description}</p>
+        )}
+
+        <div className="text-sm text-gray-500">
+          Part ID: {part.id}
+        </div>
+      </div>
     </main>
   );
 }
