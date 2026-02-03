@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
   const body = await req.json();
   const { part_id } = body;
 
@@ -26,5 +25,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  return NextResponse.json({ success: true });
-}
+  return NextResponse.json({ success:
