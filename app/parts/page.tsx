@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase/supabaseClient";
+import { supabase } from "@/lib/supabase/client";
 
 type Part = {
   id: number; // ✅ MUST be number
