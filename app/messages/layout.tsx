@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabaseServer";
+import { createClient } from "@/lib/supabase/supabaseServer";
 
 export default async function MessagesLayout({
   children,
