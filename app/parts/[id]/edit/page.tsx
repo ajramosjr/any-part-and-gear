@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 
 interface EditPartPageProps {
   params: {
@@ -8,8 +8,6 @@ interface EditPartPageProps {
 }
 
 export default async function EditPartPage({ params }: EditPartPageProps) {
-  const supabase = await createClient(); // ✅ FIX
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -28,7 +26,7 @@ export default async function EditPartPage({ params }: EditPartPageProps) {
     redirect("/my-listings");
   }
 
-  // Ownership check
+  // 🔐 Ownership check
   if (part.seller_id !== user.id) {
     redirect("/my-listings");
   }
@@ -62,8 +60,7 @@ export default async function EditPartPage({ params }: EditPartPageProps) {
 
         <button
           type="submit"
-          className="bg-black text-white px-4 py-2 rounded"
-        >
+          className="bg-black text-white px-4 py-2 rounded">
           Save Changes
         </button>
       </form>
