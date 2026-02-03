@@ -14,8 +14,9 @@ export default async function PartPage({ params }: PartPageProps) {
   if (Number.isNaN(partId)) {
     notFound();
   }
-
-  const supabase = createClient();
+  
+const supabase = await createClient();
+  
 
   const { data: part, error } = await supabase
     .from("parts")
