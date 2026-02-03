@@ -10,10 +10,12 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
-  // Mark all unread messages for this part as read
   const { error } = await supabase
     .from("messages")
     .update({ read: true })
@@ -22,7 +24,12 @@ export async function POST(req: Request) {
     .eq("read", false);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(
+      { error: error.message },
+      { status: 400 }
+    );
   }
 
-  return NextResponse.json({ success:
+  // ✅ THIS WAS THE BROKEN LINE
+  return NextResponse.json({ success: true });
+}
