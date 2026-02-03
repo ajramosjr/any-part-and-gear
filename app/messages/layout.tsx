@@ -1,13 +1,11 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 
 export default async function MessagesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
