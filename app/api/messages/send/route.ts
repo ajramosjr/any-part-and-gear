@@ -1,12 +1,9 @@
-
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
     const body = await req.json();
-
     const { receiver_id, part_id, content } = body;
 
     if (!receiver_id || !content) {
