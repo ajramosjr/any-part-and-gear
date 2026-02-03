@@ -9,69 +9,45 @@ type PartPageProps = {
 };
 
 export default async function PartPage({ params }: PartPageProps) {
-  // 🔒 HARD GUARD: only allow numeric IDs
-  const partId = Number(params.id);
+  const supabase = await createClient();
+
+  const partId = Number(params.id); // ✅ FIX
+
   if (Number.isNaN(partId)) {
     notFound();
   }
-  
-const supabase = await createClient();
-  
 
   const { data: part, error } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", partId)
+    .eq("id", partId) // ✅ number matches int8
     .single();
 
   if (error || !part) {
     notFound();
   }
 
-  const images: string[] = Array.isArray(part.images) ? part.images : [];
-
   return (
-    <main className="max-w-5xl mx-auto px-4 py-8">
-      {/* Title */}
-      <h1 className="text-3xl font-bold mb-4">
-        {part.title ?? "Untitled Part"}
-      </h1>
+    <div style={{ padding: 20 }}>
+      <h1>{part.title}</h1>
 
-      {/* Images */}
-      {images.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          {images.map((src, index) => (
-            <div
-              key={index}
-              className="relative w-full aspect-square rounded-lg overflow-hidden border"
-            >
-              <Image
-                src={src}
-                alt={`Part image ${index + 1}`}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ))}
-        </div>
+      {part.image_urls?.[0] && (
+        <Image
+          src={part.image_urls[0]}
+          alt={part.title}
+          width={600}
+          height={400}
+          style={{ borderRadius: 8 }}
+        />
       )}
 
-      {/* Details */}
-      <div className="space-y-3">
-        {part.price && (
-          <p className="text-xl font-semibold">
-            ${Number(part.price).toLocaleString()}
-          </p>
-        )}
+      <p style={{ marginTop: 12 }}>${part.price}</p>
+      <p>{part.platform}</p>
+      <p>{part.category}</p>
 
-        {part.description && (
-          <p className="text-gray-700">{part.description}</p>
-        )}
-
-        <div className="text-sm text-gray-500">
-          Part ID: {part.id}
-        </div>
-      </div>
-    </main>
+      {part.trade_available && (
+        <p style={{ color: "green" }}>Trade available</p>
+      )}
+    </div>
   );
 }
