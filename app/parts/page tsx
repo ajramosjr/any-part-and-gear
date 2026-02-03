@@ -1,209 +1,53 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 
-type Part = {
-  id: number;
-  title: string;
-  price: number;
-  platform: string;
-  category: string;
-  trade_available: boolean;
-  images: string[] | null;
+type PartPageProps = {
+  params: {
+    id: string;
+  };
 };
 
-const categories = [
-  "All",
-  "Brakes",
-  "Engine",
-  "Suspension",
-  "Electrical",
-  "Body",
-  "Interior",
-  "Drivetrain",
-  "Other",
-];
+export default async function PartPage({ params }: PartPageProps) {
+  const supabase = await createClient();
 
-export default function PartsPage() {
-  const [parts, setParts] = useState<Part[]>([]);
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [tradeOnly, setTradeOnly] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const partId = Number(params.id); // ✅ FIX
 
-  useEffect(() => {
-    const init = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  if (Number.isNaN(partId)) {
+    notFound();
+  }
 
-      if (user) {
-        setUserId(user.id);
+  const { data: part, error } = await supabase
+    .from("parts")
+    .select("*")
+    .eq("id", partId) // ✅ number matches int8
+    .single();
 
-        const { data } = await supabase
-          .from("favorites")
-          .select("part_id")
-          .eq("user_id", user.id);
-
-        setFavorites(data?.map((f) => f.part_id) || []);
-      }
-
-      fetchParts();
-    };
-
-    init();
-  }, [activeCategory, tradeOnly]);
-
-  const fetchParts = async () => {
-    setLoading(true);
-
-    let query = supabase
-      .from("parts")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (activeCategory !== "All") {
-      query = query.eq("category", activeCategory);
-    }
-
-    if (tradeOnly) {
-      query = query.eq("trade_available", true);
-    }
-
-    const { data } = await query;
-
-    setParts((data as Part[]) || []);
-    setLoading(false);
-  };
-
-  const toggleFavorite = async (partId: number) => {
-    if (!userId) {
-      alert("Please sign in to save listings.");
-      return;
-    }
-
-    const isSaved = favorites.includes(partId);
-
-    if (isSaved) {
-      await supabase
-        .from("favorites")
-        .delete()
-        .eq("user_id", userId)
-        .eq("part_id", partId);
-
-      setFavorites(favorites.filter((id) => id !== partId));
-    } else {
-      await supabase.from("favorites").insert({
-        user_id: userId,
-        part_id: partId,
-      });
-
-      setFavorites([...favorites, partId]);
-    }
-  };
+  if (error || !part) {
+    notFound();
+  }
 
   return (
     <div style={{ padding: 20 }}>
-      <h1>Marketplace</h1>
+      <h1>{part.title}</h1>
 
-      {/* CATEGORY FILTERS */}
-      <div style={{ marginBottom: 12 }}>
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            style={{
-              marginRight: 6,
-              padding: "6px 12px",
-              borderRadius: 6,
-              border: "1px solid #ccc",
-              background: activeCategory === cat ? "#000" : "#fff",
-              color: activeCategory === cat ? "#fff" : "#000",
-              cursor: "pointer",
-            }}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      {part.image_urls?.[0] && (
+        <Image
+          src={part.image_urls[0]}
+          alt={part.title}
+          width={600}
+          height={400}
+          style={{ borderRadius: 8 }}
+        />
+      )}
 
-      {/* TRADE ONLY */}
-      <label style={{ display: "block", marginBottom: 12 }}>
-        <input
-          type="checkbox"
-          checked={tradeOnly}
-          onChange={() => setTradeOnly(!tradeOnly)}
-        />{" "}
-        Trade only
-      </label>
+      <p style={{ marginTop: 12 }}>${part.price}</p>
+      <p>{part.platform}</p>
+      <p>{part.category}</p>
 
-      {loading && <p>Loading parts...</p>}
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          gap: 16,
-        }}
-      >
-        {parts.map((part) => {
-          const mainImage = part.images?.[0];
-
-          return (
-            <div
-              key={part.id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                padding: 12,
-              }}
-            >
-              <Link href={`/parts/${part.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                {mainImage && (
-                  <img
-                    src={mainImage}
-                    alt={part.title}
-                    style={{
-                      width: "100%",
-                      height: 160,
-                      objectFit: "cover",
-                      borderRadius: 6,
-                      marginBottom: 8,
-                    }}
-                  />
-                )}
-
-                <h3>{part.title}</h3>
-                <p>${part.price}</p>
-                <small>
-                  {part.platform} · {part.category}
-                </small>
-              </Link>
-
-              {/* FAVORITE BUTTON */}
-              <button
-                onClick={() => toggleFavorite(part.id)}
-                style={{
-                  marginTop: 8,
-                  width: "100%",
-                  padding: 6,
-                  borderRadius: 6,
-                  border: "1px solid #ccc",
-                  background: favorites.includes(part.id)
-                    ? "#ffe6e6"
-                    : "#f9f9f9",
-                  cursor: "pointer",
-                }}
-              >
-                {favorites.includes(part.id) ? "❤️ Saved" : "🤍 Save"}
-              </button>
-            </div>
-          );
-        })}
-      </div>
+      {part.trade_available && (
+        <p style={{ color: "green" }}>Trade available</p>
+      )}
     </div>
   );
 }
