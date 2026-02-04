@@ -4,7 +4,6 @@ import { useState } from "react";
 import supabase from "@/lib/supabaseClient";
 
 export default function AiScanPage() {
-  const supabase = createClient();
 
   const [image, setImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
