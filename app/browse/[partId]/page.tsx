@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabaseClient";
+import supabase from "@/lib/supabaseClient";
 
 type Part = {
   id: number;
