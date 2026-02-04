@@ -12,8 +12,7 @@ type Part = {
   images: string[] | null;
 };
 
-export default function BrowsePage() {
-  const supabase = createClient();
+export default function BrowsePage() 
 
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
