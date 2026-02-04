@@ -1,35 +1,22 @@
-cat > app/browse/page.tsx << 'EOF'
-import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
-
-export const dynamic = "force-dynamic";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-export default async function BrowsePage() {
-  const { data: parts, error } = await supabase
-    .from("parts")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    return <main style={{ padding: 40 }}>Error loading parts</main>;
-  }
-
-  return (
-    <main style={{ padding: 40 }}>
-      <h1>Browse Parts</h1>
-      <ul>
-        {parts?.map((part) => (
-          <li key={part.id}>
-            <Link href={`/parts/${part.id}`}>{part.title}</Link>
-          </li>
-        ))}
-      </ul>
-    </main>
-  );
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
 }
-EOF
