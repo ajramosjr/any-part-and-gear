@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Message = {
@@ -16,7 +16,6 @@ type Message = {
 };
 
 export default function InboxPage() {
-  const supabase = createClient();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,14 +68,11 @@ export default function InboxPage() {
       )}
 
       {messages.map((msg) => (
-        <div
-          key={msg.id}
-          className="border rounded-lg p-4 mb-4"
-        >
-         <div className="flex items-center gap-2 mb-1">
-  <strong>{msg.profiles?.[0]?.username ?? "Unknown"}</strong>
-  {msg.profiles?.[0]?.verified && <VerifiedBadge />}
-</div> 
+        <div key={msg.id} className="border rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-2 mb-1">
+            <strong>{msg.profiles?.[0]?.username ?? "Unknown"}</strong>
+            {msg.profiles?.[0]?.verified && <VerifiedBadge />}
+          </div>
 
           <p className="mb-2">{msg.content}</p>
 
