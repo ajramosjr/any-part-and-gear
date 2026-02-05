@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
+import { createClient } from "@/lib/supabaseClient";
+import RequireAuth from "@/app/components/RequireAuth";
 
 type Trade = {
-  id: string;
+  id: number;
+  part_id: number;
+  sender_id: string;
   message: string;
-  status: string;
-  parts: {
-    title: string;
-  }[];
+  created_at: string;
 };
 
 export default function TradeRequestsPage() {
@@ -29,56 +30,61 @@ export default function TradeRequestsPage() {
         return;
       }
 
-      const { data } = await supabase
-        .from("trade_requests")
-        .select(
-          `
-          id,
-          message,
-          status,
-          parts (
-            title
-          )
-        `
-        )
+      const { data, error } = await supabase
+        .from("trade_messages")
+        .select("*")
         .eq("receiver_id", user.id)
         .order("created_at", { ascending: false });
 
-      setTrades(data || []);
+      if (!error && data) {
+        setTrades(data);
+      }
+
       setLoading(false);
     };
 
     fetchTrades();
-  }, []);
+  }, [supabase]);
 
   if (loading) {
     return <p className="p-6">Loading trade requests…</p>;
   }
 
   return (
-    <main className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Trade Requests</h1>
+    <RequireAuth>
+      <main className="max-w-5xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">
+          Trade Requests
+        </h1>
 
-      {trades.length === 0 && (
-        <p className="text-gray-500">No trade requests yet.</p>
-      )}
-
-      {trades.map((trade) => (
-        <div
-          key={trade.id}
-          className="border rounded-lg p-4 mb-4"
-        >
-          <h3 className="font-semibold text-lg">
-            {trade.parts?.[0]?.title ?? "Unknown Part"}
-          </h3>
-
-          <p className="mt-2">{trade.message}</p>
-
-          <p className="mt-2 text-sm text-gray-600">
-            Status: <strong>{trade.status}</strong>
+        {trades.length === 0 && (
+          <p className="text-gray-500">
+            No trade requests yet.
           </p>
+        )}
+
+        <div className="space-y-4">
+          {trades.map((trade) => (
+            <div
+              key={trade.id}
+              className="border rounded-lg p-4"
+            >
+              <p className="mb-2">{trade.message}</p>
+
+              <p className="text-xs text-gray-500 mb-3">
+                {new Date(trade.created_at).toLocaleString()}
+              </p>
+
+              <Link
+                href={`/Trade/${trade.part_id}`}
+                className="text-blue-600 hover:underline text-sm"
+              >
+                View conversation
+              </Link>
+            </div>
+          ))}
         </div>
-      ))}
-    </main>
+      </main>
+    </RequireAuth>
   );
 }
