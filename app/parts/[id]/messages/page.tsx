@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import RequireAuth from "@/app/components/RequireAuth";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 type Message = {
   id: number;
@@ -14,7 +14,6 @@ type Message = {
 };
 
 export default function PartMessagesPage() {
-  const supabase = createClient();
   const params = useParams();
   const partId = Number(params.id);
 
