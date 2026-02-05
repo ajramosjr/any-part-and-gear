@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
 
 export default function NewPartPage() {
-  const supabase = createClient();
   const router = useRouter();
 
   const [title, setTitle] = useState("");
