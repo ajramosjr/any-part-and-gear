@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
-import VerifiedBadge from "@/components/VerifiedBadge";
+import { createClient } from "@/lib/supabaseClient";
+import RequireAuth from "@/app/components/RequireAuth";
 
 type ReportedPart = {
   id: number;
   title: string;
   description: string;
-  reported: boolean;
+  reported_reason: string | null;
+  created_at: string;
 };
 
 export default function ModerationPage() {
@@ -19,60 +20,70 @@ export default function ModerationPage() {
 
   useEffect(() => {
     const fetchReportedParts = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("parts")
-        .select("id, title, description, reported")
-        .eq("reported", true)
+        .select(`
+          id,
+          title,
+          description,
+          reported_reason,
+          created_at
+        `)
+        .not("reported_reason", "is", null)
         .order("created_at", { ascending: false });
 
-      setParts(data || []);
+      if (!error && data) {
+        setParts(data);
+      }
+
       setLoading(false);
     };
 
     fetchReportedParts();
-  }, []);
-
-  const approvePart = async (id: number) => {
-    await supabase
-      .from("parts")
-      .update({ reported: false })
-      .eq("id", id);
-
-    setParts((prev) => prev.filter((p) => p.id !== id));
-  };
+  }, [supabase]);
 
   if (loading) {
     return <p className="p-6">Loading moderation queue…</p>;
   }
 
   return (
-    <main className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Moderation</h1>
+    <RequireAuth>
+      <main className="max-w-6xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">
+          Moderation
+        </h1>
 
-      {parts.length === 0 && (
-        <p className="text-gray-500">No reported items 🎉</p>
-      )}
+        {parts.length === 0 && (
+          <p className="text-gray-500">
+            No reported listings.
+          </p>
+        )}
 
-      {parts.map((part) => (
-        <div
-          key={part.id}
-          className="border rounded-lg p-4 mb-4"
-        >
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-lg">{part.title}</h3>
-            <VerifiedBadge />
-          </div>
+        <div className="space-y-4">
+          {parts.map((part) => (
+            <div
+              key={part.id}
+              className="border rounded-lg p-4"
+            >
+              <h3 className="font-semibold text-lg">
+                {part.title}
+              </h3>
 
-          <p className="mt-2 text-gray-700">{part.description}</p>
+              <p className="text-sm text-gray-700 mt-1">
+                {part.description}
+              </p>
 
-          <button
-            onClick={() => approvePart(part.id)}
-            className="mt-4 px-4 py-2 bg-green-600 text-white rounded"
-          >
-            Approve
-          </button>
+              <p className="text-sm text-red-600 mt-2">
+                Report reason: {part.reported_reason}
+              </p>
+
+              <p className="text-xs text-gray-500 mt-2">
+                {new Date(part.created_at).toLocaleString()}
+              </p>
+            </div>
+          ))}
         </div>
-      ))}
-    </main>
+      </main>
+    </RequireAuth>
   );
 }
