@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 
 type Listing = {
@@ -13,7 +13,6 @@ type Listing = {
 };
 
 export default function ListingsPage() {
-  const supabase = createClient();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -59,7 +58,9 @@ export default function ListingsPage() {
       <h1 className="text-2xl font-bold mb-6">My Listings</h1>
 
       {listings.length === 0 && (
-        <p className="text-gray-500">You haven’t posted any listings yet.</p>
+        <p className="text-gray-500">
+          You haven’t posted any listings yet.
+        </p>
       )}
 
       {listings.map((listing) => (
@@ -72,7 +73,7 @@ export default function ListingsPage() {
               {listing.title}
             </h3>
 
-            {listing.price && (
+            {listing.price !== null && (
               <p className="text-gray-700">${listing.price}</p>
             )}
 
