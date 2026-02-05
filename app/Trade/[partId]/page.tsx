@@ -6,7 +6,6 @@ import RequireAuth from "@/app/components/RequireAuth";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function TradeOfferPage() {
-  const supabase = createClient();
   const router = useRouter();
   const params = useParams();
   const partId = params.partId as string;
