@@ -1,15 +1,15 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import RequireAuth from "@/app/components/RequireAuth";
-import { createClient } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
 
 export default function SubmitReviewPage() {
+  const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const partId = searchParams.get("partId");
 
   const [rating, setRating] = useState(5);
