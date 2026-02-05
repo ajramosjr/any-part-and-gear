@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
+import { supabase } from "@/lib/supabaseClient";
 
 type ReportedPart = {
   id: number;
@@ -13,7 +13,6 @@ type ReportedPart = {
 };
 
 export default function ModerationPage() {
-  const supabase = createClient();
 
   const [parts, setParts] = useState<ReportedPart[]>([]);
   const [loading, setLoading] = useState(true);
