@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type PartPageProps = {
   params: {
@@ -9,45 +9,32 @@ type PartPageProps = {
 };
 
 export default async function PartPage({ params }: PartPageProps) {
-  const supabase = await createClient();
+  const supabase = await createServerSupabaseClient();
 
-  const partId = Number(params.id); // ✅ FIX
+  const partId = Number(params.id);
+  if (Number.isNaN(partId)) return notFound();
 
-  if (Number.isNaN(partId)) {
-    notFound();
-  }
-
-  const { data: part, error } = await supabase
+  const { data: part } = await supabase
     .from("parts")
     .select("*")
-    .eq("id", partId) // ✅ number matches int8
+    .eq("id", partId)
     .single();
 
-  if (error || !part) {
-    notFound();
-  }
+  if (!part) return notFound();
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>{part.title}</h1>
-
-      {part.image_urls?.[0] && (
+    <main className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">{part.title}</h1>
+      {part.image && (
         <Image
-          src={part.image_urls[0]}
+          src={part.image}
           alt={part.title}
-          width={600}
-          height={400}
-          style={{ borderRadius: 8 }}
+          width={800}
+          height={500}
+          className="rounded"
         />
       )}
-
-      <p style={{ marginTop: 12 }}>${part.price}</p>
-      <p>{part.platform}</p>
-      <p>{part.category}</p>
-
-      {part.trade_available && (
-        <p style={{ color: "green" }}>Trade available</p>
-      )}
-    </div>
+      <p className="mt-4">{part.description}</p>
+    </main>
   );
 }
