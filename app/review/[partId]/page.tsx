@@ -2,25 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
 
 export default function ReviewPage() {
-  const supabase = createClient();
-  const params = useParams();
   const router = useRouter();
+  const params = useParams();
+  const partId = params.partId as string;
 
-  const partId = Number(params.partId);
-
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState<number>(5);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (isNaN(partId)) {
-      router.push("/");
-    }
-  }, [partId, router]);
 
   const submitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +58,7 @@ export default function ReviewPage() {
             >
               {[5, 4, 3, 2, 1].map((r) => (
                 <option key={r} value={r}>
-                  {r}
+                  {r} Star{r > 1 && "s"}
                 </option>
               ))}
             </select>
@@ -76,8 +68,8 @@ export default function ReviewPage() {
             placeholder="Write your review…"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
+            className="w-full border rounded p-2 min-h-[120px]"
             required
-            className="w-full border rounded p-2"
           />
 
           <button
