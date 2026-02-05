@@ -1,95 +1,88 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
+import { useRouter, useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
+import RequireAuth from "@/app/components/RequireAuth";
 
 export default function SubmitReviewPage() {
-  const supabase = createClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const partId = searchParams.get("partId");
 
-  const [rating, setRating] = useState<number | null>(null);
+  const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submitReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!partId) return;
+
     setLoading(true);
-    setMessage(null);
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setMessage("You must be logged in to submit a review.");
       setLoading(false);
       return;
     }
 
     const { error } = await supabase.from("reviews").insert({
+      part_id: partId,
       user_id: user.id,
       rating,
       comment,
     });
 
-    if (error) {
-      setMessage("Failed to submit review.");
-    } else {
-      setMessage("Review submitted successfully!");
-      setRating(null);
-      setComment("");
-    }
-
     setLoading(false);
+
+    if (!error) {
+      router.push(`/parts/${partId}`);
+    } else {
+      alert(error.message);
+    }
   };
 
   return (
-    <main className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Submit a Review</h1>
+    <RequireAuth>
+      <main className="max-w-xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">Submit Review</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block font-medium mb-1">Rating</label>
-          <select
-            value={rating ?? ""}
-            onChange={(e) => setRating(Number(e.target.value))}
-            className="w-full border rounded p-2"
-            required
-          >
-            <option value="" disabled>
-              Select rating
-            </option>
-            {[1, 2, 3, 4, 5].map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
-        </div>
+        <form onSubmit={submitReview} className="space-y-4">
+          <label className="block">
+            <span className="text-sm font-medium">Rating</span>
+            <select
+              value={rating}
+              onChange={(e) => setRating(Number(e.target.value))}
+              className="w-full border rounded p-2 mt-1"
+            >
+              {[5, 4, 3, 2, 1].map((r) => (
+                <option key={r} value={r}>
+                  {r} Star{r > 1 && "s"}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <div>
-          <label className="block font-medium mb-1">Comment</label>
           <textarea
+            placeholder="Write your review…"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="w-full border rounded p-2"
-            rows={4}
+            className="w-full border rounded p-2 min-h-[120px]"
             required
           />
-        </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
-        >
-          {loading ? "Submitting..." : "Submit Review"}
-        </button>
-
-        {message && <p className="text-sm mt-2">{message}</p>}
-      </form>
-    </main>
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
+          >
+            {loading ? "Submitting…" : "Submit Review"}
+          </button>
+        </form>
+      </main>
+    </RequireAuth>
   );
 }
