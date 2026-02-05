@@ -2,11 +2,10 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
 
 export default function SendMessagePage() {
-  const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -25,13 +24,16 @@ export default function SendMessagePage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (!user) {
+      setSending(false);
+      return;
+    }
 
-    await supabase.from("trade_messages").insert({
+    await supabase.from("messages").insert({
       part_id: partId,
       sender_id: user.id,
       receiver_id: receiverId,
-      message,
+      content: message,
     });
 
     setSending(false);
@@ -46,7 +48,7 @@ export default function SendMessagePage() {
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Write your message…"
+          placeholder="Type your message…"
           className="w-full border rounded-lg p-3 mb-4 min-h-[120px]"
         />
 
