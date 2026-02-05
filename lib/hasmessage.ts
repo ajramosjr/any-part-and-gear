@@ -1,24 +1,22 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function hasMessaged(
   userId: string,
-  otherUserId: string
-) {
-  const supabase = await createClient();
+  partId: number
+): Promise<boolean> {
+  const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
-    .from("messages")
+    .from("trade_messages")
     .select("id")
-    .or(
-      `and(sender_id.eq.${userId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${userId})`
-    )
-    .limit(1)
-    .maybeSingle();
+    .eq("part_id", partId)
+    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+    .limit(1);
 
   if (error) {
-    console.error("Error checking messages:", error);
+    console.error("hasMessaged error:", error.message);
     return false;
   }
 
-  return !!data;
+  return (data?.length ?? 0) > 0;
 }
