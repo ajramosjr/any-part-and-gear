@@ -1,29 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  try {
+    const { id } = await params;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from("parts")
+      .delete()
+      .eq("id", id);
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Failed to delete part" },
+      { status: 500 }
+    );
   }
-
-  const { error } = await supabase
-    .from("parts")
-    .delete()
-    .eq("id", id)
-    .eq("seller_id", user.id);
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
-  }
-
-  return NextResponse.json({ success: true });
 }
