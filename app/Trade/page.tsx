@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
+import { supabase } from "@/lib/supabaseClient";
 
 type Trade = {
   id: number;
