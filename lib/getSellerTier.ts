@@ -1,26 +1,31 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 /**
  * Returns Bronze | Silver | Gold
  */
 export async function getSellerTier(sellerId: string) {
-  const supabase = await createClient();
+  const supabase = await createServerSupabaseClient();
 
-  // count completed trades
-  const { count, error } = await supabase
-    .from("trades")
-    .select("*", { count: "exact", head: true })
-    .eq("seller_id", sellerId)
-    .eq("status", "completed");
+  // total listings
+  const { data: parts } = await supabase
+    .from("parts")
+    .select("id")
+    .eq("user_id", sellerId);
 
-  if (error) {
-    console.error("Error getting seller tier:", error);
-    return "Bronze";
-  }
+  const totalListings = parts?.length ?? 0;
 
-  const completedTrades = count ?? 0;
+  // average rating
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("rating")
+    .eq("seller_id", sellerId);
 
-  if (completedTrades >= 50) return "Gold";
-  if (completedTrades >= 10) return "Silver";
+  const avgRating =
+    reviews && reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : 0;
+
+  if (totalListings >= 25 && avgRating >= 4.5) return "Gold";
+  if (totalListings >= 10 && avgRating >= 4.0) return "Silver";
   return "Bronze";
 }
