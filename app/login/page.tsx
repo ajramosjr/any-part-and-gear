@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function LoginPage() {
-  const supabase = createClient();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -13,7 +12,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     setError(null);
 
@@ -33,35 +33,39 @@ export default function LoginPage() {
 
   return (
     <main className="max-w-md mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Log In</h1>
+      <h1 className="text-2xl font-bold mb-6">Log in</h1>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full border rounded p-2 mb-3"
-      />
+      <form onSubmit={handleLogin} className="space-y-4">
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full border rounded p-2"
+          required
+        />
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="w-full border rounded p-2 mb-4"
-      />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border rounded p-2"
+          required
+        />
 
-      {error && (
-        <p className="text-red-600 text-sm mb-3">{error}</p>
-      )}
+        {error && (
+          <p className="text-sm text-red-600">{error}</p>
+        )}
 
-      <button
-        onClick={handleLogin}
-        disabled={loading}
-        className="w-full bg-black text-white py-2 rounded hover:opacity-90 disabled:opacity-50"
-      >
-        {loading ? "Logging in…" : "Log In"}
-      </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-black text-white py-2 rounded"
+        >
+          {loading ? "Logging in…" : "Log in"}
+        </button>
+      </form>
     </main>
   );
 }
