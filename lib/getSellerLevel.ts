@@ -1,40 +1,17 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function getSellerLevel(sellerId: string) {
-  const supabase = await createClient();
+  const supabase = await createServerSupabaseClient();
 
-  // Count completed sales
-  const { count: completedSales, error: salesError } = await supabase
-    .from("trades")
-    .select("*", { count: "exact", head: true })
-    .eq("seller_id", sellerId)
-    .eq("status", "completed");
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("seller_level")
+    .eq("id", sellerId)
+    .single();
 
-  if (salesError) {
-    console.error("Error fetching completed sales:", salesError);
+  if (error || !data) {
+    return "new";
   }
 
-  // Fetch seller reviews
-  const { data: reviews, error: reviewsError } = await supabase
-    .from("seller_reviews")
-    .select("rating")
-    .eq("seller_id", sellerId);
-
-  if (reviewsError) {
-    console.error("Error fetching seller reviews:", reviewsError);
-  }
-
-  const averageRating =
-    reviews && reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-      : 0;
-
-  const sales = completedSales ?? 0;
-
-  // Seller tier logic
-  if (sales >= 50 && averageRating >= 4.8) return "Elite Seller";
-  if (sales >= 10 && averageRating >= 4.5) return "Trusted Seller";
-  if (sales >= 3) return "Active Seller";
-
-  return "New Seller";
+  return data.seller_level;
 }
