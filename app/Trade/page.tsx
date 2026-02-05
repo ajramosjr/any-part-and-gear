@@ -14,8 +14,7 @@ type Trade = {
 };
 
 export default function TradeRequestsPage() {
-  const supabase = createClient();
-
+  
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
 
