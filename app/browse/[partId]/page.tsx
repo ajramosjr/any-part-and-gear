@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
-import supabase from "@/lib/supabaseClient";
+import { useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient"; // ✅ named import
 
 type Part = {
   id: number;
@@ -12,13 +12,11 @@ type Part = {
   images: string[] | null;
 };
 
-export default function BrowsePage() 
-
+export default function BrowsePage() {
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   useEffect(() => {
     const fetchParts = async () => {
@@ -43,7 +41,7 @@ export default function BrowsePage()
     };
 
     fetchParts();
-  }, [searchParams, supabase]);
+  }, [searchParams]);
 
   if (loading) {
     return <p className="p-6">Loading parts…</p>;
@@ -74,7 +72,7 @@ export default function BrowsePage()
 
             <h2 className="font-semibold">{part.title}</h2>
 
-            {part.price && (
+            {part.price !== null && (
               <p className="text-sm text-gray-600">${part.price}</p>
             )}
           </Link>
