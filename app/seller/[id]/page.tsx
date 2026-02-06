@@ -1,103 +1,84 @@
-    "use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Profile = {
   id: string;
-  username: string | null;
+  username: string;
   verified: boolean;
 };
 
 type Part = {
   id: string;
   title: string;
-  price: number | null;
+  price: number;
 };
 
 export default function SellerProfilePage() {
-  const supabase = createClient();
-  const params = useParams();
-  const sellerId = params?.id as string | undefined;
+  const { id } = useParams<{ id: string }>();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!sellerId) return;
+    if (!id) return;
 
-    const fetchSeller = async () => {
+    const loadSeller = async () => {
       const { data: profileData } = await supabase
         .from("profiles")
         .select("id, username, verified")
-        .eq("id", sellerId)
+        .eq("id", id)
         .single();
 
       const { data: partsData } = await supabase
         .from("parts")
         .select("id, title, price")
-        .eq("user_id", sellerId)
-        .order("created_at", { ascending: false });
+        .eq("user_id", id);
 
-      setProfile(profileData ?? null);
-      setParts(partsData ?? []);
+      setProfile(profileData);
+      setParts(partsData || []);
       setLoading(false);
     };
 
-    fetchSeller();
-  }, [sellerId, supabase]);
+    loadSeller();
+  }, [id]);
 
   if (loading) {
-    return <p className="p-6">Loading seller…</p>;
+    return <div className="p-6">Loading seller…</div>;
   }
 
   if (!profile) {
-    return <p className="p-6">Seller not found.</p>;
+    return <div className="p-6">Seller not found</div>;
   }
 
   return (
-    <main className="max-w-3xl mx-auto p-6">
-      <div className="flex items-center gap-2 mb-2">
-        <h1 className="text-2xl font-bold">
-          {profile.username ?? "Seller"}
-        </h1>
+    <main className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
+        {profile.username}
         {profile.verified && <VerifiedBadge />}
-      </div>
+      </h1>
 
-      <p className="text-sm text-gray-500 mb-6">
-        {profile.verified
-          ? "Verified seller on Any-Part & Gear"
-          : "Seller on Any-Part & Gear"}
-      </p>
+      <h2 className="text-xl font-semibold mt-6 mb-4">Listings</h2>
 
-      <h2 className="text-lg font-semibold mb-4">Listings</h2>
-
-      {parts.length === 0 && (
+      {parts.length === 0 ? (
         <p className="text-gray-500">No listings yet.</p>
+      ) : (
+        <ul className="grid gap-4">
+          {parts.map((part) => (
+            <li key={part.id} className="border p-4 rounded">
+              <Link href={`/parts/${part.id}`} className="font-medium">
+                {part.title}
+              </Link>
+              <p className="text-sm text-gray-600">${part.price}</p>
+            </li>
+          ))}
+        </ul>
       )}
-
-      <ul className="space-y-3">
-        {parts.map((part) => (
-          <li
-            key={part.id}
-            className="border rounded p-3 flex justify-between items-center"
-          >
-            <Link
-              href={`/parts/${part.id}`}
-              className="font-medium hover:underline"
-            >
-              {part.title}
-            </Link>
-            {part.price !== null && (
-              <span className="text-gray-700">${part.price}</span>
-            )}
-          </li>
-        ))}
-      </ul>
     </main>
   );
 }
