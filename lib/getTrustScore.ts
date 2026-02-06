@@ -1,24 +1,24 @@
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import { isVerifiedSeller } from "@/lib/isVerifiedSeller";
 
 export async function getTrustScore(sellerId: string): Promise<number> {
-  const supabase = createClient();
+  let score = 0;
 
-  const { data: listings, error } = await supabase
-    .from("parts")
-    .select("id")
-    .eq("user_id", sellerId);
+  // Reviews
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("rating")
+    .eq("seller_id", sellerId);
 
-  if (error || !listings) {
-    return 0;
+  if (reviews && reviews.length > 0) {
+    const avg =
+      reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+    score += avg * 20;
   }
 
-  let score = listings.length * 10;
-
+  // Verified seller bonus
   const verified = await isVerifiedSeller(sellerId);
-  if (verified) {
-    score += 50;
-  }
+  if (verified) score += 20;
 
-  return score;
+  return Math.min(score, 100);
 }
