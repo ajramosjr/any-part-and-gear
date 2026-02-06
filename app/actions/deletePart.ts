@@ -1,18 +1,24 @@
-"use server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-import { createClient } from "@/lib/supabaseClient";
+export async function createServerSupabaseClient() {
+  const cookieStore = cookies();
 
-export async function deletePart(id: string) {
-  const supabase = createClient();
-
-  const { error } = await supabase
-    .from("parts")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return { success: true };
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: any) {
+          cookieStore.set({ name, value: "", ...options });
+        },
+      },
+    }
+  );
 }
