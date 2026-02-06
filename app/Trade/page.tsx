@@ -3,18 +3,19 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequireAuth from "@/app/components/RequireAuth";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 type Trade = {
   id: number;
   part_id: number;
-  sender_id: string;
-  message: string;
+  offer_text: string;
+  status: string;
   created_at: string;
 };
 
 export default function TradeRequestsPage() {
-  
+  const supabase = createClient();
+
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,9 +31,9 @@ export default function TradeRequestsPage() {
       }
 
       const { data, error } = await supabase
-        .from("trade_messages")
+        .from("trades")
         .select("*")
-        .eq("receiver_id", user.id)
+        .eq("seller_id", user.id)
         .order("created_at", { ascending: false });
 
       if (!error && data) {
@@ -45,44 +46,40 @@ export default function TradeRequestsPage() {
     fetchTrades();
   }, [supabase]);
 
-  if (loading) {
-    return <p className="p-6">Loading trade requests…</p>;
-  }
-
   return (
     <RequireAuth>
-      <main className="max-w-5xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">
-          Trade Requests
-        </h1>
+      <main className="max-w-4xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">Trade Requests</h1>
 
-        {trades.length === 0 && (
-          <p className="text-gray-500">
-            No trade requests yet.
-          </p>
+        {loading && <p>Loading…</p>}
+
+        {!loading && trades.length === 0 && (
+          <p className="text-gray-500">No trade requests yet.</p>
         )}
 
-        <div className="space-y-4">
+        <ul className="space-y-4">
           {trades.map((trade) => (
-            <div
+            <li
               key={trade.id}
-              className="border rounded-lg p-4"
+              className="border rounded p-4 flex justify-between items-center"
             >
-              <p className="mb-2">{trade.message}</p>
-
-              <p className="text-xs text-gray-500 mb-3">
-                {new Date(trade.created_at).toLocaleString()}
-              </p>
+              <div>
+                <p className="font-medium">Offer:</p>
+                <p className="text-sm text-gray-600">{trade.offer_text}</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Status: {trade.status}
+                </p>
+              </div>
 
               <Link
                 href={`/Trade/${trade.part_id}`}
                 className="text-blue-600 hover:underline text-sm"
               >
-                View conversation
+                View
               </Link>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </main>
     </RequireAuth>
   );
