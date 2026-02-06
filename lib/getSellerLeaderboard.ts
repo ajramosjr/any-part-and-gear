@@ -1,43 +1,29 @@
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import { getTrustScore } from "@/lib/getTrustScore";
 import { isVerifiedSeller } from "@/lib/isVerifiedSeller";
 
-type Seller = {
-  id: string;
-  username: string | null;
-};
-
-type LeaderboardSeller = {
-  id: string;
-  username: string | null;
-  trustScore: number;
-  verified: boolean;
-};
-
-export async function getSellerLeaderboard(): Promise<LeaderboardSeller[]> {
-  const supabase = createClient();
-
+export async function getSellerLeaderboard() {
   const { data: sellers, error } = await supabase
     .from("profiles")
-    .select("id, username");
+    .select("*");
 
-  if (error || !sellers) {
+  if (error) {
+    console.error("Leaderboard error:", error.message);
     return [];
   }
 
-  const leaderboard: LeaderboardSeller[] = [];
+  const leaderboard = await Promise.all(
+    sellers.map(async (seller) => {
+      const trustScore = await getTrustScore(seller.id);
+      const verified = await isVerifiedSeller(seller.id);
 
-  for (const seller of sellers as Seller[]) {
-    const trustScore = await getTrustScore(seller.id);
-    const verified = await isVerifiedSeller(seller.id);
-
-    leaderboard.push({
-      id: seller.id,
-      username: seller.username,
-      trustScore,
-      verified,
-    });
-  }
+      return {
+        ...seller,
+        trustScore,
+        verified,
+      };
+    })
+  );
 
   return leaderboard.sort((a, b) => b.trustScore - a.trustScore);
 }
