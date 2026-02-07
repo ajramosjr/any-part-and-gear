@@ -8,7 +8,7 @@ export default function AiScanPage() {
   const [image, setImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-
+  const supabase = createClient();
   const handleScan = async () => {
     if (!image) return;
 
