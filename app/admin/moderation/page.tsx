@@ -6,77 +6,76 @@ import { createClient } from "@/lib/supabaseClient";
 
 type ReportedPart = {
   id: number;
-  title: string;
   reason: string;
   created_at: string;
+  parts: {
+    id: number;
+    title: string;
+  } | null;
 };
 
 export default function ModerationPage() {
-  const supabase = createClient();
-
-  const [parts, setParts] = useState<ReportedPart[]>([]);
+  const [reports, setReports] = useState<ReportedPart[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchReportedParts = async () => {
+    const fetchReports = async () => {
+      const supabase = createClient();
+
       const { data, error } = await supabase
-        .from("reported_parts")
-        .select("*")
+        .from("reports")
+        .select(
+          `
+          id,
+          reason,
+          created_at,
+          parts (
+            id,
+            title
+          )
+        `
+        )
         .order("created_at", { ascending: false });
 
       if (!error && data) {
-        setParts(data);
+        setReports(data);
       }
 
       setLoading(false);
     };
 
-    fetchReportedParts();
-  }, [supabase]);
-
-  const deletePart = async (id: number) => {
-    const confirmDelete = confirm("Delete this part permanently?");
-    if (!confirmDelete) return;
-
-    await supabase.from("parts").delete().eq("id", id);
-    await supabase.from("reported_parts").delete().eq("id", id);
-
-    setParts((prev) => prev.filter((p) => p.id !== id));
-  };
+    fetchReports();
+  }, []);
 
   return (
     <RequireAuth>
-      <main className="max-w-5xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">Moderation Panel</h1>
+      <main className="max-w-4xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">Admin Moderation</h1>
 
-        {loading && <p>Loading…</p>}
+        {loading && <p>Loading reports…</p>}
 
-        {!loading && parts.length === 0 && (
-          <p className="text-gray-500">No reported listings 🎉</p>
+        {!loading && reports.length === 0 && (
+          <p>No reports found 🎉</p>
         )}
 
         <ul className="space-y-4">
-          {parts.map((part) => (
+          {reports.map((report) => (
             <li
-              key={part.id}
-              className="border rounded p-4 flex justify-between items-center"
+              key={report.id}
+              className="border rounded p-4 bg-white"
             >
-              <div>
-                <p className="font-semibold">{part.title}</p>
-                <p className="text-sm text-gray-600">
-                  Reason: {part.reason}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {new Date(part.created_at).toLocaleString()}
-                </p>
-              </div>
+              <p className="font-semibold">
+                {report.parts?.title ?? "Unknown Part"}
+              </p>
 
-              <button
-                onClick={() => deletePart(part.id)}
-                className="bg-red-600 text-white px-3 py-1 rounded text-sm"
-              >
-                Delete
-              </button>
+              <p className="text-sm text-gray-600 mt-1">
+                Reason: {report.reason}
+              </p>
+
+              <p className="text-xs text-gray-400 mt-2">
+                Reported on{" "}
+                {new Date(report.created_at).toLocaleString()}
+              </p>
             </li>
           ))}
         </ul>
