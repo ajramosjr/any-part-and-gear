@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient"; // ✅ named import
+import { createClient } from "@/lib/supabaseClient";
 
 type Part = {
   id: number;
@@ -15,7 +15,7 @@ type Part = {
 export default function BrowsePage() {
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const supabase = createClient();
   const searchParams = useSearchParams();
 
   useEffect(() => {
