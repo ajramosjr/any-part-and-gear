@@ -1,8 +1,13 @@
 "use server";
 
-// TEMP DISABLED – server Supabase removed
 export async function deletePart(id: string) {
-  throw new Error(
-    "deletePart is temporarily disabled. Use browser Supabase instead."
+  const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+
+  const { error } = await supabase.from("parts").delete().eq("id", id);
+
+
+
 }

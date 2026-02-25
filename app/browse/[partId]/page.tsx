@@ -5,12 +5,16 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
 
+<<<<<<< HEAD
 type Part = {
   id: number;
   title: string;
   price: number | null;
   images: string[] | null;
 };
+=======
+const supabase = );
+>>>>>>> 8b64255 (import { supabase } from "@/lib/supabaseClient";)
 
 export default function BrowsePage() {
   const [parts, setParts] = useState<Part[]>([]);

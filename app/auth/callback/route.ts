@@ -7,12 +7,16 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
 
   if (code) {
+<<<<<<< HEAD
     const cookieStore = cookies() as unknown as {
       get: (name: string) => { value: string } | undefined;
       set: (args: any) => void;
     };
 
     const supabase = createServerClient(
+=======
+    const supabase = 
+>>>>>>> 8b64255 (import { supabase } from "@/lib/supabaseClient";)
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {

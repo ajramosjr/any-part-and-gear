@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
+<<<<<<< HEAD
 import { useRouter } from "next/navigation";
 import RequireAuth from "@/app/components/RequireAuth";
 import { supabase } from "@/lib/supabaseClient";
+=======
+import { createClient } from "@/lib/supabaseClient";
+
+const supabase = );
+>>>>>>> 8b64255 (import { supabase } from "@/lib/supabaseClient";)
 
 export default function SellPage() {
   const router = useRouter();

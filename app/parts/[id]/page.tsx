@@ -8,8 +8,14 @@ type PartPageProps = {
   };
 };
 
+<<<<<<< HEAD
 export default async function PartPage({ params }: PartPageProps) {
   const supabase = await createServerSupabaseClient();
+=======
+const supabase = );
+const PLACEHOLDER_IMAGE =
+  "https://via.placeholder.com/800x500?text=No+Image+Available";
+>>>>>>> 8b64255 (import { supabase } from "@/lib/supabaseClient";)
 
   const partId = Number(params.id);
   if (Number.isNaN(partId)) return notFound();

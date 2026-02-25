@@ -13,32 +13,15 @@ type Part = {
   images: string[] | null;
 };
 
-export default function HomePage() {
-  const [parts, setParts] = useState<Part[]>([]);
-  const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+export default async function HomePage() {
+  const { createClient } = await import("@supabase/supabase-js");
 
-  useEffect(() => {
-    const fetchParts = async () => {
-      const { data, error } = await supabase
-        .from("parts")
-        .select("id, title, price, images")
-        .order("created_at", { ascending: false })
-        .limit(6);
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
-      if (!error && data) {
-        setParts(data);
-      }
-
-      setLoading(false);
-    };
-
-    fetchParts();
-  }, []);
-
-  if (loading) {
-    return <p className="p-6">Loading…</p>;
-  }
+  const { data } = await supabase.from("parts").select("*").limit(5);
 
   return (
     <main className="max-w-6xl mx-auto p-6">
