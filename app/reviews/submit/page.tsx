@@ -1,9 +1,13 @@
 "use client";
 
+"use client";
+
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import RequireAuth from "@/app/components/RequireAuth";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
+
+const supabase = createClient();
 
 export default function SubmitReviewPage() {
   const router = useRouter();
@@ -45,6 +49,7 @@ export default function SubmitReviewPage() {
       alert(error.message);
     }
   };
+}
 
   return (
     <RequireAuth>
