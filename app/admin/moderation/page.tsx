@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import RequireAuth from "@/app/components/RequireAuth";
 import { createClient } from "@/lib/supabaseClient";
 
+const supabase = createClient();
+
 type ReportedPart = {
   id: number;
   reason: string;
@@ -20,8 +22,6 @@ export default function ModerationPage() {
 
   useEffect(() => {
     const fetchReports = async () => {
-      const supabase = createClient();
-
       const { data, error } = await supabase
         .from("reports")
         .select(
