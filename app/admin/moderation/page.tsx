@@ -11,10 +11,9 @@ type ReportedPart = {
   reason: string;
   created_at: string;
   parts: {
-    id: number;
-    title: string;
-  } | null;
-};
+  id: number;
+  title: string;
+}[] | null;
 
 export default function ModerationPage() {
   const [reports, setReports] = useState<ReportedPart[]>([]);
