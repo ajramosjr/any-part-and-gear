@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 type Part = {
   id: number;
@@ -14,6 +14,8 @@ type Part = {
 export default function BrowsePage() {
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchParts = async () => {
@@ -48,6 +50,7 @@ export default function BrowsePage() {
             className="border rounded-lg p-4 hover:shadow transition"
           >
             <h2 className="font-semibold">{part.title}</h2>
+
             {part.price !== null && (
               <p className="text-sm text-gray-600">${part.price}</p>
             )}
