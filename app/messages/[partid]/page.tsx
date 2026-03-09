@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 type Conversation = {
   id: string;
@@ -14,6 +14,8 @@ type Conversation = {
 export default function MessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -59,9 +61,8 @@ export default function MessagesPage() {
           href={`/messages/${conv.part_id}`}
           className="block border rounded-lg p-4 mb-4 hover:bg-gray-50"
         >
-          <p className="font-semibold">
-            Part #{conv.part_id}
-          </p>
+          <p className="font-semibold">Part #{conv.part_id}</p>
+
           <p className="text-sm text-gray-600 truncate">
             {conv.last_message}
           </p>
