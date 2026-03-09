@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: Request) {
   const body = await req.json();
   const { part_id } = body;
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const {
     data: { user },
@@ -30,6 +35,5 @@ export async function POST(req: Request) {
     );
   }
 
-  // ✅ THIS WAS THE BROKEN LINE
   return NextResponse.json({ success: true });
 }
