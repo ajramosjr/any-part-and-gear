@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
 
 export default function ReplyPage() {
@@ -14,6 +14,8 @@ export default function ReplyPage() {
 
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+
+  const supabase = createClient();
 
   const sendMessage = async () => {
     if (!message.trim() || !partId || !receiverId) return;
