@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 type Part = {
-  id: number; // ✅ MUST be number
+  id: number;
   title: string;
   price: number;
   platform: string;
@@ -27,6 +27,8 @@ const categories = [
 ];
 
 export default function PartsPage() {
+  const supabase = createClient();
+
   const [parts, setParts] = useState<Part[]>([]);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -103,110 +105,3 @@ export default function PartsPage() {
       setFavorites((prev) => [...prev, partId]);
     }
   };
-
-  return (
-    <div style={{ padding: 20 }}>
-      <h1>Marketplace</h1>
-
-      {/* CATEGORY FILTERS */}
-      <div style={{ marginBottom: 12 }}>
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            style={{
-              marginRight: 6,
-              marginBottom: 6,
-              padding: "6px 12px",
-              borderRadius: 6,
-              border: "1px solid #ccc",
-              background: activeCategory === cat ? "#000" : "#fff",
-              color: activeCategory === cat ? "#fff" : "#000",
-              cursor: "pointer",
-            }}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* TRADE ONLY */}
-      <label style={{ display: "block", marginBottom: 16 }}>
-        <input
-          type="checkbox"
-          checked={tradeOnly}
-          onChange={() => setTradeOnly((v) => !v)}
-        />{" "}
-        Trade only
-      </label>
-
-      {loading && <p>Loading parts...</p>}
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          gap: 16,
-        }}
-      >
-        {parts.map((part) => {
-          const mainImage = part.image_urls?.[0];
-
-          return (
-            <div
-              key={part.id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                padding: 12,
-              }}
-            >
-              <Link href={`/parts/${part.id}`}>
-                <div style={{ cursor: "pointer" }}>
-                  {mainImage && (
-                    <img
-                      src={mainImage}
-                      alt={part.title}
-                      style={{
-                        width: "100%",
-                        height: 160,
-                        objectFit: "cover",
-                        borderRadius: 6,
-                        marginBottom: 8,
-                      }}
-                    />
-                  )}
-
-                  <h3 style={{ marginBottom: 4 }}>{part.title}</h3>
-                  <p style={{ margin: 0 }}>${part.price}</p>
-
-                  <small style={{ color: "#666" }}>
-                    {part.platform} · {part.category}
-                  </small>
-                </div>
-              </Link>
-
-              {/* FAVORITE BUTTON */}
-              <button
-                onClick={() => toggleFavorite(part.id)}
-                style={{
-                  marginTop: 10,
-                  width: "100%",
-                  padding: 6,
-                  borderRadius: 6,
-                  border: "1px solid #ccc",
-                  background: favorites.includes(part.id)
-                    ? "#ffe6e6"
-                    : "#f9f9f9",
-                  cursor: "pointer",
-                }}
-              >
-                {favorites.includes(part.id) ? "❤️ Saved" : "🤍 Save"}
-              </button>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
