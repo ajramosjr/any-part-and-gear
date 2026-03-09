@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@supabase/supabase-js";
 
 interface EditPartPageProps {
   params: {
@@ -8,6 +8,11 @@ interface EditPartPageProps {
 }
 
 export default async function EditPartPage({ params }: EditPartPageProps) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -60,7 +65,8 @@ export default async function EditPartPage({ params }: EditPartPageProps) {
 
         <button
           type="submit"
-          className="bg-black text-white px-4 py-2 rounded">
+          className="bg-black text-white px-4 py-2 rounded"
+        >
           Save Changes
         </button>
       </form>
