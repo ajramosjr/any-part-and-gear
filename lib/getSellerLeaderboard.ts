@@ -1,8 +1,10 @@
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 import { getTrustScore } from "@/lib/getTrustScore";
 import { isVerifiedSeller } from "@/lib/isVerifiedSeller";
 
 export async function getSellerLeaderboard() {
+  const supabase = createClient();
+
   const { data: sellers, error } = await supabase
     .from("profiles")
     .select("*");
