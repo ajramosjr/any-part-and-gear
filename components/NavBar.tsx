@@ -43,25 +43,25 @@ export default function NavBar() {
         <Link href="/sell">Sell</Link>
         <Link href="/my-listings">My Listings</Link>
         <Link href="/inbox" style={{ position: "relative" }}>
-          Inbox
-         {unread.count > 0 && (
-            <span
-              style={{
-                position: "absolute",
-                top: -6,
-                right: -14,
-                background: "#1e40af",
-                color: "#fff",
-                borderRadius: 999,
-                padding: "2px 7px",
-                fontSize: 11,
-                fontWeight: 700,
-              }}
-            >
-              {unread.count}
-            </span>
-          )}
-        </Link>
+  Inbox
+  {unread > 0 && (
+    <span
+      style={{
+        position: "absolute",
+        top: -6,
+        right: -14,
+        background: "#1e40af",
+        color: "#fff",
+        borderRadius: 999,
+        padding: "2px 7px",
+        fontSize: 11,
+        fontWeight: 700,
+      }}
+    >
+      {unread}
+    </span>
+  )}
+</Link>
 
         <Link href="/login">Login</Link>
       </div>
