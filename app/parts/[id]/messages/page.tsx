@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import RequireAuth from "@/app/components/RequireAuth";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 type Message = {
   id: number;
@@ -19,6 +19,8 @@ export default function PartMessagesPage() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const supabase = createClient();
 
   useEffect(() => {
     if (!partId) return;
@@ -48,7 +50,7 @@ export default function PartMessagesPage() {
     };
 
     fetchMessages();
-  }, [partId, supabase]);
+  }, [partId]);
 
   if (loading) {
     return <p className="p-6">Loading messages…</p>;
@@ -70,6 +72,7 @@ export default function PartMessagesPage() {
               className="border rounded-lg p-3 text-sm"
             >
               <p>{msg.message}</p>
+
               <p className="text-xs text-gray-500 mt-1">
                 {new Date(msg.created_at).toLocaleString()}
               </p>
