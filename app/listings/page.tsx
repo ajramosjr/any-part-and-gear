@@ -1,15 +1,8 @@
 "use client";
 
-<<<<<<< HEAD
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
-=======
-const supabase = 
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
->>>>>>> 8b64255 (import { supabase } from "@/lib/supabaseClient";)
+import { createClient } from "@/lib/supabaseClient";
 
 type Listing = {
   id: number;
@@ -22,6 +15,8 @@ type Listing = {
 export default function ListingsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -36,13 +31,7 @@ export default function ListingsPage() {
 
       const { data, error } = await supabase
         .from("parts")
-        .select(`
-          id,
-          title,
-          price,
-          trade_available,
-          created_at
-        `)
+        .select("id,title,price,trade_available,created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -65,9 +54,7 @@ export default function ListingsPage() {
       <h1 className="text-2xl font-bold mb-6">My Listings</h1>
 
       {listings.length === 0 && (
-        <p className="text-gray-500">
-          You haven’t posted any listings yet.
-        </p>
+        <p className="text-gray-500">You haven’t posted any listings yet.</p>
       )}
 
       {listings.map((listing) => (
@@ -76,18 +63,14 @@ export default function ListingsPage() {
           className="border rounded-lg p-4 mb-4 flex justify-between items-center"
         >
           <div>
-            <h3 className="font-semibold text-lg">
-              {listing.title}
-            </h3>
+            <h3 className="font-semibold text-lg">{listing.title}</h3>
 
             {listing.price !== null && (
               <p className="text-gray-700">${listing.price}</p>
             )}
 
             {listing.trade_available && (
-              <p className="text-sm text-green-600">
-                Trade available
-              </p>
+              <p className="text-sm text-green-600">Trade available</p>
             )}
           </div>
 
