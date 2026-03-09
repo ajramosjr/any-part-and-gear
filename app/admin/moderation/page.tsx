@@ -11,9 +11,10 @@ type ReportedPart = {
   reason: string;
   created_at: string;
   parts: {
-  id: number;
-  title: string;
-}[] | null;
+    id: number;
+    title: string;
+  }[] | null;
+};
 
 export default function ModerationPage() {
   const [reports, setReports] = useState<ReportedPart[]>([]);
@@ -37,7 +38,7 @@ export default function ModerationPage() {
         .order("created_at", { ascending: false });
 
       if (!error && data) {
-        setReports(data);
+        setReports(data as ReportedPart[]);
       }
 
       setLoading(false);
@@ -64,7 +65,7 @@ export default function ModerationPage() {
               className="border rounded p-4 bg-white"
             >
               <p className="font-semibold">
-                {report.parts?.title ?? "Unknown Part"}
+                {report.parts?.[0]?.title ?? "Unknown Part"}
               </p>
 
               <p className="text-sm text-gray-600 mt-1">
