@@ -1,95 +1,80 @@
 "use client";
 
 import { useState } from "react";
-<<<<<<< HEAD
 import { useRouter } from "next/navigation";
-import RequireAuth from "@/app/components/RequireAuth";
-import { supabase } from "@/lib/supabaseClient";
-=======
-import { createClient } from "@/lib/supabaseClient";
-
-const supabase = );
->>>>>>> 8b64255 (import { supabase } from "@/lib/supabaseClient";)
+import RequireAuth from "@/components/RequireAuth";
+import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 export default function SellPage() {
-  const router = useRouter();
+const router = useRouter();
+const supabase = createSupabaseBrowser();
 
-  const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
+const [title, setTitle] = useState("");
+const [price, setPrice] = useState("");
+const [description, setDescription] = useState("");
+const [loading, setLoading] = useState(false);
 
-  const submitListing = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const submitListing = async (e: React.FormEvent) => {
+e.preventDefault();
+setLoading(true);
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+const {
+  data: { user },
+  error: userError,
+} = await supabase.auth.getUser();
 
-    if (userError || !user) {
-      setLoading(false);
-      return;
-    }
+if (userError || !user) {
+  setLoading(false);
+  return;
+}
 
-    const { error } = await supabase.from("parts").insert({
-      title,
-      price: Number(price),
-      description,
-      user_id: user.id,
-    });
+const { error } = await supabase.from("parts").insert({
+  title,
+  price,
+  description,
+  user_id: user.id,
+});
 
-    setLoading(false);
+setLoading(false);
 
-    if (!error) {
-      router.push("/");
-    } else {
-      alert(error.message);
-    }
-  };
+if (!error) {
+  router.push("/my-listings");
+}
 
-  return (
-    <RequireAuth>
-      <main className="max-w-xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">Sell a Part</h1>
+};
 
-        <form onSubmit={submitListing} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Part title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border rounded p-2"
-            required
-          />
+return (
+<RequireAuth>
+<div style={{ maxWidth: 600, margin: "40px auto" }}>
+<h1>Sell a Part</h1>
 
-          <input
-            type="number"
-            placeholder="Price"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="w-full border rounded p-2"
-            required
-          />
+    <form onSubmit={submitListing}>
+      <input
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+      />
 
-          <textarea
-            placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full border rounded p-2 min-h-[120px]"
-            required
-          />
+      <input
+        placeholder="Price"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+        required
+      />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
-          >
-            {loading ? "Posting…" : "Post Listing"}
-          </button>
-        </form>
-      </main>
-    </RequireAuth>
-  );
+      <textarea
+        placeholder="Description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+
+      <button disabled={loading}>
+        {loading ? "Posting..." : "Post Listing"}
+      </button>
+    </form>
+  </div>
+</RequireAuth>
+
+);
 }
