@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 
 type Listing = {
   id: number;
@@ -18,6 +18,8 @@ export default function MyListingPage() {
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -48,7 +50,9 @@ export default function MyListingPage() {
   return (
     <main className="max-w-3xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">{listing.title}</h1>
+
       {listing.price && <p className="mb-2">${listing.price}</p>}
+
       <p>{listing.description}</p>
     </main>
   );
