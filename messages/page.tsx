@@ -5,7 +5,7 @@ export default async function MessagesPage({
 }: {
   searchParams: { to?: string; part?: string };
 }) {
-  const supabase = await );
+  const supabase = await createClient();
 
   const { data: messages } = await supabase
     .from("messages")
