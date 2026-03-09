@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabaseClient";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Message = {
@@ -18,6 +18,8 @@ type Message = {
 export default function InboxPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchMessages = async () => {
