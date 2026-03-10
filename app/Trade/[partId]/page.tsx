@@ -3,10 +3,9 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import RequireAuth from "@/app/components/RequireAuth";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function TradeOfferPage() {
-  const supabase = createClient();
   const router = useRouter();
   const params = useParams();
 
