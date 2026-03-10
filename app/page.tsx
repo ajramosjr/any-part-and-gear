@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
-const supabase = createClient();
-
 type Part = {
   id: number;
   title: string;
