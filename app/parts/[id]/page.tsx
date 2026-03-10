@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 
 type PartPageProps = {
   params: {
@@ -12,8 +12,6 @@ const PLACEHOLDER_IMAGE =
   "https://via.placeholder.com/800x500?text=No+Image+Available";
 
 export default async function PartPage({ params }: PartPageProps) {
-  const supabase = await createServerSupabaseClient();
-
   const partId = Number(params.id);
   if (Number.isNaN(partId)) return notFound();
 
