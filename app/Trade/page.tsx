@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequireAuth from "@/app/components/RequireAuth";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 type Trade = {
   id: number;
@@ -14,8 +14,6 @@ type Trade = {
 };
 
 export default function TradeRequestsPage() {
-  const supabase = createClient();
-
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,7 +42,7 @@ export default function TradeRequestsPage() {
     };
 
     fetchTrades();
-  }, [supabase]);
+  }, []);
 
   return (
     <RequireAuth>
