@@ -13,16 +13,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // Supabase service-role client (server only)
+    // Server-only Supabase client
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    /* -------------------------------------------------
-       1️⃣ Run AI scan (mocked for now)
-       Replace later with real AI / vision model
-    -------------------------------------------------- */
+    /* ---------------------------------------
+       1️⃣ AI Scan (mock for now)
+    --------------------------------------- */
 
     const aiResult = {
       vehicle: "2018 Ford F-150",
@@ -33,19 +32,15 @@ export async function POST(req: Request) {
 
     let confidence = aiResult.confidence;
 
-    /* -------------------------------------------------
+    /* ---------------------------------------
        2️⃣ Check seller verification
-    -------------------------------------------------- */
+    --------------------------------------- */
 
-    const { data: seller, error: sellerError } = await supabase
+    const { data: seller } = await supabase
       .from("profiles")
       .select("verified")
       .eq("id", userId)
       .single();
-
-    if (sellerError) {
-      console.error("Seller lookup error:", sellerError);
-    }
 
     const sellerIsVerified = seller?.verified === true;
 
@@ -55,11 +50,11 @@ export async function POST(req: Request) {
 
     confidence = Math.min(confidence, 1);
 
-    /* -------------------------------------------------
-       3️⃣ Save scan result
-    -------------------------------------------------- */
+    /* ---------------------------------------
+       3️⃣ Save AI scan result
+    --------------------------------------- */
 
-    const { error: insertError } = await supabase.from("ai_scans").insert({
+    const { error } = await supabase.from("ai_scans").insert({
       user_id: userId,
       image_url: imageUrl,
       vehicle: aiResult.vehicle,
@@ -69,17 +64,17 @@ export async function POST(req: Request) {
       verified_boost: sellerIsVerified,
     });
 
-    if (insertError) {
-      console.error("Insert error:", insertError);
+    if (error) {
+      console.error("Insert error:", error);
       return NextResponse.json(
         { error: "Failed to save scan" },
         { status: 500 }
       );
     }
 
-    /* -------------------------------------------------
-       4️⃣ Return result to client
-    -------------------------------------------------- */
+    /* ---------------------------------------
+       4️⃣ Return result
+    --------------------------------------- */
 
     return NextResponse.json({
       vehicle: aiResult.vehicle,
@@ -90,6 +85,7 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     console.error("AI Scan Error:", err);
+
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
