@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 type Part = {
   id: number;
@@ -15,8 +15,6 @@ export default function BrowsePage() {
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [supabase] = useState(() => createClient());
-
   useEffect(() => {
     const fetchParts = async () => {
       const { data, error } = await supabase
@@ -25,7 +23,7 @@ export default function BrowsePage() {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error loading parts:", error);
+        console.error(error);
       }
 
       if (data) {
@@ -36,38 +34,23 @@ export default function BrowsePage() {
     };
 
     fetchParts();
-  }, [supabase]);
+  }, []);
 
-  if (loading) {
-    return <p className="p-6 text-gray-500">Loading parts...</p>;
-  }
+  if (loading) return <p className="p-6">Loading parts...</p>;
 
   return (
     <main className="max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Browse Parts</h1>
-
-      {parts.length === 0 && (
-        <p className="text-gray-500">No parts available.</p>
-      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {parts.map((part) => (
           <Link
             key={part.id}
             href={`/parts/${part.id}`}
-            className="border rounded-lg p-4 hover:shadow transition block"
+            className="border rounded-lg p-4"
           >
-            <img
-              src={part.images?.[0] || "/placeholder-part.png"}
-              alt={part.title}
-              className="w-full h-40 object-cover rounded mb-3"
-            />
-
-            <h2 className="font-semibold">{part.title}</h2>
-
-            {part.price !== null && (
-              <p className="text-sm text-gray-600">${part.price}</p>
-            )}
+            <h2>{part.title}</h2>
+            {part.price && <p>${part.price}</p>}
           </Link>
         ))}
       </div>
