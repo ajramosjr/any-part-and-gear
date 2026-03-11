@@ -1,39 +1,59 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabaseClient";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
-export default function RequireAuth({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const router = useRouter();
+type Part = {
+  id: number;
+  title: string;
+  price: number | null;
+  images: string[] | null;
+};
+
+export default function BrowsePage() {
+  const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const supabase = createClient();
-
   useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    const fetchParts = async () => {
+      const { data, error } = await supabase
+        .from("parts")
+        .select("id, title, price, images")
+        .order("created_at", { ascending: false });
 
-      if (!user) {
-        router.push("/login");
-        return;
+      if (error) {
+        console.error(error);
+      }
+
+      if (data) {
+        setParts(data);
       }
 
       setLoading(false);
     };
 
-    checkAuth();
-  }, [router]);
+    fetchParts();
+  }, []);
 
-  if (loading) {
-    return <p className="p-6">Checking authentication…</p>;
-  }
+  if (loading) return <p className="p-6">Loading parts...</p>;
 
-  return <>{children}</>;
+  return (
+    <main className="max-w-6xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Browse Parts</h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {parts.map((part) => (
+          <Link
+            key={part.id}
+            href={`/parts/${part.id}`}
+            className="border rounded-lg p-4"
+          >
+            <h2>{part.title}</h2>
+            {part.price && <p>${part.price}</p>}
+          </Link>
+        ))}
+      </div>
+    </main>
+  );
 }
