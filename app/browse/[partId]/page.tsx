@@ -16,7 +16,7 @@ export default function BrowsePage() {
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   const searchParams = useSearchParams();
   const query = searchParams.get("q");
@@ -34,8 +34,10 @@ export default function BrowsePage() {
 
       const { data, error } = await request;
 
-      if (!error && data) {
-        setParts(data);
+      if (error) {
+        console.error("Error loading parts:", error);
+      } else {
+        setParts(data ?? []);
       }
 
       setLoading(false);
@@ -54,31 +56,4 @@ export default function BrowsePage() {
 
       {parts.length === 0 && (
         <p className="text-gray-500">
-          {query ? `No parts found for "${query}".` : "No parts available."}
-        </p>
-      )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {parts.map((part) => (
-          <Link
-            key={part.id}
-            href={`/parts/${part.id}`}
-            className="border rounded-lg p-4 hover:shadow transition"
-          >
-            <img
-              src={part.images?.[0] || "/placeholder-part.png"}
-              alt={part.title}
-              className="w-full h-40 object-cover rounded-lg mb-3"
-            />
-
-            <h2 className="font-semibold">{part.title}</h2>
-
-            {part.price !== null && (
-              <p className="text-sm text-gray-600">${part.price}</p>
-            )}
-          </Link>
-        ))}
-      </div>
-    </main>
-  );
-}
+          {query ? `No parts found for "${query}".` : "No
