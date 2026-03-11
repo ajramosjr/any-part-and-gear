@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Message = {
@@ -18,8 +18,6 @@ type Message = {
 export default function InboxPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const supabase = createClient();
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -57,9 +55,7 @@ export default function InboxPage() {
     fetchMessages();
   }, []);
 
-  if (loading) {
-    return <p className="p-6">Loading inbox…</p>;
-  }
+  if (loading) return <p className="p-6">Loading inbox...</p>;
 
   return (
     <main className="max-w-3xl mx-auto p-6">
