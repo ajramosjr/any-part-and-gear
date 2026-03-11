@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 type Part = {
@@ -12,7 +12,7 @@ type Part = {
 };
 
 export default function PartClient({ partId }: { partId: string }) {
-  const supabase = createSupabaseBrowser();
+  const supabase = useMemo(() => createSupabaseBrowser(), []);
 
   const [part, setPart] = useState<Part | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,7 @@ export default function PartClient({ partId }: { partId: string }) {
         .eq("id", partId)
         .single();
 
-      if (!error) {
+      if (!error && data) {
         setPart(data);
       }
 
@@ -47,7 +47,9 @@ export default function PartClient({ partId }: { partId: string }) {
     <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-4">{part.title}</h1>
       <p className="text-gray-300 mb-6">{part.description}</p>
+
       <div className="text-xl font-semibold">${part.price}</div>
+
       {part.condition && (
         <div className="text-sm text-gray-400 mt-2">
           Condition: {part.condition}
