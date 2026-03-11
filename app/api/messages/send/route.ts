@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   try {
     const { receiver_id, content } = await req.json();
 
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
             cookieStore.set({ name, value, ...options });
           },
           remove(name: string, options: any) {
-            cookieStore.set({ name, value: "", ...options });
+            cookieStore.set({ name, value: "", ...options, maxAge: 0 });
           },
         },
       }
