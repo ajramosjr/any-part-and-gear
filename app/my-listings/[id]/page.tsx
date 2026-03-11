@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
 
 type Listing = {
@@ -12,8 +12,7 @@ type Listing = {
 };
 
 export default function MyListingPage() {
-  const router = useRouter();
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const id = Number(params.id);
 
   const [listing, setListing] = useState<Listing | null>(null);
@@ -23,10 +22,20 @@ export default function MyListingPage() {
 
   useEffect(() => {
     const fetchListing = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("parts")
         .select("*")
         .eq("id", id)
+        .eq("user_id", user.id)
         .single();
 
       if (!error && data) {
@@ -37,7 +46,7 @@ export default function MyListingPage() {
     };
 
     fetchListing();
-  }, [id]);
+  }, [id, supabase]);
 
   if (loading) {
     return <p className="p-6">Loading listing…</p>;
