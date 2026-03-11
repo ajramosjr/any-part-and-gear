@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { createClient } from "@/lib/supabaseClient";
 
 type Part = {
   id: number;
@@ -16,7 +16,7 @@ export default function BrowsePage() {
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const supabase = useMemo(() => createSupabaseBrowser(), []);
+  const supabase = createClient();
 
   const searchParams = useSearchParams();
   const query = searchParams.get("q");
