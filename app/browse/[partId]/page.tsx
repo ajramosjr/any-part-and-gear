@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
@@ -28,8 +28,8 @@ export default function BrowsePage() {
         .select("id, title, price, images")
         .order("created_at", { ascending: false });
 
-      if (query) {
-        request = request.ilike("title", `%${query}%`);
+      if (query && query.trim() !== "") {
+        request = request.ilike("title", `%${query.trim()}%`);
       }
 
       const { data, error } = await request;
@@ -53,7 +53,9 @@ export default function BrowsePage() {
       <h1 className="text-2xl font-bold mb-6">Browse Parts</h1>
 
       {parts.length === 0 && (
-        <p className="text-gray-500">No parts found.</p>
+        <p className="text-gray-500">
+          {query ? `No parts found for "${query}".` : "No parts available."}
+        </p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -66,7 +68,7 @@ export default function BrowsePage() {
             <img
               src={part.images?.[0] || "/placeholder-part.png"}
               alt={part.title}
-              className="w-full h-40 object-cover rounded mb-3"
+              className="w-full h-40 object-cover rounded-lg mb-3"
             />
 
             <h2 className="font-semibold">{part.title}</h2>
