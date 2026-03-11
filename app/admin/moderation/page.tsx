@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import RequireAuth from "@/app/components/RequireAuth";
-import { createClient } from "@/lib/supabaseClient";
-
-const supabase = createClient();
+import { supabase } from "@/lib/supabaseClient";
 
 type ReportedPart = {
   id: number;
