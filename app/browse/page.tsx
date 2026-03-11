@@ -39,7 +39,7 @@ export default function BrowsePage() {
   }, [supabase]);
 
   if (loading) {
-    return <p className="p-6">Loading parts…</p>;
+    return <p className="p-6 text-gray-500">Loading parts...</p>;
   }
 
   return (
@@ -55,15 +55,13 @@ export default function BrowsePage() {
           <Link
             key={part.id}
             href={`/parts/${part.id}`}
-            className="border rounded-lg p-4 hover:shadow transition"
+            className="border rounded-lg p-4 hover:shadow transition block"
           >
-            {part.images?.[0] && (
-              <img
-                src={part.images[0]}
-                alt={part.title}
-                className="w-full h-40 object-cover rounded mb-3"
-              />
-            )}
+            <img
+              src={part.images?.[0] || "/placeholder-part.png"}
+              alt={part.title}
+              className="w-full h-40 object-cover rounded mb-3"
+            />
 
             <h2 className="font-semibold">{part.title}</h2>
 
