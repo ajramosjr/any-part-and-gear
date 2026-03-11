@@ -1,8 +1,6 @@
-// app/actions/updateParts.ts
-// TEMP DISABLED – handled in client until server auth is reintroduced
+import { createClient } from "@supabase/supabase-js";
 
-export async function updatePart() {
-throw new Error(
-"updatePart is temporarily disabled. Use browser Supabase instead."
+export const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
-}
