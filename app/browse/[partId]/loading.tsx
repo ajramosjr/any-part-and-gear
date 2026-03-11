@@ -1,23 +1,36 @@
 export default function LoadingPart() {
+  const skeleton = {
+    background: "#222",
+    borderRadius: 6,
+    animation: "pulse 1.5s infinite ease-in-out",
+  };
+
   return (
     <main style={{ padding: 40 }}>
+      <style>{`
+        @keyframes pulse {
+          0% { opacity: 0.5; }
+          50% { opacity: 1; }
+          100% { opacity: 0.5; }
+        }
+      `}</style>
+
       {/* Title skeleton */}
       <div
         style={{
+          ...skeleton,
           width: "60%",
           height: 32,
-          background: "#222",
           marginBottom: 20,
-          borderRadius: 6,
         }}
       />
 
       {/* Image skeleton */}
       <div
         style={{
+          ...skeleton,
           width: 300,
           height: 200,
-          background: "#222",
           marginBottom: 20,
           borderRadius: 8,
         }}
@@ -26,30 +39,28 @@ export default function LoadingPart() {
       {/* Price skeleton */}
       <div
         style={{
+          ...skeleton,
           width: 120,
           height: 20,
-          background: "#222",
           marginBottom: 12,
-          borderRadius: 4,
         }}
       />
 
       {/* Description skeleton */}
       <div
         style={{
+          ...skeleton,
           width: "100%",
           height: 16,
-          background: "#222",
           marginBottom: 8,
-          borderRadius: 4,
         }}
       />
+
       <div
         style={{
+          ...skeleton,
           width: "90%",
           height: 16,
-          background: "#222",
-          borderRadius: 4,
         }}
       />
     </main>
