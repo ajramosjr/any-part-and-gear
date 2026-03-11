@@ -1,20 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function AiScanPage() {
-
   const [image, setImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const supabase = createClient();
+
   const handleScan = async () => {
     if (!image) return;
 
     setLoading(true);
 
-    // example placeholder — replace with your real logic
     const { data, error } = await supabase
       .from("ai_scans")
       .insert({ status: "uploaded" })
@@ -23,6 +21,8 @@ export default function AiScanPage() {
 
     if (!error) {
       setResult("Scan submitted successfully");
+    } else {
+      setResult("Scan failed");
     }
 
     setLoading(false);
