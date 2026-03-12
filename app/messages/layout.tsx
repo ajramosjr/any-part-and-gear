@@ -1,15 +1,12 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export default async function MessagesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user },
