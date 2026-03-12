@@ -30,7 +30,7 @@ export default function TradeOfferPage() {
     }
 
     const { error } = await supabase.from("trades").insert({
-      part_id: partId,
+      part_id: Number(partId),
       sender_id: user.id,
       message,
       status: "pending",
@@ -39,7 +39,7 @@ export default function TradeOfferPage() {
     setLoading(false);
 
     if (!error) {
-      router.push("/Trade");
+      router.push("/trades");
     } else {
       alert(error.message);
     }
