@@ -6,10 +6,12 @@ import { useState } from "react";
 
 export default function TradeChat({
   tradeRequestId,
-  userId,
+  currentUserId,
+  receiverId,
 }: {
   tradeRequestId: string;
-  userId: string;
+  currentUserId: string;
+  receiverId: string;
 }) {
   const { messages, loading } = useTradeChat(tradeRequestId);
   const [text, setText] = useState("");
@@ -18,11 +20,13 @@ export default function TradeChat({
 
   const send = async () => {
     if (!text.trim()) return;
+
     await sendTradeMessage({
-  tradeId: tradeRequestId,
-  receiverId: userId,
-  message: text,
-});
+      tradeId: tradeRequestId,
+      receiverId,
+      message: text,
+    });
+
     setText("");
   };
 
@@ -31,7 +35,9 @@ export default function TradeChat({
       <div style={{ maxHeight: 300, overflowY: "auto", marginBottom: 8 }}>
         {messages.map((m) => (
           <div key={m.id} style={{ marginBottom: 6 }}>
-            <strong>{m.sender_id === userId ? "You" : "Them"}:</strong>{" "}
+            <strong>
+              {m.sender_id === currentUserId ? "You" : "Them"}:
+            </strong>{" "}
             {m.message}
           </div>
         ))}
@@ -44,6 +50,7 @@ export default function TradeChat({
           placeholder="Type message…"
           style={{ flex: 1 }}
         />
+
         <button onClick={send}>Send</button>
       </div>
     </div>
