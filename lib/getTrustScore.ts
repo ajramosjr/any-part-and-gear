@@ -1,9 +1,7 @@
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import { isVerifiedSeller } from "@/lib/isVerifiedSeller";
 
 export async function getTrustScore(sellerId: string): Promise<number> {
-  const supabase = createClient();
-
   let score = 0;
 
   // Reviews
