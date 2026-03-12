@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 type Listing = {
   id: number;
@@ -15,8 +15,6 @@ type Listing = {
 export default function ListingsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const supabase = createClient();
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -43,7 +41,7 @@ export default function ListingsPage() {
     };
 
     fetchListings();
-  }, [supabase]);
+  }, []);
 
   if (loading) {
     return <p className="p-6">Loading your listings…</p>;
@@ -64,10 +62,6 @@ export default function ListingsPage() {
         >
           <div>
             <h3 className="font-semibold text-lg">{listing.title}</h3>
-
-            <p className="text-xs text-gray-500">
-              Posted {new Date(listing.created_at).toLocaleDateString()}
-            </p>
 
             {listing.price !== null && (
               <p className="text-gray-700">${listing.price}</p>
