@@ -43,7 +43,7 @@ export default function ListingsPage() {
     };
 
     fetchListings();
-  }, []);
+  }, [supabase]);
 
   if (loading) {
     return <p className="p-6">Loading your listings…</p>;
@@ -64,6 +64,10 @@ export default function ListingsPage() {
         >
           <div>
             <h3 className="font-semibold text-lg">{listing.title}</h3>
+
+            <p className="text-xs text-gray-500">
+              Posted {new Date(listing.created_at).toLocaleDateString()}
+            </p>
 
             {listing.price !== null && (
               <p className="text-gray-700">${listing.price}</p>
