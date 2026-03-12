@@ -1,13 +1,11 @@
 import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 
 export default async function MessagesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createServerSupabaseClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -35,6 +33,16 @@ export default async function MessagesLayout({
           padding: 24,
         }}
       >
+        <h1
+          style={{
+            fontSize: 22,
+            fontWeight: 600,
+            marginBottom: 20,
+          }}
+        >
+          Messages
+        </h1>
+
         {children}
       </div>
     </div>
