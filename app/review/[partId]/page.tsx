@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import RequireAuth from "@/app/components/RequireAuth";
-
-const supabase = createClient();
 
 export default function ReviewPage() {
   const router = useRouter();
