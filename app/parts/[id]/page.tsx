@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 type PartPageProps = {
   params: {
@@ -14,8 +14,6 @@ const PLACEHOLDER_IMAGE =
 export default async function PartPage({ params }: PartPageProps) {
   const partId = Number(params.id);
   if (Number.isNaN(partId)) return notFound();
-
-  const supabase = createClient();
 
   const { data: part } = await supabase
     .from("parts")
