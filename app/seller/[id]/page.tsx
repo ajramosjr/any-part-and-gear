@@ -3,17 +3,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import VerifiedBadge from "@/components/VerifiedBadge";
-
-const supabase = createClient();
 
 type Profile = {
   id: string;
   username: string;
   verified: boolean;
 };
-
 type Part = {
   id: string;
   title: string;
