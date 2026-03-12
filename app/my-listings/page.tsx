@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 type Part = {
   id: number;
@@ -13,8 +13,6 @@ type Part = {
 };
 
 export default function MyListingsPage() {
-  const supabase = createClient();
-
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +41,7 @@ export default function MyListingsPage() {
     };
 
     fetchParts();
-  }, [supabase]);
+  }, []);
 
   if (loading) {
     return <p className="p-6">Loading your listings…</p>;
