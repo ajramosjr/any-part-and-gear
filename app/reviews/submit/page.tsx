@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import RequireAuth from "@/app/components/RequireAuth";
-import { createClient } from "@/lib/supabaseClient";
-
-const supabase = createClient();
+import { supabase } from "@/lib/supabaseClient";
 
 export default function SubmitReviewPage() {
   const router = useRouter();
