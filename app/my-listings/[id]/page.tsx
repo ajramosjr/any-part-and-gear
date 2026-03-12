@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 type Listing = {
   id: number;
@@ -17,8 +17,6 @@ export default function MyListingPage() {
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const supabase = createClient();
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -46,7 +44,7 @@ export default function MyListingPage() {
     };
 
     fetchListing();
-  }, [id, supabase]);
+  }, [id]);
 
   if (loading) {
     return <p className="p-6">Loading listing…</p>;
