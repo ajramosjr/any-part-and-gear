@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabaseClient";
-
-const supabase = createClient();
+import { supabase } from "@/lib/supabaseClient";
 
 type Part = {
   id: number;
@@ -15,7 +13,6 @@ type Part = {
   trade_available: boolean;
   image_urls: string[] | null;
 };
-
 const categories = [
   "All",
   "Brakes",
