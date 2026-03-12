@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
-
-const supabase = createClient();
+import { supabase } from "@/lib/supabaseClient";
 
 export function useUnreadMessages() {
   const [count, setCount] = useState(0);
