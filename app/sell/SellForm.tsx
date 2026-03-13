@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function SellForm() {
   const router = useRouter();
-  const supabase = createSupabaseBrowser();
 
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
