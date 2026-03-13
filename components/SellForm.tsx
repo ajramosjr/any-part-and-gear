@@ -3,11 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function SellForm() {
   const router = useRouter();
-  const supabase = createSupabaseBrowser();
 
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
@@ -32,7 +31,7 @@ export default function SellForm() {
       title,
       description,
       price: Number(price),
-      seller_id: user.id,
+      user_id: user.id,
     });
 
     setLoading(false);
