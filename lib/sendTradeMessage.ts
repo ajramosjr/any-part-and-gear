@@ -1,4 +1,4 @@
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabase } from "@/lib/supabaseClient";
 
 export async function sendTradeMessage({
   tradeId,
@@ -9,8 +9,6 @@ export async function sendTradeMessage({
   receiverId: string;
   message: string;
 }) {
-  const supabase = createSupabaseBrowser();
-
   const {
     data: { user },
     error: userError,
