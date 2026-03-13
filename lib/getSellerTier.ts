@@ -1,16 +1,15 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 
 /**
  * Returns Bronze | Silver | Gold
  */
 export async function getSellerTier(sellerId: string) {
-  const supabase = await createServerSupabaseClient();
 
   // total listings
   const { data: parts } = await supabase
     .from("parts")
     .select("id")
-    .eq("user_id", sellerId);
+    .eq("seller_id", sellerId);
 
   const totalListings = parts?.length ?? 0;
 
@@ -27,5 +26,6 @@ export async function getSellerTier(sellerId: string) {
 
   if (totalListings >= 25 && avgRating >= 4.5) return "Gold";
   if (totalListings >= 10 && avgRating >= 4.0) return "Silver";
+
   return "Bronze";
 }
