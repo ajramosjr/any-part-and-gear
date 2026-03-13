@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function SellerReviewForm({
   sellerId,
@@ -10,7 +10,6 @@ export default function SellerReviewForm({
   sellerId: string;
 }) {
   const router = useRouter();
-  const supabase = createSupabaseBrowser();
 
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
