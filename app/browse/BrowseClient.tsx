@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 type Part = {
   id: number;
@@ -12,8 +12,6 @@ type Part = {
 };
 
 export default function BrowseClient() {
-  const supabase = useMemo(() => createClient(), []);
-
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +31,7 @@ export default function BrowseClient() {
     };
 
     fetchParts();
-  }, [supabase]);
+  }, []);
 
   if (loading) {
     return <p className="p-6">Loading parts…</p>;
