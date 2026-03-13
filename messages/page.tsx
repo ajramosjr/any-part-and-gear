@@ -1,15 +1,15 @@
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 export default async function MessagesPage({
   searchParams,
 }: {
   searchParams: { to?: string; part?: string };
 }) {
-  const supabase = createClient();
 
   const { data: messages } = await supabase
     .from("messages")
     .select("*")
+    .eq("part_title", searchParams.part)
     .order("created_at", { ascending: true });
 
   return (
