@@ -32,10 +32,7 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser();
 
     if (!user || authError) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { error } = await supabase.from("messages").insert({
@@ -45,24 +42,14 @@ export async function POST(req: Request) {
     });
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
+
   } catch (err: any) {
     return NextResponse.json(
-      { error: err.message },
-      { status: 500 }
-    );
-  }
-}
-    return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message },
+      { error: err.message || "Server error" },
       { status: 500 }
     );
   }
