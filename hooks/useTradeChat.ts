@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabase } from "@/lib/supabaseClient";
 
 export type TradeMessage = {
   id: string;
@@ -11,7 +11,6 @@ export type TradeMessage = {
 };
 
 export function useTradeChat(tradeId: string) {
-  const supabase = createSupabaseBrowser();
   const [messages, setMessages] = useState<TradeMessage[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +50,7 @@ export function useTradeChat(tradeId: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tradeId, supabase]);
+  }, [tradeId]);
 
   return { messages, loading };
 }
