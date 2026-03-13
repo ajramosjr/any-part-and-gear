@@ -1,11 +1,9 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 
 export async function hasMessaged(
   userId: string,
   partId: number
 ): Promise<boolean> {
-  const supabase = await createServerSupabaseClient();
-
   const { data, error } = await supabase
     .from("trade_messages")
     .select("id")
