@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   try {
     const { receiver_id, content } = await req.json();
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -51,6 +51,14 @@ export async function POST(req: Request) {
       );
     }
 
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message },
+      { status: 500 }
+    );
+  }
+}
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json(
