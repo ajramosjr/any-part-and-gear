@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function SellClient() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = createSupabaseBrowser();
-
     const loadUser = async () => {
       const {
         data: { user },
