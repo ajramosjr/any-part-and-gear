@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 interface TradeRequestFormProps {
   partId: number;
@@ -12,8 +12,6 @@ export default function TradeRequestForm({
   partId,
   receiverId,
 }: TradeRequestFormProps) {
-  const supabase = createClient();
-
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
 
@@ -27,13 +25,18 @@ export default function TradeRequestForm({
       return;
     }
 
-    await supabase.from("trade_requests").insert({
+    const { error } = await supabase.from("trade_requests").insert({
       part_id: partId,
       sender_id: user.id,
       receiver_id: receiverId,
       message,
       status: "pending",
     });
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
     setSent(true);
   };
