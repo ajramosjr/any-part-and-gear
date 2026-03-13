@@ -1,11 +1,9 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabaseClient";
 
 /**
  * Returns average seller rating rounded to 1 decimal
  */
 export async function getSellerRating(sellerId: string) {
-  const supabase = await createServerSupabaseClient();
-
   const { data, error } = await supabase
     .from("reviews")
     .select("rating")
