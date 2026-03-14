@@ -16,7 +16,10 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const result = await analyzeVehicle(buffer);
+    // convert image to base64
+    const base64Image = buffer.toString("base64");
+
+    const result = await analyzeVehicle(base64Image);
 
     return NextResponse.json(result);
 
