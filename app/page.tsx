@@ -1,4 +1,4 @@
-  export default function Home() {
+export default function Home() {
   return (
     <main className="max-w-6xl mx-auto p-6">
 
@@ -23,104 +23,81 @@
           </button>
         </div>
       </div>
-<section className="mt-12">
-
-<h2 className="text-2xl font-bold mb-4">
 
       {/* Categories */}
       <h2 className="text-2xl font-semibold mb-4">Browse Categories</h2>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
 
-        <div className="border rounded-lg p-6 text-center hover:shadow">
-          🚗 Cars
+        <div className="border rounded-lg p-6 text-center hover:shadow">🚗 Cars</div>
+        <div className="border rounded-lg p-6 text-center hover:shadow">🚤 Boats</div>
+        <div className="border rounded-lg p-6 text-center hover:shadow">⚓ Marine</div>
+        <div className="border rounded-lg p-6 text-center hover:shadow">🛠 Tools</div>
+        <div className="border rounded-lg p-6 text-center hover:shadow">🏗 Machinery</div>
+        <div className="border rounded-lg p-6 text-center hover:shadow">🏎 RC Vehicles</div>
+        <div className="border rounded-lg p-6 text-center hover:shadow">🚐 RV Vehicles</div>
+        <div className="border rounded-lg p-6 text-center hover:shadow">🚌 Buses</div>
+
+      </div>
+
+      {/* AI Vehicle Scan */}
+      <section className="mt-14 mb-12">
+
+        <div className="bg-blue-900 text-white rounded-2xl p-10 text-center">
+
+          <h2 className="text-3xl font-bold mb-3">
+            Scan Your Vehicle With AI
+          </h2>
+
+          <p className="text-gray-200 mb-6">
+            Take a photo of your car, boat, or RC vehicle and instantly discover
+            compatible parts, maintenance tips, and upgrade ideas.
+          </p>
+
+          <a
+            href="/ai-scan"
+            className="bg-yellow-500 text-black font-semibold px-6 py-3 rounded-lg hover:bg-yellow-400"
+          >
+            Scan Your Vehicle
+          </a>
+
         </div>
 
-        <div className="border rounded-lg p-6 text-center hover:shadow">
-          🚤 Boats
+      </section>
+
+      {/* Trending Parts */}
+      <h2 className="text-2xl font-bold mb-4">
+        🔥 Trending Parts
+      </h2>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+
+        <div className="border rounded-xl p-4 hover:shadow-lg transition">
+          <img src="/placeholder.png" className="rounded mb-3" />
+          <h3 className="font-semibold">Ford F150 Headlights</h3>
+          <p className="text-gray-500">$140</p>
         </div>
 
-        <div className="border rounded-lg p-6 text-center hover:shadow">
-          ⚓ Marine
+        <div className="border rounded-xl p-4 hover:shadow-lg transition">
+          <img src="/placeholder.png" className="rounded mb-3" />
+          <h3 className="font-semibold">Chevy Silverado Tailgate</h3>
+          <p className="text-gray-500">$300</p>
         </div>
 
-        <div className="border rounded-lg p-6 text-center hover:shadow">
-          🛠 Tools
+        <div className="border rounded-xl p-4 hover:shadow-lg transition">
+          <img src="/placeholder.png" className="rounded mb-3" />
+          <h3 className="font-semibold">Yamaha Jet Ski Pump</h3>
+          <p className="text-gray-500">$180</p>
         </div>
 
-        <div className="border rounded-lg p-6 text-center hover:shadow">
-          🏗 Machinery
-        </div>
-
-        <div className="border rounded-lg p-6 text-center hover:shadow">
-          🏎 RC Vehicles
-        </div>
-
-        <div className="border rounded-lg p-6 text-center hover:shadow">
-          🚐 RV Vehicles
-        </div>
-
-        <div className="border rounded-lg p-6 text-center hover:shadow">
-          🚌 Buses
+        <div className="border rounded-xl p-4 hover:shadow-lg transition">
+          <img src="/placeholder.png" className="rounded mb-3" />
+          <h3 className="font-semibold">Traxxas RC Motor</h3>
+          <p className="text-gray-500">$90</p>
         </div>
 
       </div>
-  <section className="mt-14">
 
-<div className="bg-blue-900 text-white rounded-2xl p-10 text-center">
-
-<h2 className="text-3xl font-bold mb-3">
-Scan Your Vehicle With AI
-</h2>
-
-<p className="text-gray-200 mb-6">
-Take a photo of your car, boat, or RC vehicle and instantly discover
-compatible parts, maintenance tips, and upgrade ideas.
-</p>
-
-<a
-href="/ai-scan"
-className="bg-yellow-500 text-black font-semibold px-6 py-3 rounded-lg hover:bg-yellow-400"
->
-Scan Your Vehicle
-</a>
-
-</div>
-
-</section>
-<h2 className="text-2xl font-bold mb-4">
-🔥 Trending Parts
-</h2>
-
-<div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-
-<div className="border rounded-xl p-4 hover:shadow-lg transition">
-<img src="/placeholder.png" className="rounded mb-3"/>
-<h3 className="font-semibold">Ford F150 Headlights</h3>
-<p className="text-gray-500">$140</p>
-</div>
-
-<div className="border rounded-xl p-4 hover:shadow-lg transition">
-<img src="/placeholder.png" className="rounded mb-3"/>
-<h3 className="font-semibold">Chevy Silverado Tailgate</h3>
-<p className="text-gray-500">$300</p>
-</div>
-
-<div className="border rounded-xl p-4 hover:shadow-lg transition">
-<img src="/placeholder.png" className="rounded mb-3"/>
-<h3 className="font-semibold">Yamaha Jet Ski Pump</h3>
-<p className="text-gray-500">$180</p>
-</div>
-
-<div className="border rounded-xl p-4 hover:shadow-lg transition">
-<img src="/placeholder.png" className="rounded mb-3"/>
-<h3 className="font-semibold">Traxxas RC Motor</h3>
-<p className="text-gray-500">$90</p>
-</div>
-
-</div>
-
-</section>
       {/* Featured Listings */}
       <h2 className="text-2xl font-semibold mb-4">Featured Listings</h2>
 
@@ -148,4 +125,4 @@ Scan Your Vehicle
 
     </main>
   );
-  }
+}
