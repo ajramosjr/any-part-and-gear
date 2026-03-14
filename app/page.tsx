@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="max-w-6xl mx-auto p-6">
@@ -8,10 +10,16 @@ export default function Home() {
           Find Rare Parts & Trusted Sellers
         </h1>
 
-        <p className="text-gray-500 mt-2">
-          Powered by A.P.G X-Link
-        </p>
-
+        
+<p className="text-gray-500 mt-2">
+  Powered by{" "}
+  <Link
+    href="/apg-xlink"
+    className="text-blue-600 hover:underline font-semibold"
+  >
+    A.P.G X-Link
+  </Link>
+</p>
         <div className="flex mt-6 justify-center">
           <input
             type="text"
