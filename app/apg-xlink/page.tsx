@@ -7,7 +7,7 @@ export default function APGXLink() {
       </h1>
 
       <p className="text-gray-600 mb-8">
-        Discover trusted gear, parts, and tools recommended by Any Part & Gear.
+        Instant access to trusted parts, gear, and equipment through A.P.G X-Link.
       </p>
 
       <div className="grid md:grid-cols-3 gap-6">
