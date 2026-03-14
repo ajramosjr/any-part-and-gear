@@ -1,52 +1,59 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 
-export default function AiScanPage() {
-  const [image, setImage] = useState<File | null>(null);
+export default function AIScanPage() {
+  const [file, setFile] = useState<File | null>(null);
+  const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
 
-  const handleScan = async () => {
-    if (!image) return;
+  const scanVehicle = async () => {
+
+    if (!file) {
+      setResult("Please upload an image first");
+      return;
+    }
 
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("ai_scans")
-      .insert({ status: "uploaded" })
-      .select()
-      .single();
+    const formData = new FormData();
+    formData.append("file", file);
 
-    if (!error) {
-      setResult("Scan submitted successfully");
-    } else {
-      setResult("Scan failed");
-    }
+    const res = await fetch("/api/vehicle-scan", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
 
     setLoading(false);
+
+    if (data.error) {
+      setResult("Scan failed");
+    } else {
+      setResult(JSON.stringify(data, null, 2));
+    }
   };
 
   return (
-    <main className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">AI Scan</h1>
+    <div className="max-w-xl mx-auto mt-10 text-center">
+
+      <h1 className="text-3xl font-bold mb-6">AI Scan</h1>
 
       <input
         type="file"
-        accept="image/*"
-        onChange={(e) => setImage(e.target.files?.[0] || null)}
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
       />
 
       <button
-        onClick={handleScan}
-        disabled={!image || loading}
-        className="mt-4 px-4 py-2 bg-black text-white rounded"
+        onClick={scanVehicle}
+        className="bg-black text-white px-6 py-2 ml-4 rounded"
       >
         {loading ? "Scanning..." : "Scan"}
       </button>
 
-      {result && <p className="mt-4 text-green-600">{result}</p>}
-    </main>
+      <p className="mt-6 text-green-600">{result}</p>
+
+    </div>
   );
 }
