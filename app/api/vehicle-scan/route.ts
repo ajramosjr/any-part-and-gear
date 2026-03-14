@@ -3,25 +3,23 @@ import { analyzeVehicle } from "@/lib/vehicleVision";
 
 export async function POST(req: Request) {
   try {
-    const { imageUrl } = await req.json();
+    const formData = await req.formData();
+    const file = formData.get("file") as File;
 
-    if (!imageUrl) {
+    if (!file) {
       return NextResponse.json(
-        { error: "Missing imageUrl" },
+        { error: "No image uploaded" },
         { status: 400 }
       );
     }
 
-    if (!imageUrl.startsWith("http")) {
-      return NextResponse.json(
-        { error: "Invalid image URL" },
-        { status: 400 }
-      );
-    }
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-    const result = await analyzeVehicle(imageUrl);
+    const result = await analyzeVehicle(buffer);
 
     return NextResponse.json(result);
+
   } catch (err) {
     console.error("Vehicle AI error:", err);
 
