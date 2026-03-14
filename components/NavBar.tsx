@@ -1,20 +1,16 @@
+import Image from "next/image";
 import Link from "next/link";
 
-export default function Navbar() {
-  return (
-    <header className="border-b bg-white">
-
-      <div className="max-w-6xl mx-auto flex items-center justify-between p-4">
-
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <img
-            src="/logo.png"
-            alt="Any Part & Gear"
-            className="h-10"
-          />
-        </Link>
-
+<Link href="/" className="flex items-center">
+  <Image
+    src="/logo.png"
+    alt="Any Part & Gear"
+    width={200}
+    height={80}
+    className="h-12 w-auto"
+    priority
+  />
+</Link>
         {/* Navigation */}
         <nav className="flex gap-6 text-gray-700 font-medium items-center">
 
