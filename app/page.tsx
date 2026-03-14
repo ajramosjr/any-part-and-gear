@@ -23,7 +23,41 @@
           </button>
         </div>
       </div>
+<section className="mt-12">
 
+<h2 className="text-2xl font-bold mb-4">
+🔥 Trending Parts
+</h2>
+
+<div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+<div className="border rounded-xl p-4 hover:shadow-lg transition">
+<img src="/placeholder.png" className="rounded mb-3"/>
+<h3 className="font-semibold">Ford F150 Headlights</h3>
+<p className="text-gray-500">$140</p>
+</div>
+
+<div className="border rounded-xl p-4 hover:shadow-lg transition">
+<img src="/placeholder.png" className="rounded mb-3"/>
+<h3 className="font-semibold">Chevy Silverado Tailgate</h3>
+<p className="text-gray-500">$300</p>
+</div>
+
+<div className="border rounded-xl p-4 hover:shadow-lg transition">
+<img src="/placeholder.png" className="rounded mb-3"/>
+<h3 className="font-semibold">Yamaha Jet Ski Pump</h3>
+<p className="text-gray-500">$180</p>
+</div>
+
+<div className="border rounded-xl p-4 hover:shadow-lg transition">
+<img src="/placeholder.png" className="rounded mb-3"/>
+<h3 className="font-semibold">Traxxas RC Motor</h3>
+<p className="text-gray-500">$90</p>
+</div>
+
+</div>
+
+</section>
       {/* Categories */}
       <h2 className="text-2xl font-semibold mb-4">Browse Categories</h2>
 
