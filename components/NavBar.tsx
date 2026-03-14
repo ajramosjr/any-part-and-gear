@@ -6,7 +6,7 @@ import Link from "next/link";
     src="/logo.png"
     alt="Any Part & Gear"
     width={200}
-    height={80}
+    height={90}
     className="h-12 w-auto"
     priority
   />
