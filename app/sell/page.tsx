@@ -9,14 +9,14 @@ export default function SellPage() {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [vehicle, setVehicle] = useState("");
-  const [partType, setPartType] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-
+const [price, setPrice] = useState("");
+const [description, setDescription] = useState("");
+const [category, setCategory] = useState("");
+const [vehicle, setVehicle] = useState("");
+const [partType, setPartType] = useState("");
+const [imageUrl, setImageUrl] = useState("");
+const [condition, setCondition] = useState("");
+const [loading, setLoading] = useState(false);
   const submitListing = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
