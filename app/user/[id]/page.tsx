@@ -12,7 +12,8 @@ type Part = {
 };
 
 export default function UserProfile() {
-
+  
+const [rating, setRating] = useState<number | null>(null);
   const params = useParams<{ id: string }>();
   const userId = params.id;
 
@@ -34,7 +35,17 @@ export default function UserProfile() {
     fetchParts();
 
   }, [userId]);
+const { data } = await supabase
+  .from("ratings")
+  .select("rating")
+  .eq("seller_id", userId);
 
+if (data && data.length > 0) {
+  const avg =
+    data.reduce((sum, r) => sum + r.rating, 0) / data.length;
+
+  setRating(avg);
+}
   return (
 
     <main className="max-w-4xl mx-auto p-6">
@@ -61,7 +72,11 @@ export default function UserProfile() {
           {part.price && (
             <p className="text-green-600">${part.price}</p>
           )}
-
+{rating && (
+  <p className="text-yellow-500">
+    ⭐ {rating.toFixed(1)} Seller Rating
+  </p>
+)}
         </Link>
 
       ))}
