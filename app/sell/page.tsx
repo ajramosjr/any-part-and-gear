@@ -102,6 +102,40 @@ const [loading, setLoading] = useState(false);
           </select>
           <select
   className="border w-full p-3 rounded"
+  value={subcategory}
+  onChange={(e) => setSubcategory(e.target.value)}
+>
+  <option value="">Select Sub Category</option>
+
+  {category === "cars" && (
+    <>
+      <option value="engine">Engine</option>
+      <option value="transmission">Transmission</option>
+      <option value="exhaust">Exhaust</option>
+      <option value="headlights">Headlights</option>
+      <option value="interior">Interior</option>
+    </>
+  )}
+
+  {category === "boats" && (
+    <>
+      <option value="propeller">Propeller</option>
+      <option value="jet pump">Jet Pump</option>
+      <option value="marine engine">Marine Engine</option>
+    </>
+  )}
+
+  {category === "rc" && (
+    <>
+      <option value="motor">Motor</option>
+      <option value="esc">ESC</option>
+      <option value="battery">Battery</option>
+      <option value="tires">Tires</option>
+    </>
+  )}
+</select>
+          <select
+  className="border w-full p-3 rounded"
   onChange={(e) => setCondition(e.target.value)}
 >
   <option value="">Condition</option>
