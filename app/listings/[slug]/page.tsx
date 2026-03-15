@@ -1,5 +1,4 @@
 import ApgXLink from "@/components/ApgXLink";
-<ApgXLink part={title} />
 import { notFound } from "next/navigation";
 
 export default function ListingsPage({ params }: { params: { slug: string } }) {
@@ -26,9 +25,12 @@ export default function ListingsPage({ params }: { params: { slug: string } }) {
         $199
       </p>
 
-      <button className="bg-blue-600 text-white px-6 py-3 rounded-lg">
+      <button className="bg-blue-600 text-white px-6 py-3 rounded-lg mb-10">
         Contact Seller
       </button>
+
+      {/* APG X-Link Affiliate Section */}
+      <ApgXLink part={title} />
 
     </main>
   );
