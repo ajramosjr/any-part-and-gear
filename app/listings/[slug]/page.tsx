@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-export default function ListingPage({ params }: { params: { slug: string } }) {
+export default function ListingsPage({ params }: { params: { slug: string } }) {
 
   const title = params.slug.replace(/-/g, " ");
 
