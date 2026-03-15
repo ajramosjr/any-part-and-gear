@@ -9,6 +9,9 @@ type Listing = {
   title: string;
   price: number | null;
   description: string | null;
+  image_url: string | null;
+  city: string | null;
+  state: string | null;
 };
 
 export default function MyListingPage() {
@@ -47,7 +50,7 @@ export default function MyListingPage() {
   }, [id]);
 
   if (loading) {
-    return <p className="p-6">Loading listing…</p>;
+    return <p className="p-6">Loading listing...</p>;
   }
 
   if (!listing) {
@@ -55,12 +58,40 @@ export default function MyListingPage() {
   }
 
   return (
-    <main className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">{listing.title}</h1>
+    <main className="max-w-4xl mx-auto p-6">
 
-      {listing.price && <p className="mb-2">${listing.price}</p>}
+      <h1 className="text-3xl font-bold mb-6">
+        {listing.title}
+      </h1>
 
-      <p>{listing.description}</p>
+      <img
+        src={listing.image_url || "/placeholder.png"}
+        className="w-full max-h-[400px] object-cover rounded-lg mb-6"
+        alt={listing.title}
+      />
+
+      {listing.price && (
+        <p className="text-2xl font-semibold mb-4">
+          ${listing.price}
+        </p>
+      )}
+
+      {(listing.city || listing.state) && (
+        <p className="text-gray-500 mb-4">
+          📍 {listing.city} {listing.state}
+        </p>
+      )}
+
+      {listing.description && (
+        <p className="mb-8 text-gray-700">
+          {listing.description}
+        </p>
+      )}
+
+      <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+        Contact Buyer
+      </button>
+
     </main>
   );
 }
