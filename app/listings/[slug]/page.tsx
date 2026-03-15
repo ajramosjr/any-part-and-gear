@@ -1,3 +1,4 @@
+import ApgXLink from "@/components/ApgXLink";
 import { notFound } from "next/navigation";
 
 export default function ListingsPage({ params }: { params: { slug: string } }) {
@@ -5,6 +6,7 @@ export default function ListingsPage({ params }: { params: { slug: string } }) {
   const title = params.slug.replace(/-/g, " ");
 
   return (
+    <ApgXLink part={title} />
     <main className="max-w-4xl mx-auto p-6">
 
       <h1 className="text-3xl font-bold capitalize mb-6">
