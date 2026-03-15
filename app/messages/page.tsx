@@ -9,17 +9,20 @@ type Conversation = {
   part_id: number;
   last_message: string;
   updated_at: string;
+  buyer_id: string;
+  seller_id: string;
 };
 
 export default function MessagesPage() {
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+
     const fetchConversations = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+
+      const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
         setLoading(false);
@@ -29,6 +32,7 @@ export default function MessagesPage() {
       const { data, error } = await supabase
         .from("conversations")
         .select("*")
+        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .order("updated_at", { ascending: false });
 
       if (!error && data) {
@@ -39,6 +43,7 @@ export default function MessagesPage() {
     };
 
     fetchConversations();
+
   }, []);
 
   if (loading) {
@@ -47,25 +52,20 @@ export default function MessagesPage() {
 
   return (
     <main className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Messages</h1>
+
+      <h1 className="text-2xl font-bold mb-6">
+        Messages
+      </h1>
 
       {conversations.length === 0 && (
-        <p className="text-gray-500">No conversations yet.</p>
+        <p className="text-gray-500">
+          No conversations yet.
+        </p>
       )}
 
       {conversations.map((conv) => (
+
         <Link
           key={conv.id}
-          href={`/messages/${conv.part_id}`}
-          className="block border rounded-lg p-4 mb-4 hover:bg-gray-50"
-        >
-          <p className="font-semibold">Part #{conv.part_id}</p>
-
-          <p className="text-sm text-gray-600 truncate">
-            {conv.last_message}
-          </p>
-        </Link>
-      ))}
-    </main>
-  );
-}
+          href={`/messages/${conv.id}`}
+          className="block
