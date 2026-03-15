@@ -38,6 +38,7 @@ export default function PartPage() {
       }
 
       setLoading(false);
+
     };
 
     fetchPart();
@@ -46,46 +47,42 @@ export default function PartPage() {
 
   const startConversation = async () => {
 
-  const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    router.push("/login");
-    return;
-  }
+    if (!user) {
+      router.push("/login");
+      return;
+    }
 
-  if (!part) return;
+    if (!part) return;
 
-  // Check if conversation already exists
-  const { data: existing } = await supabase
-    .from("conversations")
-    .select("*")
-    .eq("part_id", part.id)
-    .eq("buyer_id", user.id)
-    .eq("seller_id", part.user_id)
-    .single();
+    const { data: existing } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("part_id", part.id)
+      .eq("buyer_id", user.id)
+      .eq("seller_id", part.user_id)
+      .single();
 
-  if (existing) {
-    router.push(`/messages/${existing.id}`);
-    return;
-  }
+    if (existing) {
+      router.push(`/messages/${existing.id}`);
+      return;
+    }
 
-  // Create new conversation
-  const { data, error } = await supabase
-    .from("conversations")
-    .insert({
-      part_id: part.id,
-      buyer_id: user.id,
-      seller_id: part.user_id,
-      last_message: "Hi, is this still available?"
-    })
-    .select()
-    .single();
+    const { data, error } = await supabase
+      .from("conversations")
+      .insert({
+        part_id: part.id,
+        buyer_id: user.id,
+        seller_id: part.user_id,
+        last_message: "Hi, is this still available?"
+      })
+      .select()
+      .single();
 
-  if (!error && data) {
-    router.push(`/messages/${data.id}`);
-  }
-
-};
+    if (!error && data) {
+      router.push(`/messages/${data.id}`);
+    }
 
   };
 
