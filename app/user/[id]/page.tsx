@@ -1,4 +1,4 @@
-"use client";
+     "use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -12,47 +12,61 @@ type Part = {
 };
 
 export default function UserProfile() {
-  
-const [rating, setRating] = useState<number | null>(null);
+
   const params = useParams<{ id: string }>();
   const userId = params.id;
 
   const [parts, setParts] = useState<Part[]>([]);
+  const [rating, setRating] = useState<number | null>(null);
 
   useEffect(() => {
 
-    const fetchParts = async () => {
+    const loadProfile = async () => {
 
-      const { data } = await supabase
+      const { data: partsData } = await supabase
         .from("parts")
         .select("id,title,price")
         .eq("user_id", userId);
 
-      if (data) setParts(data);
+      if (partsData) setParts(partsData);
+
+      const { data: ratingData } = await supabase
+        .from("ratings")
+        .select("rating")
+        .eq("seller_id", userId);
+
+      if (ratingData && ratingData.length > 0) {
+
+        const avg =
+          ratingData.reduce((sum, r) => sum + r.rating, 0) /
+          ratingData.length;
+
+        setRating(avg);
+      }
 
     };
 
-    fetchParts();
+    loadProfile();
 
   }, [userId]);
-const { data } = await supabase
-  .from("ratings")
-  .select("rating")
-  .eq("seller_id", userId);
 
-if (data && data.length > 0) {
-  const avg =
-    data.reduce((sum, r) => sum + r.rating, 0) / data.length;
-
-  setRating(avg);
-}
   return (
 
     <main className="max-w-4xl mx-auto p-6">
 
-      <h1 className="text-3xl font-bold mb-6">
-        Seller Listings
+      <h1 className="text-3xl font-bold mb-2">
+        Seller Profile
       </h1>
+
+      {rating && (
+        <p className="text-yellow-500 mb-6">
+          ⭐ {rating.toFixed(1)} Seller Rating
+        </p>
+      )}
+
+      <h2 className="text-2xl font-semibold mb-4">
+        Seller Listings
+      </h2>
 
       {parts.length === 0 && (
         <p className="text-gray-500">
@@ -67,20 +81,22 @@ if (data && data.length > 0) {
           href={`/parts/${part.id}`}
           className="block border p-4 rounded mb-3"
         >
-          <p className="font-semibold">{part.title}</p>
+
+          <p className="font-semibold">
+            {part.title}
+          </p>
 
           {part.price && (
-            <p className="text-green-600">${part.price}</p>
+            <p className="text-green-600">
+              ${part.price}
+            </p>
           )}
-{rating && (
-  <p className="text-yellow-500">
-    ⭐ {rating.toFixed(1)} Seller Rating
-  </p>
-)}
+
         </Link>
 
       ))}
 
     </main>
+
   );
-}
+}     
