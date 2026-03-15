@@ -1,53 +1,66 @@
-"use client";
+export const dynamic = "force-dynamic";
 
 import { useSearchParams } from "next/navigation";
-import ApgXLink from "@/components/ApgXLink";
 
-export default function ScanResults() {
-  const params = useSearchParams();
-  const vehicle = params.get("vehicle");
+export default function ScanResultsPage() {
+  const searchParams = useSearchParams();
 
-  const suggestedParts = [
-    "Headlights",
-    "Front Bumper",
-    "Brake Pads",
-    "Air Filter",
-  ];
+  const vehicle = searchParams.get("vehicle");
+  const part = searchParams.get("part");
+  const condition = searchParams.get("condition");
+  const confidence = searchParams.get("confidence");
+  const image = searchParams.get("image");
 
   return (
-    <main className="max-w-5xl mx-auto p-6">
+    <main className="max-w-4xl mx-auto p-6">
 
       <h1 className="text-3xl font-bold mb-6">
         AI Scan Results
       </h1>
 
-      <p className="text-gray-600 mb-8">
-        Vehicle detected: <strong>{vehicle}</strong>
-      </p>
+      {image && (
+        <img
+          src={image}
+          className="rounded-lg mb-6 w-full max-h-[400px] object-cover"
+        />
+      )}
 
-      <h2 className="text-2xl font-semibold mb-4">
-        Suggested Parts
-      </h2>
+      <div className="bg-gray-100 p-6 rounded-lg mb-6">
 
-      <div className="grid md:grid-cols-2 gap-6">
+        <p className="text-lg mb-2">
+          <strong>Vehicle:</strong> {vehicle || "Unknown"}
+        </p>
 
-        {suggestedParts.map((part) => (
-          <div
-            key={part}
-            className="border rounded-xl p-6 hover:shadow"
-          >
-            <h3 className="text-lg font-semibold mb-2">
-              {vehicle} {part}
-            </h3>
+        <p className="text-lg mb-2">
+          <strong>Detected Part:</strong> {part || "Unknown"}
+        </p>
 
-            <p className="text-gray-500 mb-4">
-              Check listings or compare prices.
-            </p>
+        <p className="text-lg mb-2">
+          <strong>Condition:</strong> {condition || "Unknown"}
+        </p>
 
-            <ApgXLink part={`${vehicle} ${part}`} />
+        <p className="text-lg">
+          <strong>AI Confidence:</strong>{" "}
+          {confidence ? `${Math.round(Number(confidence) * 100)}%` : "N/A"}
+        </p>
 
-          </div>
-        ))}
+      </div>
+
+      <div className="flex gap-4">
+
+        <a
+          href="/sell"
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+        >
+          Sell This Part
+        </a>
+
+        <a
+          href="/"
+          className="bg-gray-200 px-6 py-3 rounded-lg hover:bg-gray-300"
+        >
+          Back Home
+        </a>
 
       </div>
 
