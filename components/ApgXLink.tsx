@@ -1,4 +1,8 @@
-export default function ApgXLink({ part }) {
+type ApgXLinkProps = {
+  part: string;
+};
+
+export default function ApgXLink({ part }: ApgXLinkProps) {
 
   const amazonLink =
     "https://www.amazon.com/s?k=" +
