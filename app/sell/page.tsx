@@ -12,6 +12,7 @@ export default function SellPage() {
 const [price, setPrice] = useState("");
 const [description, setDescription] = useState("");
 const [category, setCategory] = useState("");
+const [subcategory, setSubcategory] = useState("");
 const [vehicle, setVehicle] = useState("");
 const [partType, setPartType] = useState("");
 const [imageUrl, setImageUrl] = useState("");
