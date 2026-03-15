@@ -9,7 +9,7 @@ type Part = {
   id: number;
   title: string;
   price: number | null;
-  images: string[] | null;
+  image_url: string | null;
 };
 
 export default function MyListingsPage() {
@@ -29,7 +29,7 @@ export default function MyListingsPage() {
 
       const { data, error } = await supabase
         .from("parts")
-        .select("id, title, price, images")
+        .select("id, title, price, image_url")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -44,7 +44,7 @@ export default function MyListingsPage() {
   }, []);
 
   if (loading) {
-    return <p className="p-6">Loading your listings…</p>;
+    return <p className="p-6">Loading your listings...</p>;
   }
 
   return (
@@ -60,19 +60,21 @@ export default function MyListingsPage() {
           <Link
             key={part.id}
             href={`/parts/${part.id}`}
-            className="border rounded-lg p-4"
+            className="border rounded-lg p-4 hover:shadow-md transition"
           >
             <Image
-              src={part.images?.[0] || "/images/apg-placeholder.png"}
+              src={part.image_url || "/placeholder.png"}
               alt={part.title}
               width={400}
               height={300}
-              className="rounded mb-3"
+              className="rounded mb-3 w-full h-40 object-cover"
             />
 
             <h3 className="font-semibold">{part.title}</h3>
 
-            {part.price && <p>${part.price}</p>}
+            {part.price && (
+              <p className="text-gray-700">${part.price}</p>
+            )}
           </Link>
         ))}
       </div>
