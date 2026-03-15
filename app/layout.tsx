@@ -2,7 +2,7 @@ import "./globals.css";
 import NavBar from "@/components/NavBar";
 
 export const metadata = {
-  title: "AnyPartingGear",
+  title: "AnyPartandGear",
   description:
     "Buy, sell, and trade car, boat, and gear parts. Find rare parts and trusted sellers.",
 };
