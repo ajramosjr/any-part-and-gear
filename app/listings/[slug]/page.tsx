@@ -17,7 +17,7 @@ export default function ListingPage({ params }: { params: { slug: string } }) {
       />
 
       <p className="text-gray-600 mb-4">
-        Example listing page for {title}.
+        Example listings page for {title}.
       </p>
 
       <p className="text-2xl font-semibold mb-6">
