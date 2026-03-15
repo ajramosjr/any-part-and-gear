@@ -37,10 +37,10 @@ export async function POST(req: Request) {
     --------------------------------------- */
 
     const { data: seller } = await supabase
-      .from("profiles")
-      .select("verified")
-      .eq("id", userId)
-      .single();
+  .from("profiles")
+  .select("verified")
+  .eq("id", userId)
+  .maybeSingle();
 
     const sellerIsVerified = seller?.verified === true;
 
@@ -55,14 +55,15 @@ export async function POST(req: Request) {
     --------------------------------------- */
 
     const { error } = await supabase.from("ai_scans").insert({
-      user_id: userId,
-      image_url: imageUrl,
-      vehicle: aiResult.vehicle,
-      part: aiResult.part,
-      condition: aiResult.condition,
-      confidence,
-      verified_boost: sellerIsVerified,
-    });
+  user_id: userId,
+  image_url: imageUrl,
+  vehicle: aiResult.vehicle,
+  part: aiResult.part,
+  condition: aiResult.condition,
+  confidence,
+  verified_boost: sellerIsVerified,
+  created_at: new Date().toISOString()
+});
 
     if (error) {
       console.error("Insert error:", error);
