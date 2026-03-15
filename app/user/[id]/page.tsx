@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 type Part = {
@@ -10,7 +11,7 @@ type Part = {
   price: number | null;
 };
 
-export default function UserPage() {
+export default function UserProfile() {
 
   const params = useParams<{ id: string }>();
   const userId = params.id;
@@ -19,7 +20,7 @@ export default function UserPage() {
 
   useEffect(() => {
 
-    const loadListings = async () => {
+    const fetchParts = async () => {
 
       const { data } = await supabase
         .from("parts")
@@ -30,7 +31,7 @@ export default function UserPage() {
 
     };
 
-    loadListings();
+    fetchParts();
 
   }, [userId]);
 
@@ -38,21 +39,30 @@ export default function UserPage() {
 
     <main className="max-w-4xl mx-auto p-6">
 
-      <h1 className="text-2xl font-bold mb-6">
+      <h1 className="text-3xl font-bold mb-6">
         Seller Listings
       </h1>
 
+      {parts.length === 0 && (
+        <p className="text-gray-500">
+          No listings yet.
+        </p>
+      )}
+
       {parts.map((part) => (
 
-        <div key={part.id} className="border p-4 rounded mb-3">
-
+        <Link
+          key={part.id}
+          href={`/parts/${part.id}`}
+          className="block border p-4 rounded mb-3"
+        >
           <p className="font-semibold">{part.title}</p>
 
           {part.price && (
             <p className="text-green-600">${part.price}</p>
           )}
 
-        </div>
+        </Link>
 
       ))}
 
