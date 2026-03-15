@@ -14,40 +14,77 @@ export default function ApgXLink({ part }: ApgXLinkProps) {
     encodeURIComponent(part);
 
   return (
-    <div className="border rounded-xl p-6 mt-10">
+    <section className="mt-14">
 
-      <h2 className="text-xl font-bold mb-4">
-        Recommended Parts (A.P.G X-Link)
+      <h2 className="text-2xl font-bold mb-4">
+        🔗 A.P.G X-Link — Compare Prices
       </h2>
 
-      <div className="grid md:grid-cols-3 gap-4">
+      <p className="text-gray-500 mb-6">
+        Find this part from trusted retailers and compare prices instantly.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <a
           href={amazonLink}
           target="_blank"
-          className="border p-4 rounded hover:shadow"
+          className="border rounded-xl p-4 hover:shadow-lg transition"
         >
-          Buy on Amazon
+          <img
+            src="/amazon.png"
+            className="rounded mb-3"
+          />
+
+          <h3 className="font-semibold mb-1">
+            Find "{part}" on Amazon
+          </h3>
+
+          <p className="text-gray-500">
+            View listings, reviews, and fast shipping.
+          </p>
         </a>
 
         <a
           href={ebayLink}
           target="_blank"
-          className="border p-4 rounded hover:shadow"
+          className="border rounded-xl p-4 hover:shadow-lg transition"
         >
-          Buy on eBay
+          <img
+            src="/ebay.png"
+            className="rounded mb-3"
+          />
+
+          <h3 className="font-semibold mb-1">
+            Find "{part}" on eBay
+          </h3>
+
+          <p className="text-gray-500">
+            Compare new and used parts from sellers.
+          </p>
         </a>
 
         <a
           href={amazonLink}
           target="_blank"
-          className="border p-4 rounded hover:shadow"
+          className="border rounded-xl p-4 hover:shadow-lg transition"
         >
-          Compare Prices
+          <img
+            src="/compare.png"
+            className="rounded mb-3"
+          />
+
+          <h3 className="font-semibold mb-1">
+            Compare Prices
+          </h3>
+
+          <p className="text-gray-500">
+            See multiple sellers and choose the best deal.
+          </p>
         </a>
 
       </div>
 
-    </div>
+    </section>
   );
 }
