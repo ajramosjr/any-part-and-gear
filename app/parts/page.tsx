@@ -153,7 +153,9 @@ export default function PartsPage() {
                     className="w-full h-40 object-cover mb-3 rounded"
                   />
                 )}
-
+<Link href={`/user/${part.user_id}`}>
+  View Seller Profile
+</Link>
                 <Link href={`/parts/${part.id}`}>
                   <h2 className="font-semibold hover:underline">
                     {part.title}
