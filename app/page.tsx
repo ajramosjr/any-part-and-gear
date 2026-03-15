@@ -109,7 +109,8 @@ ${part.price}
 )}
 
 </Link>
-
+  
+);
 })}
 
 </div>
