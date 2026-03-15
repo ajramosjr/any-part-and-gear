@@ -15,7 +15,7 @@ const [category, setCategory] = useState("");
 const [subcategory, setSubcategory] = useState("");
 const [vehicle, setVehicle] = useState("");
 const [partType, setPartType] = useState("");
-const [imageUrl, setImageUrl] = useState("");
+const [imageFile, setImageFile] = useState<File | null>(null);
 const [condition, setCondition] = useState("");
 const [loading, setLoading] = useState(false);
   const submitListing = async (e: React.FormEvent) => {
@@ -164,7 +164,15 @@ const [loading, setLoading] = useState(false);
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
           />
-
+ <input
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    if (e.target.files) {
+      setImageFile(e.target.files[0]);
+    }
+  }}
+/>
           <textarea
             className="border w-full p-3 rounded"
             placeholder="Describe the part"
