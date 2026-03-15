@@ -19,11 +19,20 @@ export default function NavBar() {
 
     getUser();
 
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+
   }, []);
 
   const logout = async () => {
     await supabase.auth.signOut();
-    location.reload();
   };
 
   return (
@@ -73,6 +82,7 @@ export default function NavBar() {
         <div className="md:hidden border-t bg-white p-4 flex flex-col gap-4">
 
           <Link href="/browse">Browse</Link>
+
           <Link href="/sell">Sell</Link>
 
           {user && (
