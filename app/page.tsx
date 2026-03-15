@@ -5,42 +5,44 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
-
 export default function Home() {
 
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [parts, setParts] = useState<any[]>([]);
 
   const handleSearch = () => {
     if (!search) return;
     router.push(`/browse?search=${encodeURIComponent(search)}`);
   };
-const [parts, setParts] = useState<any[]>([]);
 
-useEffect(() => {
-  const loadParts = async () => {
-    const { data } = await supabase
-      .from("parts")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(6);
+  useEffect(() => {
+    const loadParts = async () => {
+      const { data } = await supabase
+        .from("parts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(6);
 
-    if (data) setParts(data);
-  };
+      if (data) setParts(data);
+    };
 
-  loadParts();
-}, []);
+    loadParts();
+  }, []);
+
   return (
     <main className="max-w-6xl mx-auto p-6">
 
-      {/* Hero Section */}
-      <div className="text-center mb-10">
+      {/* HERO */}
+      <div className="text-center mb-12">
 
-        <h1 className="text-4xl font-bold text-blue-900">
-          Find rare parts, local deals, and trusted sellers.
-
-The smarter marketplace for car, boat, and gear enthusiasts.
+        <h1 className="text-4xl font-bold text-blue-900 mb-2">
+          Find rare parts, local deals, and trusted sellers
         </h1>
+
+        <p className="text-gray-600">
+          The smarter marketplace for car, boat, and gear enthusiasts
+        </p>
 
         <p className="text-gray-500 mt-2">
           Powered by{" "}
@@ -52,15 +54,15 @@ The smarter marketplace for car, boat, and gear enthusiasts.
           </Link>
         </p>
 
-        {/* Search */}
-        <div className="flex mt-6 justify-center">
+        {/* SEARCH */}
+        <div className="flex justify-center mt-6">
 
           <input
             type="text"
             placeholder="Search parts, vehicles, or gear..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border p-3 w-96 rounded-l-lg"
+            className="border p-3 w-80 rounded-l-lg"
           />
 
           <button
@@ -71,112 +73,84 @@ The smarter marketplace for car, boat, and gear enthusiasts.
           </button>
 
         </div>
+
       </div>
 
-      {/* Categories */}
+      {/* CATEGORIES */}
 
-      <h2 className="text-2xl font-semibold mb-4">
+      <h2 className="text-2xl font-semibold mb-6">
         Browse Categories
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-<section className="max-w-6xl mx-auto mt-12">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
 
-<section className="max-w-6xl mx-auto mt-16">
-
-<h2 className="text-3xl font-bold mb-8 text-center">
-Recent Listings
-</h2>
-
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-
-{parts.map((part) => (
-
-<Link
-key={part.id}
-href={`/parts/${part.id}`}
-className="border rounded-xl p-4 hover:shadow-lg transition bg-white"
->
-
-<h3 className="font-semibold text-lg">
-{part.title}
-</h3>
-
-{part.price && (
-<p className="text-green-600 font-bold mt-2">
-${part.price}
-</p>
-)}
-
-</Link>
-  
-);
-})}
-
-</div>
-
-</section>
-
-<Link
-key={part.id}
-href={`/parts/${part.id}`}
-className="border rounded-lg p-4 hover:shadow-md transition"
->
-
-<h3 className="font-semibold text-lg">
-{part.title}
-</h3>
-
-{part.price && (
-<p className="text-green-600 font-medium">
-${part.price}
-</p>
-)}
-
-</Link>
-
-))}
-
-</div>
-
-</section>
-        <Link href="/category/cars" className="border rounded-lg p-6 text-center hover:shadow block">
+        <Link href="/category/cars" className="border rounded-lg p-6 text-center hover:shadow">
           🚗 Cars
         </Link>
 
-        <Link href="/category/boats" className="border rounded-lg p-6 text-center hover:shadow block">
+        <Link href="/category/boats" className="border rounded-lg p-6 text-center hover:shadow">
           🚤 Boats
         </Link>
 
-        <Link href="/category/marine" className="border rounded-lg p-6 text-center hover:shadow block">
+        <Link href="/category/marine" className="border rounded-lg p-6 text-center hover:shadow">
           ⚓ Marine
         </Link>
 
-        <Link href="/category/tools" className="border rounded-lg p-6 text-center hover:shadow block">
+        <Link href="/category/tools" className="border rounded-lg p-6 text-center hover:shadow">
           🛠 Tools
         </Link>
 
-        <Link href="/category/machinery" className="border rounded-lg p-6 text-center hover:shadow block">
+        <Link href="/category/machinery" className="border rounded-lg p-6 text-center hover:shadow">
           🏗 Machinery
         </Link>
 
-        <Link href="/category/rc" className="border rounded-lg p-6 text-center hover:shadow block">
+        <Link href="/category/rc" className="border rounded-lg p-6 text-center hover:shadow">
           🏎 RC Vehicles
         </Link>
 
-        <Link href="/category/rv" className="border rounded-lg p-6 text-center hover:shadow block">
+        <Link href="/category/rv" className="border rounded-lg p-6 text-center hover:shadow">
           🚐 RV Vehicles
         </Link>
 
-        <Link href="/category/buses" className="border rounded-lg p-6 text-center hover:shadow block">
+        <Link href="/category/buses" className="border rounded-lg p-6 text-center hover:shadow">
           🚌 Buses
         </Link>
 
       </div>
 
-      {/* AI Scan Section */}
+      {/* RECENT LISTINGS */}
 
-      <section className="mt-14 mb-12">
+      <h2 className="text-2xl font-bold mb-6">
+        Recent Listings
+      </h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-16">
+
+        {parts.map((part) => (
+          <Link
+            key={part.id}
+            href={`/parts/${part.id}`}
+            className="border rounded-xl p-4 hover:shadow-lg transition bg-white"
+          >
+
+            <h3 className="font-semibold text-lg">
+              {part.title}
+            </h3>
+
+            {part.price && (
+              <p className="text-green-600 font-bold mt-2">
+                ${part.price}
+              </p>
+            )}
+
+          </Link>
+        ))}
+
+      </div>
+
+      {/* AI SCAN */}
+
+      <section className="mb-12">
 
         <div className="bg-blue-900 text-white rounded-2xl p-10 text-center">
 
@@ -185,8 +159,7 @@ ${part.price}
           </h2>
 
           <p className="text-gray-200 mb-6">
-            Take a photo of your car, boat, or RC vehicle and instantly discover
-            compatible parts, maintenance tips, and upgrade ideas.
+            Take a photo of your car, boat, or RC vehicle and instantly discover compatible parts and maintenance tips.
           </p>
 
           <Link
@@ -199,152 +172,6 @@ ${part.price}
         </div>
 
       </section>
-
-      {/* Trending Parts */}
-
-      <h2 className="text-2xl font-bold mb-4">
-        🔥 Trending Parts
-      </h2>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-
-        <Link href="/parts/1" className="border rounded-xl p-4 hover:shadow-lg transition block">
-
-          <img
-            src="/placeholder.png"
-            alt="Ford F150 Headlights"
-            className="rounded mb-3 w-full h-40 object-cover"
-          />
-
-          <h3 className="font-semibold">
-            Ford F150 Headlights
-          </h3>
-
-          <p className="text-gray-500">
-            $140
-          </p>
-
-        </Link>
-
-        <Link href="/parts/2" className="border rounded-xl p-4 hover:shadow-lg transition block">
-
-          <img
-            src="/placeholder.png"
-            alt="Chevy Silverado Tailgate"
-            className="rounded mb-3 w-full h-40 object-cover"
-          />
-
-          <h3 className="font-semibold">
-            Chevy Silverado Tailgate
-          </h3>
-
-          <p className="text-gray-500">
-            $300
-          </p>
-
-        </Link>
-
-        <Link href="/parts/3" className="border rounded-xl p-4 hover:shadow-lg transition block">
-
-          <img
-            src="/placeholder.png"
-            alt="Yamaha Jet Ski Pump"
-            className="rounded mb-3 w-full h-40 object-cover"
-          />
-
-          <h3 className="font-semibold">
-            Yamaha Jet Ski Pump
-          </h3>
-
-          <p className="text-gray-500">
-            $180
-          </p>
-
-        </Link>
-
-        <Link href="/parts/4" className="border rounded-xl p-4 hover:shadow-lg transition block">
-
-          <img
-            src="/placeholder.png"
-            alt="Traxxas RC Motor"
-            className="rounded mb-3 w-full h-40 object-cover"
-          />
-
-          <h3 className="font-semibold">
-            Traxxas RC Motor
-          </h3>
-
-          <p className="text-gray-500">
-            $90
-          </p>
-
-        </Link>
-
-      </div>
-
-      {/* Featured Listings */}
-
-      <h2 className="text-2xl font-semibold mb-4">
-        Featured Listings
-      </h2>
-
-      <div className="grid md:grid-cols-3 gap-6">
-
-        <Link href="/parts/5" className="border rounded-lg p-4 hover:shadow block">
-
-          <img
-            src="/placeholder.png"
-            alt="Ford Mustang GT Exhaust"
-            className="rounded mb-3 w-full h-40 object-cover"
-          />
-
-          <h3 className="font-semibold">
-            Ford Mustang GT Exhaust
-          </h3>
-
-          <p className="text-gray-500">
-            $250
-          </p>
-
-        </Link>
-
-        <Link href="/parts/6" className="border rounded-lg p-4 hover:shadow block">
-
-          <img
-            src="/placeholder.png"
-            alt="Yamaha Boat Propeller"
-            className="rounded mb-3 w-full h-40 object-cover"
-          />
-
-          <h3 className="font-semibold">
-            Yamaha Boat Propeller
-          </h3>
-
-          <p className="text-gray-500">
-            $180
-          </p>
-
-        </Link>
-
-        <Link href="/parts/7" className="border rounded-lg p-4 hover:shadow block">
-
-          <img
-            src="/placeholder.png"
-            alt="Traxxas RC Engine"
-            className="rounded mb-3 w-full h-40 object-cover"
-          />
-
-          <h3 className="font-semibold">
-            Traxxas RC Engine
-          </h3>
-
-          <p className="text-gray-500">
-            $120
-          </p>
-
-        </Link>
-
-      </div>
 
     </main>
   );
