@@ -1,17 +1,21 @@
-"use client";
-
 export const dynamic = "force-dynamic";
 
-import { useSearchParams } from "next/navigation";
+type Props = {
+  searchParams: {
+    vehicle?: string;
+    part?: string;
+    condition?: string;
+    confidence?: string;
+    image?: string;
+  };
+};
 
-export default function ScanResultsPage() {
-  const searchParams = useSearchParams();
-
-  const vehicle = searchParams.get("vehicle");
-  const part = searchParams.get("part");
-  const condition = searchParams.get("condition");
-  const confidence = searchParams.get("confidence");
-  const image = searchParams.get("image");
+export default function ScanResultsPage({ searchParams }: Props) {
+  const vehicle = searchParams.vehicle;
+  const part = searchParams.part;
+  const condition = searchParams.condition;
+  const confidence = searchParams.confidence;
+  const image = searchParams.image;
 
   return (
     <main className="max-w-4xl mx-auto p-6">
@@ -24,6 +28,7 @@ export default function ScanResultsPage() {
         <img
           src={image}
           className="rounded-lg mb-6 w-full max-h-[400px] object-cover"
+          alt="Scanned vehicle"
         />
       )}
 
