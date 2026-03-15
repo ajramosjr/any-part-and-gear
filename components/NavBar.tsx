@@ -1,45 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function NavBar() {
 
+  const [user, setUser] = useState<any>(null);
   const [open, setOpen] = useState(false);
-  const [messageCount, setMessageCount] = useState(0);
 
   useEffect(() => {
 
-    const loadMessages = async () => {
-
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) return;
-
-      const { data } = await supabase
-        .from("conversations")
-        .select("id")
-        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`);
-
-      if (data) {
-        setMessageCount(data.length);
-      }
-
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
     };
 
-    loadMessages();
+    getUser();
 
   }, []);
 
-  return (
+  const logout = async () => {
+    await supabase.auth.signOut();
+    location.reload();
+  };
 
+  return (
     <header className="border-b bg-white">
 
       <div className="max-w-6xl mx-auto flex items-center justify-between p-4">
 
-        {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
             src="/logo.png"
@@ -50,24 +41,25 @@ export default function NavBar() {
           />
         </Link>
 
-        {/* Desktop Menu */}
         <nav className="hidden md:flex gap-6 text-gray-700 font-medium">
 
           <Link href="/browse">Browse</Link>
 
           <Link href="/sell">Sell</Link>
 
-          <Link href="/my-listings">My Listings</Link>
+          {user && (
+            <>
+              <Link href="/my-listings">My Listings</Link>
+              <Link href="/messages">Messages</Link>
+              <Link href={`/user/${user.id}`}>Profile</Link>
+              <button onClick={logout}>Logout</button>
+            </>
+          )}
 
-          <Link href="/messages">
-            Messages {messageCount > 0 && `(${messageCount})`}
-          </Link>
-
-          <Link href="/login">Login</Link>
+          {!user && <Link href="/login">Login</Link>}
 
         </nav>
 
-        {/* Mobile Button */}
         <button
           className="md:hidden text-2xl"
           onClick={() => setOpen(!open)}
@@ -77,25 +69,24 @@ export default function NavBar() {
 
       </div>
 
-      {/* Mobile Menu */}
       {open && (
-
         <div className="md:hidden border-t bg-white p-4 flex flex-col gap-4">
 
           <Link href="/browse">Browse</Link>
-
           <Link href="/sell">Sell</Link>
 
-          <Link href="/my-listings">My Listings</Link>
+          {user && (
+            <>
+              <Link href="/my-listings">My Listings</Link>
+              <Link href="/messages">Messages</Link>
+              <Link href={`/user/${user.id}`}>Profile</Link>
+              <button onClick={logout}>Logout</button>
+            </>
+          )}
 
-          <Link href="/messages">
-            Messages {messageCount > 0 && `(${messageCount})`}
-          </Link>
-
-          <Link href="/login">Login</Link>
+          {!user && <Link href="/login">Login</Link>}
 
         </div>
-
       )}
 
     </header>
