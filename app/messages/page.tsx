@@ -65,7 +65,22 @@ export default function MessagesPage() {
 
       {conversations.map((conv) => (
 
-        <Link
-          key={conv.id}
-          href={`/messages/${conv.id}`}
-          className="block
+        {conversations.map((conv) => (
+
+  <Link
+    key={conv.id}
+    href={`/messages/${conv.id}`}
+    className="block border rounded-lg p-4 mb-4 hover:bg-gray-50"
+  >
+
+    <p className="font-semibold">
+      Part #{conv.part_id}
+    </p>
+
+    <p className="text-sm text-gray-600 truncate">
+      {conv.last_message}
+    </p>
+
+  </Link>
+
+))}
