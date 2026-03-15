@@ -2,185 +2,125 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 
 type Part = {
   id: number;
   title: string;
-  price: number;
-  platform: string;
-  category: string;
-  trade_available: boolean;
-  image_urls: string[] | null;
+  price: number | null;
+  description: string | null;
+  image_url: string | null;
+  user_id: string;
 };
-const categories = [
-  "All",
-  "Brakes",
-  "Engine",
-  "Suspension",
-  "Electrical",
-  "Body",
-  "Interior",
-  "Drivetrain",
-  "Other",
-];
 
 export default function PartsPage() {
+
   const [parts, setParts] = useState<Part[]>([]);
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [tradeOnly, setTradeOnly] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const init = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
 
-      if (user) {
-        setUserId(user.id);
+    const fetchParts = async () => {
 
-        const { data } = await supabase
-          .from("favorites")
-          .select("part_id")
-          .eq("user_id", user.id);
+      const { data, error } = await supabase
+        .from("parts")
+        .select("*")
+        .order("id", { ascending: false });
 
-        setFavorites(data?.map((f) => f.part_id) || []);
+      if (!error && data) {
+        setParts(data);
       }
 
-      fetchParts();
+      setLoading(false);
     };
 
-    init();
-  }, [activeCategory, tradeOnly]);
+    fetchParts();
 
-  const fetchParts = async () => {
-    setLoading(true);
-
-    let query = supabase
-      .from("parts")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (activeCategory !== "All") {
-      query = query.eq("category", activeCategory);
-    }
-
-    if (tradeOnly) {
-      query = query.eq("trade_available", true);
-    }
-
-    const { data } = await query;
-    setParts(data || []);
-    setLoading(false);
-  };
-
-  const toggleFavorite = async (partId: number) => {
-    if (!userId) {
-      alert("Please sign in to save listings.");
-      return;
-    }
-
-    const isSaved = favorites.includes(partId);
-
-    if (isSaved) {
-      await supabase
-        .from("favorites")
-        .delete()
-        .eq("user_id", userId)
-        .eq("part_id", partId);
-
-      setFavorites((prev) => prev.filter((id) => id !== partId));
-    } else {
-      await supabase.from("favorites").insert({
-        user_id: userId,
-        part_id: partId,
-      });
-
-      setFavorites((prev) => [...prev, partId]);
-    }
-  };
+  }, []);
 
   if (loading) {
-    return <div className="p-6">Loading parts...</div>;
+    return <p className="p-6">Loading parts...</p>;
   }
 
   return (
+
     <main className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Parts Marketplace</h1>
 
-      {/* Category Filters */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`px-3 py-1 border rounded ${
-              activeCategory === cat ? "bg-black text-white" : ""
-            }`}
+      <h1 className="text-3xl font-bold mb-8">
+        Browse Parts
+      </h1>
+
+      {parts.length === 0 && (
+        <p className="text-gray-500">
+          No parts listed yet.
+        </p>
+      )}
+
+      <div className="grid md:grid-cols-3 gap-6">
+
+        {parts.map((part) => (
+
+          <div
+            key={part.id}
+            className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition"
           >
-            {cat}
-          </button>
-        ))}
-      </div>
 
-      {/* Trade Toggle */}
-      <label className="flex items-center gap-2 mb-6">
-        <input
-          type="checkbox"
-          checked={tradeOnly}
-          onChange={() => setTradeOnly(!tradeOnly)}
-        />
-        Trade Only
-      </label>
+            {part.image_url && (
+              <Image
+                src={part.image_url}
+                alt={part.title}
+                width={400}
+                height={300}
+                className="w-full h-48 object-cover"
+              />
+            )}
 
-      {/* Listings */}
-      {parts.length === 0 ? (
-        <p className="text-gray-500">No listings found.</p>
-      ) : (
-        <div className="grid md:grid-cols-3 gap-6">
-          {parts.map((part) => {
-            const isSaved = favorites.includes(part.id);
+            <div className="p-4">
 
-            return (
-              <div key={part.id} className="border rounded p-4">
-                {part.image_urls?.[0] && (
-                  <img
-                    src={part.image_urls[0]}
-                    alt={part.title}
-                    className="w-full h-40 object-cover mb-3 rounded"
-                  />
-                )}
-<Link href={`/user/${part.user_id}`}>
-  View Seller Profile
-</Link>
-                <Link href={`/parts/${part.id}`}>
-                  <h2 className="font-semibold hover:underline">
-                    {part.title}
-                  </h2>
+              <h2 className="font-semibold text-lg mb-2">
+                {part.title}
+              </h2>
+
+              {part.price && (
+                <p className="text-green-600 font-medium mb-2">
+                  ${part.price}
+                </p>
+              )}
+
+              {part.description && (
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                  {part.description}
+                </p>
+              )}
+
+              <div className="flex flex-col gap-2">
+
+                <Link
+                  href={`/parts/${part.id}`}
+                  className="text-blue-600 font-medium"
+                >
+                  View Part
                 </Link>
 
-                <p className="text-sm text-gray-600">{part.platform}</p>
-
-                <p className="font-bold mt-2">${part.price}</p>
-
-                {part.trade_available && (
-                  <p className="text-xs text-green-600">Trade Available</p>
-                )}
-
-                <button
-                  onClick={() => toggleFavorite(part.id)}
-                  className="mt-3 text-sm"
+                <Link
+                  href={`/user/${part.user_id}`}
+                  className="text-sm text-gray-500"
                 >
-                  {isSaved ? "★ Saved" : "☆ Save"}
-                </button>
+                  View Seller Profile
+                </Link>
+
               </div>
-            );
-          })}
-        </div>
-      )}
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
     </main>
+
   );
 }
