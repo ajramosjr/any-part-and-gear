@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,7 +16,21 @@ export default function Home() {
     if (!search) return;
     router.push(`/browse?search=${encodeURIComponent(search)}`);
   };
+const [parts, setParts] = useState<any[]>([]);
 
+useEffect(() => {
+  const loadParts = async () => {
+    const { data } = await supabase
+      .from("parts")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(6);
+
+    if (data) setParts(data);
+  };
+
+  loadParts();
+}, []);
   return (
     <main className="max-w-6xl mx-auto p-6">
 
