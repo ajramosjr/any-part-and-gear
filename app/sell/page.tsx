@@ -32,16 +32,15 @@ export default function SellPage() {
     }
 
     const { error } = await supabase.from("parts").insert({
-      title,
-      price: Number(price),
-      description,
-      category,
-      vehicle,
-      part_type: partType,
-      image_url: imageUrl,
-      user_id: user.id,
-    });
-
+  title,
+  price: Number(price),
+  description,
+  category,
+  vehicle_type: vehicle,
+  image_url: imageUrl,
+  user_id: user.id,
+});
+    
     setLoading(false);
 
     if (!error) {
@@ -100,6 +99,15 @@ export default function SellPage() {
             <option value="rv">RV Vehicles</option>
             <option value="buses">Buses</option>
           </select>
+          <select
+  className="border w-full p-3 rounded"
+  onChange={(e) => setCondition(e.target.value)}
+>
+  <option value="">Condition</option>
+  <option value="new">New</option>
+  <option value="used">Used</option>
+  <option value="refurbished">Refurbished</option>
+</select>
 
           <input
             className="border w-full p-3 rounded"
