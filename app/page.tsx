@@ -35,19 +35,41 @@ export default function Home() {
       {/* Categories */}
       <h2 className="text-2xl font-semibold mb-4">Browse Categories</h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
 
-        <div className="border rounded-lg p-6 text-center hover:shadow">🚗 Cars</div>
-        <div className="border rounded-lg p-6 text-center hover:shadow">🚤 Boats</div>
-        <div className="border rounded-lg p-6 text-center hover:shadow">⚓ Marine</div>
-        <div className="border rounded-lg p-6 text-center hover:shadow">🛠 Tools</div>
-        <div className="border rounded-lg p-6 text-center hover:shadow">🏗 Machinery</div>
-        <div className="border rounded-lg p-6 text-center hover:shadow">🏎 RC Vehicles</div>
-        <div className="border rounded-lg p-6 text-center hover:shadow">🚐 RV Vehicles</div>
-        <div className="border rounded-lg p-6 text-center hover:shadow">🚌 Buses</div>
+  <Link href="/category/cars" className="border rounded-lg p-6 text-center hover:shadow block">
+    🚗 Cars
+  </Link>
 
-      </div>
+  <Link href="/category/boats" className="border rounded-lg p-6 text-center hover:shadow block">
+    🚤 Boats
+  </Link>
 
+  <Link href="/category/marine" className="border rounded-lg p-6 text-center hover:shadow block">
+    ⚓ Marine
+  </Link>
+
+  <Link href="/category/tools" className="border rounded-lg p-6 text-center hover:shadow block">
+    🛠 Tools
+  </Link>
+
+  <Link href="/category/machinery" className="border rounded-lg p-6 text-center hover:shadow block">
+    🏗 Machinery
+  </Link>
+
+  <Link href="/category/rc" className="border rounded-lg p-6 text-center hover:shadow block">
+    🏎 RC Vehicles
+  </Link>
+
+  <Link href="/category/rv" className="border rounded-lg p-6 text-center hover:shadow block">
+    🚐 RV Vehicles
+  </Link>
+
+  <Link href="/category/buses" className="border rounded-lg p-6 text-center hover:shadow block">
+    🚌 Buses
+  </Link>
+
+</div>
       {/* AI Vehicle Scan */}
       <section className="mt-14 mb-12">
 
