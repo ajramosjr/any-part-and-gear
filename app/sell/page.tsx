@@ -11,6 +11,10 @@ export default function SellPage() {
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [vehicle, setVehicle] = useState("");
+  const [partType, setPartType] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
   const submitListing = async (e: React.FormEvent) => {
@@ -31,6 +35,10 @@ export default function SellPage() {
       title,
       price: Number(price),
       description,
+      category,
+      vehicle,
+      part_type: partType,
+      image_url: imageUrl,
       user_id: user.id,
     });
 
@@ -40,24 +48,35 @@ export default function SellPage() {
       setTitle("");
       setPrice("");
       setDescription("");
+      setCategory("");
+      setVehicle("");
+      setPartType("");
+      setImageUrl("");
+
       router.push("/my-listings");
     }
   };
 
   return (
     <RequireAuth>
-      <div style={{ maxWidth: 600, margin: "40px auto" }}>
-        <h1>Sell a Part</h1>
+      <main className="max-w-2xl mx-auto p-6">
 
-        <form onSubmit={submitListing}>
+        <h1 className="text-3xl font-bold mb-6">
+          Sell a Part
+        </h1>
+
+        <form onSubmit={submitListing} className="space-y-4">
+
           <input
-            placeholder="Title"
+            className="border w-full p-3 rounded"
+            placeholder="Listing Title (ex: Ford F150 Headlights)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
           />
 
           <input
+            className="border w-full p-3 rounded"
             placeholder="Price"
             type="number"
             value={price}
@@ -65,17 +84,61 @@ export default function SellPage() {
             required
           />
 
+          <select
+            className="border w-full p-3 rounded"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            required
+          >
+            <option value="">Select Category</option>
+            <option value="cars">Cars</option>
+            <option value="boats">Boats</option>
+            <option value="marine">Marine</option>
+            <option value="tools">Tools</option>
+            <option value="machinery">Machinery</option>
+            <option value="rc">RC Vehicles</option>
+            <option value="rv">RV Vehicles</option>
+            <option value="buses">Buses</option>
+          </select>
+
+          <input
+            className="border w-full p-3 rounded"
+            placeholder="Vehicle Compatibility (ex: 2018 Ford F150)"
+            value={vehicle}
+            onChange={(e) => setVehicle(e.target.value)}
+          />
+
+          <input
+            className="border w-full p-3 rounded"
+            placeholder="Part Type (ex: Headlights, Engine, Propeller)"
+            value={partType}
+            onChange={(e) => setPartType(e.target.value)}
+          />
+
+          <input
+            className="border w-full p-3 rounded"
+            placeholder="Image URL"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+          />
+
           <textarea
-            placeholder="Description"
+            className="border w-full p-3 rounded"
+            placeholder="Describe the part"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
 
-          <button disabled={loading}>
+          <button
+            className="bg-green-600 text-white px-6 py-3 rounded-lg w-full"
+            disabled={loading}
+          >
             {loading ? "Posting..." : "Post Listing"}
           </button>
+
         </form>
-      </div>
+
+      </main>
     </RequireAuth>
   );
 }
