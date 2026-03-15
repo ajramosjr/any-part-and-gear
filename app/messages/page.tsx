@@ -14,14 +14,11 @@ type Conversation = {
 };
 
 export default function MessagesPage() {
-
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-
     const fetchConversations = async () => {
-
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
@@ -43,60 +40,33 @@ export default function MessagesPage() {
     };
 
     fetchConversations();
-
   }, []);
 
   if (loading) {
-    return <p className="p-6">Loading messages…</p>;
+    return <p className="p-6">Loading messages...</p>;
   }
 
   return (
     <main className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Messages</h1>
 
-      <h1 className="text-2xl font-bold mb-6">
-        Messages
-      </h1>
+      {conversations.length === 0 ? (
+        <p className="text-gray-500">No conversations yet.</p>
+      ) : (
+        conversations.map((conv) => (
+          <Link
+            key={conv.id}
+            href={`/messages/${conv.id}`}
+            className="block border rounded-lg p-4 mb-4 hover:bg-gray-50"
+          >
+            <p className="font-semibold">Part #{conv.part_id}</p>
 
-      {conversations.length === 0 && (
-        <p className="text-gray-500">
-          No conversations yet.
-        </p>
+            <p className="text-sm text-gray-600 truncate">
+              {conv.last_message}
+            </p>
+          </Link>
+        ))
       )}
-
-      {conversations.map((conv) => (
-
-  <Link
-    key={conv.id}
-    href={`/messages/${conv.id}`}
-    className="block border rounded-lg p-4 mb-4 hover:bg-gray-50"
-  >
-
-    <p className="font-semibold">
-      Part #{conv.part_id}
-    </p>
-
-    <p className="text-sm text-gray-600 truncate">
-      {conv.last_message}
-    </p>
-
-  </Link>
-
-))}
-
-  <Link
-    key={conv.id}
-    href={`/messages/${conv.id}`}
-    className="block border rounded-lg p-4 mb-4 hover:bg-gray-50"
-  >
-
-    <p className="font-semibold">
-      Part #{conv.part_id}
-    </p>
-
-    <p className="text-sm text-gray-600 truncate">
-      {conv.last_message}
-    </p>
-
-  </Link>
-
-))}
+    </main>
+  );
+}
