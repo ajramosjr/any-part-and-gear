@@ -1,87 +1,83 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-
-type Part = {
-  id: number;
-  title: string;
-  price: number;
-  image_url: string | null;
-};
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function BrowsePage() {
 
-  const [parts, setParts] = useState<Part[]>([]);
-  const [loading, setLoading] = useState(true);
+const searchParams = useSearchParams();
+const search = searchParams.get("search");
 
-  useEffect(() => {
+const [parts, setParts] = useState<any[]>([]);
 
-    const fetchParts = async () => {
+useEffect(() => {
 
-      const { data, error } = await supabase
-        .from("parts")
-        .select("*")
-        .order("created_at", { ascending: false });
+const loadParts = async () => {
 
-      if (!error && data) {
-        setParts(data);
-      }
+let query = supabase
+.from("parts")
+.select("*")
+.order("created_at", { ascending: false });
 
-      setLoading(false);
-    };
+if (search) {
+query = query.ilike("title", `%${search}%`);
+}
 
-    fetchParts();
+const { data } = await query;
 
-  }, []);
+if (data) setParts(data);
 
-  if (loading) {
-    return <p className="p-6">Loading parts...</p>;
-  }
+};
 
-  return (
+loadParts();
 
-    <main className="max-w-6xl mx-auto p-6">
+}, [search]);
 
-      <h1 className="text-3xl font-bold mb-6">
-        Browse Parts
-      </h1>
+return (
 
-      {parts.length === 0 && (
-        <p>No listings yet.</p>
-      )}
+<main className="max-w-6xl mx-auto p-6">
 
-      <div className="grid md:grid-cols-3 gap-6">
+<h1 className="text-3xl font-bold mb-8">
+Browse Marketplace
+</h1>
 
-        {parts.map((part) => (
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
-          <Link
-            key={part.id}
-            href={`/parts/${part.id}`}
-            className="border rounded-lg p-4 hover:shadow block"
-          >
+{parts.map((part) => (
 
-            <img
-              src={part.image_url || "/placeholder.png"}
-              className="rounded mb-3 w-full h-40 object-cover"
-              alt={part.title}
-            />
+<Link
+key={part.id}
+href={`/parts/${part.id}`}
+className="border rounded-xl p-4 hover:shadow-lg transition bg-white"
+>
 
-            <h3 className="font-semibold">
-              {part.title}
-            </h3>
+{part.image_url && (
+<img
+src={part.image_url}
+className="w-full h-40 object-cover rounded mb-3"
+/>
+)}
 
-            <p className="text-gray-500">
-              ${part.price}
-            </p>
+<h3 className="font-semibold text-lg">
+{part.title}
+</h3>
 
-          </Link>
+{part.price && (
+<p className="text-green-600 font-bold">
+${part.price}
+</p>
+)}
 
-        ))}
+</Link>
 
-      </div>
+))}
 
-    </main>
-  );
+</div>
+
+</main>
+
+);
+
 }
