@@ -1,104 +1,95 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function NavBar() {
+export default function Navbar() {
 
-  const [user, setUser] = useState<any>(null);
-  const [open, setOpen] = useState(false);
+const [user, setUser] = useState<any>(null);
 
-  useEffect(() => {
-
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-    };
-
-    getUser();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-
-  }, []);
-
-  const logout = async () => {
-    await supabase.auth.signOut();
+useEffect(() => {
+  const getUser = async () => {
+    const { data } = await supabase.auth.getUser();
+    setUser(data.user);
   };
 
-  return (
-    <header className="border-b bg-white">
+  getUser();
+}, []);
 
-      <div className="max-w-6xl mx-auto flex items-center justify-between p-4">
+const handleLogout = async () => {
+  await supabase.auth.signOut();
+  window.location.href = "/";
+};
 
-        <Link href="/" className="flex items-center">
-          <Image
-            src="/logo.png"
-            alt="Any Part & Gear"
-            width={180}
-            height={70}
-            className="h-10 w-auto"
-          />
-        </Link>
+return (
 
-        <nav className="hidden md:flex gap-6 text-gray-700 font-medium">
+<nav className="border-b bg-white shadow-sm">
 
-          <Link href="/browse">Browse</Link>
+<div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
 
-          <Link href="/sell">Sell</Link>
+{/* Logo */}
 
-          {user && (
-            <>
-              <Link href="/my-listings">My Listings</Link>
-              <Link href="/messages">Messages</Link>
-              <Link href={`/user/${user.id}`}>Profile</Link>
-              <button onClick={logout}>Logout</button>
-            </>
-          )}
+<Link href="/" className="text-xl font-bold text-blue-900">
+Anypart and Gear
+</Link>
 
-          {!user && <Link href="/login">Login</Link>}
+{/* Links */}
 
-        </nav>
+<div className="flex items-center gap-6">
 
-        <button
-          className="md:hidden text-2xl"
-          onClick={() => setOpen(!open)}
-        >
-          ☰
-        </button>
+<Link href="/browse" className="hover:text-blue-600">
+Browse
+</Link>
 
-      </div>
+<Link href="/sell" className="hover:text-blue-600">
+Sell
+</Link>
 
-      {open && (
-        <div className="md:hidden border-t bg-white p-4 flex flex-col gap-4">
+{user && (
+<>
+<Link href="/messages" className="hover:text-blue-600">
+Messages
+</Link>
 
-          <Link href="/browse">Browse</Link>
+<Link href="/notifications" className="hover:text-blue-600">
+Notifications
+</Link>
 
-          <Link href="/sell">Sell</Link>
+<Link href={`/user/${user.id}`} className="hover:text-blue-600">
+Profile
+</Link>
+</>
+)}
 
-          {user && (
-            <>
-              <Link href="/my-listings">My Listings</Link>
-              <Link href="/messages">Messages</Link>
-              <Link href={`/user/${user.id}`}>Profile</Link>
-              <button onClick={logout}>Logout</button>
-            </>
-          )}
+{/* Login / Logout */}
 
-          {!user && <Link href="/login">Login</Link>}
+{user ? (
 
-        </div>
-      )}
+<button
+onClick={handleLogout}
+className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400"
+>
+Logout
+</button>
 
-    </header>
-  );
+) : (
+
+<Link
+href="/login"
+className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500"
+>
+Login
+</Link>
+
+)}
+
+</div>
+
+</div>
+
+</nav>
+
+);
+
 }
