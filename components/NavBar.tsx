@@ -164,9 +164,9 @@ export default function Navbar() {
           onClick={() => setMenuOpen((prev) => !prev)}
           aria-label="Toggle menu"
         >
-          <span className={`block w-6 h-0.5 bg-gray-800 transition-transform duration-200 motion-reduce:transition-none motion-reduce:transform-none ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
+          <span className={`block w-6 h-0.5 bg-gray-800 transition-transform duration-200 motion-reduce:transition-none ${menuOpen ? "rotate-45 translate-y-2 motion-reduce:rotate-0 motion-reduce:translate-y-0" : ""}`} />
           <span className={`block w-6 h-0.5 bg-gray-800 transition-opacity duration-200 motion-reduce:transition-none ${menuOpen ? "opacity-0" : ""}`} />
-          <span className={`block w-6 h-0.5 bg-gray-800 transition-transform duration-200 motion-reduce:transition-none motion-reduce:transform-none ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+          <span className={`block w-6 h-0.5 bg-gray-800 transition-transform duration-200 motion-reduce:transition-none ${menuOpen ? "-rotate-45 -translate-y-2 motion-reduce:rotate-0 motion-reduce:-translate-y-0" : ""}`} />
         </button>
       </div>
 

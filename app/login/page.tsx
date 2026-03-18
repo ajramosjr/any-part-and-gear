@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function LoginPage() {
@@ -106,6 +107,13 @@ export default function LoginPage() {
         </button>
 
       </form>
+
+      <p className="mt-4 text-center text-sm text-gray-500">
+        Don&apos;t have an account?{" "}
+        <Link href="/signup" className="text-blue-600 hover:underline">
+          Sign up
+        </Link>
+      </p>
 
     </main>
 
