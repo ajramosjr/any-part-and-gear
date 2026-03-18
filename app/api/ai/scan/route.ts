@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { analyzeVehicle } from "@/lib/vehicleVision";
 
 export async function POST(req: Request) {
   try {
@@ -19,64 +20,50 @@ export async function POST(req: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    /* ---------------------------------------
-       1️⃣ AI Scan (mock for now)
-    --------------------------------------- */
+    /* -----------------------------------------------
+       1️⃣ Real AI scan via OpenAI vision
+    ----------------------------------------------- */
+    const aiResult = await analyzeVehicle(imageUrl);
 
-    const aiResult = {
-      vehicle: "2018 Ford F-150",
-      part: "Front bumper",
-      condition: "Good",
-      confidence: 0.78,
-    };
+    let { confidence } = aiResult;
 
-    let confidence = aiResult.confidence;
-
-    /* ---------------------------------------
-       2️⃣ Check seller verification
-    --------------------------------------- */
-
+    /* -----------------------------------------------
+       2️⃣ Check seller verification for confidence boost
+    ----------------------------------------------- */
     const { data: seller } = await supabase
-  .from("profiles")
-  .select("verified")
-  .eq("id", userId)
-  .maybeSingle();
+      .from("profiles")
+      .select("verified")
+      .eq("id", userId)
+      .maybeSingle();
 
     const sellerIsVerified = seller?.verified === true;
 
     if (sellerIsVerified) {
-      confidence += 0.05;
+      confidence = Math.min(1, confidence + 0.05);
     }
 
-    confidence = Math.min(confidence, 1);
+    /* -----------------------------------------------
+       3️⃣ Save AI scan result to database
+    ----------------------------------------------- */
+    const { error: insertError } = await supabase.from("ai_scans").insert({
+      user_id: userId,
+      image_url: imageUrl,
+      vehicle: aiResult.vehicle,
+      part: aiResult.part,
+      condition: aiResult.condition,
+      confidence,
+      verified_boost: sellerIsVerified,
+      created_at: new Date().toISOString(),
+    });
 
-    /* ---------------------------------------
-       3️⃣ Save AI scan result
-    --------------------------------------- */
-
-    const { error } = await supabase.from("ai_scans").insert({
-  user_id: userId,
-  image_url: imageUrl,
-  vehicle: aiResult.vehicle,
-  part: aiResult.part,
-  condition: aiResult.condition,
-  confidence,
-  verified_boost: sellerIsVerified,
-  created_at: new Date().toISOString()
-});
-
-    if (error) {
-      console.error("Insert error:", error);
-      return NextResponse.json(
-        { error: "Failed to save scan" },
-        { status: 500 }
-      );
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      // Non-fatal — still return the result even if save fails
     }
 
-    /* ---------------------------------------
+    /* -----------------------------------------------
        4️⃣ Return result
-    --------------------------------------- */
-
+    ----------------------------------------------- */
     return NextResponse.json({
       vehicle: aiResult.vehicle,
       part: aiResult.part,

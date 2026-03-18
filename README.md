@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Any Part & Gear 🔧
 
-## Getting Started
+A peer-to-peer marketplace for buying, selling, and trading car parts, boat parts, RC parts, work gear, and more.
 
-First, run the development server:
+## Features
+
+- 🛒 **P2P Marketplace** — Browse, list, and trade parts without payment processing
+- 🔍 **Smart Search & Filters** — Search by category, condition, price, and vehicle compatibility
+- 💬 **Real-time Messaging** — Buyers and sellers communicate directly
+- 🔄 **Trade Requests** — Propose trades between listings
+- ⭐ **Trust & Ratings** — Verified sellers, trust scores, and review system
+- 🏆 **Seller Leaderboard** — Top sellers ranked by trust score
+- 🤖 **AI Vehicle Scan** — Identify vehicle parts with AI (OpenAI)
+- 🔗 **APG X-Link** — Affiliate links to Amazon and eBay for parts comparison
+
+## Tech Stack
+
+- **Next.js 16** (App Router)
+- **TypeScript** + **React 19**
+- **Tailwind CSS**
+- **Supabase** (Auth, Database, Storage)
+- **OpenAI** (AI vehicle scan)
+
+---
+
+## Setup
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/ajramosjr/any-part-and-gear.git
+cd any-part-and-gear
+npm install
+```
+
+### 2. Configure Environment Variables
+
+Copy and edit the `.env.local` file with your actual credentials:
+
+```bash
+# .env.local
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+NEXT_PUBLIC_SUPABASE_STORAGE_URL=https://your-project.supabase.co/storage/v1/object/public
+OPENAI_API_KEY=sk-your-openai-key
+```
+
+Get your Supabase credentials from: **Dashboard → Project Settings → API**
+
+### 3. Set up the Database
+
+Run the migration SQL in your Supabase SQL Editor:
+
+```
+supabase/migrations/001_schema.sql
+```
+
+This creates all required tables, RLS policies, and triggers.
+
+### 4. Create Storage Bucket
+
+In Supabase Dashboard → **Storage** → Create a new bucket:
+- **Name**: `part-images`
+- **Public**: ✅ Yes
+
+### 5. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Pages
 
-## Learn More
+| Route | Description |
+|-------|-------------|
+| `/` | Home — featured listings, categories, AI scan CTA |
+| `/browse` | Browse all marketplace listings with search |
+| `/category/[category]` | Browse by category (cars, boats, rc, etc.) |
+| `/parts/[id]` | Listing detail with seller info & contact |
+| `/sell` | Create a new listing |
+| `/my-listings` | Manage your listings |
+| `/seller/[id]` | Public seller profile with ratings |
+| `/user/[id]` | User profile with listings |
+| `/messages` | Conversations inbox |
+| `/messages/[id]` | Real-time chat |
+| `/inbox` | Message inbox |
+| `/Trade` | Trade requests |
+| `/leaderboard` | Top trusted sellers |
+| `/reviews/submit` | Submit a review |
+| `/ai-scan` | AI vehicle part scanner |
+| `/apg-xlink` | Affiliate store links |
+| `/notifications` | User notifications |
+| `/settings` | Account settings |
+| `/admin` | Admin dashboard |
+| `/login` | Login |
+| `/auth/signup` | Sign up |
 
-To learn more about Next.js, take a look at the following resources:
+## API Routes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/listings` | GET, POST | List/create parts |
+| `/api/listings/[id]` | GET, PUT, DELETE | Manage a listing |
+| `/api/search` | GET | Full-text search with filters |
+| `/api/messages/send` | POST | Send a message |
+| `/api/trades` | GET, POST, PATCH | Trade requests |
+| `/api/reviews` | POST | Submit a review |
+| `/api/notifications` | GET, PATCH | Get/mark notifications |
+| `/api/uploads` | POST | Upload image to storage |
+| `/api/users/[id]` | GET | Public user profile |
+| `/api/vehicle-scan` | POST | AI vehicle scan |
+| `/api/ai/scan` | POST | AI scan with DB logging |
+| `/auth/callback` | GET | OAuth callback |
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ajramosjr/any-part-and-gear)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Set the same environment variables in your Vercel project settings.

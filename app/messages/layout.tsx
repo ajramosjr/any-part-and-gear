@@ -1,11 +1,25 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createServerClient } from "@supabase/ssr";
 
 export default async function MessagesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -33,16 +47,6 @@ export default async function MessagesLayout({
           padding: 24,
         }}
       >
-        <h1
-          style={{
-            fontSize: 22,
-            fontWeight: 600,
-            marginBottom: 20,
-          }}
-        >
-          Messages
-        </h1>
-
         {children}
       </div>
     </div>

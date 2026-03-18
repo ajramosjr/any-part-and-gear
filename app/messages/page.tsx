@@ -1,81 +1,133 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { createServerClient } from "@supabase/ssr";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
 
-type Conversation = {
-  id: string;
-  part_id: number;
-  last_message: string;
-  updated_at: string;
-  buyer_id: string;
-  seller_id: string;
-};
+export const dynamic = "force-dynamic";
 
-export default function MessagesPage() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [loading, setLoading] = useState(true);
+type SearchParams = Promise<{ sellerId?: string; partId?: string }>;
 
-  useEffect(() => {
-    const fetchConversations = async () => {
+export default async function MessagesPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const params = await searchParams;
+  const cookieStore = await cookies();
 
-      const { data: { user } } = await supabase.auth.getUser();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: Record<string, unknown>) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: Record<string, unknown>) {
+          cookieStore.set({ name, value: "", ...options, maxAge: 0 });
+        },
+      },
+    }
+  );
 
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-      const { data, error } = await supabase
-        .from("conversations")
-        .select("*")
-        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-        .order("updated_at", { ascending: false });
+  if (!user) redirect("/login");
 
-      if (!error && data) {
-        setConversations(data);
-      }
+  // ─────────────────────────────────────────────────────────────
+  // If coming from a part page ("Message Seller" button):
+  // find or create a conversation, then redirect to the chat.
+  // ─────────────────────────────────────────────────────────────
+  const { sellerId, partId } = params;
 
-      setLoading(false);
-    };
+  if (sellerId && partId && sellerId !== user.id) {
+    // Look for an existing conversation
+    const { data: existing } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("part_id", partId)
+      .eq("buyer_id", user.id)
+      .eq("seller_id", sellerId)
+      .maybeSingle();
 
-    fetchConversations();
-  }, []);
+    if (existing) {
+      redirect(`/messages/${existing.id}`);
+    }
 
-  if (loading) {
-    return <p className="p-6">Loading messages...</p>;
+    // Create a new conversation
+    const { data: created, error: createError } = await supabase
+      .from("conversations")
+      .insert({
+        part_id: partId,
+        buyer_id: user.id,
+        seller_id: sellerId,
+        last_message: "",
+        updated_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+
+    if (created && !createError) {
+      redirect(`/messages/${created.id}`);
+    }
   }
+
+  // ─────────────────────────────────────────────────────────────
+  // Default: list all conversations for this user
+  // ─────────────────────────────────────────────────────────────
+  const { data: conversations } = await supabase
+    .from("conversations")
+    .select("id, part_id, last_message, updated_at, buyer_id, seller_id")
+    .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
+    .order("updated_at", { ascending: false });
 
   return (
     <main className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Messages</h1>
 
-      <h1 className="text-2xl font-bold mb-6">
-        Messages
-      </h1>
-
-      {conversations.length === 0 && (
-        <p className="text-gray-500">
-          No conversations yet.
-        </p>
+      {(!conversations || conversations.length === 0) && (
+        <div className="text-center py-16 text-gray-500">
+          <div className="text-4xl mb-3">💬</div>
+          <p className="font-medium">No conversations yet.</p>
+          <p className="text-sm mt-1">
+            Browse parts and click &quot;Message Seller&quot; to start one.
+          </p>
+          <Link
+            href="/browse"
+            className="mt-4 inline-block bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Browse Parts
+          </Link>
+        </div>
       )}
 
-      {conversations.map((conv) => (
+      {conversations?.map((conv) => (
         <Link
           key={conv.id}
           href={`/messages/${conv.id}`}
-          className="block border rounded-lg p-4 mb-4 hover:bg-gray-50"
+          className="block border rounded-lg p-4 mb-4 hover:bg-gray-50 transition"
         >
-          <p className="font-semibold">
-            Part #{conv.part_id}
-          </p>
-
-          <p className="text-sm text-gray-600 truncate">
-            {conv.last_message}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="font-semibold">
+              {conv.buyer_id === user.id ? "To seller" : "From buyer"} · Part{" "}
+              {conv.part_id ? `#${String(conv.part_id).slice(0, 8)}…` : ""}
+            </p>
+            <p className="text-xs text-gray-400">
+              {new Date(conv.updated_at).toLocaleDateString()}
+            </p>
+          </div>
+          {conv.last_message && (
+            <p className="text-sm text-gray-600 truncate mt-1">
+              {conv.last_message}
+            </p>
+          )}
         </Link>
       ))}
-
     </main>
   );
 }

@@ -7,8 +7,9 @@ type LeaderboardRowProps = {
     id: string;
     username: string;
     verified: boolean;
-    sales: number;
-    rating: number;
+    trustScore: number;
+    sales?: number;
+    rating?: number;
   };
 };
 
@@ -31,11 +32,11 @@ export default function LeaderboardRow({
       </td>
 
       <td style={{ padding: 12 }}>
-        {seller.sales}
+        {seller.trustScore}
       </td>
 
       <td style={{ padding: 12 }}>
-        ⭐ {seller.rating.toFixed(1)}
+        {seller.sales ?? "—"}
       </td>
     </tr>
   );

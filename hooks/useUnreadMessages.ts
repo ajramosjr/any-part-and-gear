@@ -15,13 +15,13 @@ export function useUnreadMessages() {
         return;
       }
 
-      const { count } = await supabase
+      const { count: unread } = await supabase
         .from("messages")
         .select("id", { count: "exact", head: true })
-        .eq("recipient_id", user.id)
+        .eq("receiver_id", user.id)
         .eq("read", false);
 
-      setCount(count || 0);
+      setCount(unread || 0);
     };
 
     loadUnread();

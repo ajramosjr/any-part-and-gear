@@ -59,6 +59,10 @@ Notifications
 <Link href={`/user/${user.id}`} className="hover:text-blue-600">
 Profile
 </Link>
+
+<Link href="/settings" className="hover:text-blue-600">
+Settings
+</Link>
 </>
 )}
 
@@ -75,12 +79,20 @@ Logout
 
 ) : (
 
+<div className="flex items-center gap-2">
 <Link
 href="/login"
 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500"
 >
 Login
 </Link>
+<Link
+href="/auth/signup"
+className="border border-blue-600 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50"
+>
+Sign Up
+</Link>
+</div>
 
 )}
 
