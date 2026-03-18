@@ -13,6 +13,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -37,6 +38,15 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
+      if (rememberMe) {
+        // Persist across browser restarts
+        localStorage.setItem("apg_remember_me", "1");
+        sessionStorage.removeItem("apg_session_active");
+      } else {
+        // Session only lasts while this browser tab/window is open
+        localStorage.removeItem("apg_remember_me");
+        sessionStorage.setItem("apg_session_active", "1");
+      }
       router.push("/");
     }
   };
@@ -83,6 +93,31 @@ export default function LoginPage() {
                 required
               />
             </div>
+
+            {/* Remember Me */}
+            <label className="flex items-center gap-2.5 cursor-pointer select-none group">
+              <div className="relative flex items-center">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div
+                  className={`w-10 h-6 rounded-full transition-colors duration-200 ${
+                    rememberMe ? "bg-blue-600" : "bg-gray-200"
+                  }`}
+                />
+                <div
+                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
+                    rememberMe ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </div>
+              <span className="text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
+                Stay logged in
+              </span>
+            </label>
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">

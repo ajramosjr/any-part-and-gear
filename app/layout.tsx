@@ -1,5 +1,6 @@
 import "./globals.css";
 import NavBar from "@/components/NavBar";
+import SessionGuard from "@/components/SessionGuard";
 
 export const metadata = {
   title: "AnyPartandGear",
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body style={{ margin: 0, background: "#f8fafc" }}>
+        <SessionGuard />
         <NavBar />
 
         <main
