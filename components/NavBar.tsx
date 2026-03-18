@@ -72,8 +72,13 @@ export default function Navbar() {
     <nav className="border-b bg-white shadow-sm">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="text-xl font-bold text-blue-900">
-          Anypart and Gear
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/logo.png"
+            alt="A.P.G Logo"
+            width={48}
+            height={48}
+          />
         </Link>
 
         {/* Links */}
