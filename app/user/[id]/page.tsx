@@ -52,51 +52,53 @@ export default function UserProfile() {
 
   return (
 
-    <main className="max-w-4xl mx-auto p-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto p-6">
 
-      <h1 className="text-3xl font-bold mb-2">
-        Seller Profile
-      </h1>
+        <h1 className="text-3xl font-bold mb-2">
+          Seller Profile
+        </h1>
 
-      {rating && (
-        <p className="text-yellow-500 mb-6">
-          ⭐ {rating.toFixed(1)} Seller Rating
-        </p>
-      )}
-
-      <h2 className="text-2xl font-semibold mb-4">
-        Seller Listings
-      </h2>
-
-      {parts.length === 0 && (
-        <p className="text-gray-500">
-          No listings yet.
-        </p>
-      )}
-
-      {parts.map((part) => (
-
-        <Link
-          key={part.id}
-          href={`/parts/${part.id}`}
-          className="block border p-4 rounded mb-3"
-        >
-
-          <p className="font-semibold">
-            {part.title}
+        {rating && (
+          <p className="text-yellow-500 mb-6">
+            ⭐ {rating.toFixed(1)} Seller Rating
           </p>
+        )}
 
-          {part.price && (
-            <p className="text-green-600">
-              ${part.price}
+        <h2 className="text-2xl font-semibold mb-4">
+          Seller Listings
+        </h2>
+
+        {parts.length === 0 && (
+          <p className="text-gray-500">
+            No listings yet.
+          </p>
+        )}
+
+        {parts.map((part) => (
+
+          <Link
+            key={part.id}
+            href={`/parts/${part.id}`}
+            className="block border p-4 rounded mb-3"
+          >
+
+            <p className="font-semibold">
+              {part.title}
             </p>
-          )}
 
-        </Link>
+            {part.price && (
+              <p className="text-green-600">
+                ${part.price}
+              </p>
+            )}
 
-      ))}
+          </Link>
 
-    </main>
+        ))}
+
+      </div>
+    </div>
 
   );
 }     
