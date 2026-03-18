@@ -26,22 +26,37 @@ type Review = {
   } | null;
 };
 
-function StarRating({ value, max = 5 }: { value: number; max?: number }) {
+function avatarInitials(name: string) {
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function StarRating({
+  value,
+  max = 5,
+  size = "md",
+}: {
+  value: number;
+  max?: number;
+  size?: "sm" | "md";
+}) {
+  const cls = size === "sm" ? "w-4 h-4" : "w-5 h-5";
   return (
     <span className="inline-flex gap-0.5">
-      {Array.from({ length: max }).map((_, i) => {
-        const filled = i < Math.round(value);
-        return (
-          <svg
-            key={i}
-            className={`w-5 h-5 ${filled ? "text-yellow-400" : "text-gray-300"}`}
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.286 3.957c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.286-3.957a1 1 0 00-.364-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
-          </svg>
-        );
-      })}
+      {Array.from({ length: max }).map((_, i) => (
+        <svg
+          key={i}
+          className={`${cls} ${i < Math.round(value) ? "text-yellow-400" : "text-gray-200"}`}
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.286 3.957c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.286-3.957a1 1 0 00-.364-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
+        </svg>
+      ))}
     </span>
   );
 }
@@ -55,7 +70,7 @@ function InteractiveStars({
 }) {
   const [hovered, setHovered] = useState(0);
   return (
-    <span className="inline-flex gap-1">
+    <span className="inline-flex gap-1.5">
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
@@ -63,12 +78,12 @@ function InteractiveStars({
           onClick={() => onChange(star)}
           onMouseEnter={() => setHovered(star)}
           onMouseLeave={() => setHovered(0)}
-          className="focus:outline-none"
+          className="focus:outline-none transition-transform hover:scale-110"
           aria-label={`${star} star`}
         >
           <svg
-            className={`w-7 h-7 transition-colors ${
-              star <= (hovered || value) ? "text-yellow-400" : "text-gray-300"
+            className={`w-8 h-8 transition-colors ${
+              star <= (hovered || value) ? "text-yellow-400" : "text-gray-200"
             }`}
             fill="currentColor"
             viewBox="0 0 20 20"
@@ -91,11 +106,9 @@ export default function UserProfile() {
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // current viewer
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [alreadyReviewed, setAlreadyReviewed] = useState(false);
 
-  // review form
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
@@ -107,7 +120,9 @@ export default function UserProfile() {
       { data: profileData },
       { data: partsData },
       { data: reviewsData },
-      { data: { user } },
+      {
+        data: { user },
+      },
     ] = await Promise.all([
       supabase
         .from("profiles")
@@ -145,9 +160,7 @@ export default function UserProfile() {
 
     const vid = user?.id ?? null;
     setViewerId(vid);
-    if (vid) {
-      setAlreadyReviewed(reviewList.some((r) => r.reviewer?.id === vid));
-    }
+    if (vid) setAlreadyReviewed(reviewList.some((r) => r.reviewer?.id === vid));
 
     setLoading(false);
   };
@@ -183,107 +196,132 @@ export default function UserProfile() {
     await loadData();
   };
 
-  const displayName =
-    profile?.full_name || profile?.username || "User";
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-400 text-sm animate-pulse">Loading…</div>
+      </div>
+    );
+  }
 
-  const initials = displayName
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-400">User not found.</p>
+      </div>
+    );
+  }
 
-  const memberSince = profile?.created_at
+  const displayName = profile.full_name || profile.username || "User";
+  const initials = avatarInitials(displayName);
+  const isOwner = viewerId === userId;
+  const canReview = viewerId && !isOwner && !alreadyReviewed;
+  const memberSince = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString("en-US", {
         month: "long",
         year: "numeric",
       })
     : null;
 
-  if (loading) {
-    return <div className="p-8 text-gray-400">Loading…</div>;
-  }
-
-  if (!profile) {
-    return <div className="p-8 text-gray-500">User not found.</div>;
-  }
-
-  const isOwner = viewerId === userId;
-  const canReview = viewerId && !isOwner && !alreadyReviewed;
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-6 space-y-8">
-
-        {/* ── Profile card ── */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          {/* Avatar */}
+      {/* ── Hero banner ─────────────────────────────────────────────────── */}
+      <div className="bg-gradient-to-br from-blue-600 to-blue-500 pt-14 pb-24 text-white text-center px-4">
+        <div className="flex justify-center mb-4">
           {profile.avatar_url ? (
             <Image
               src={profile.avatar_url}
               alt={displayName}
               width={96}
               height={96}
-              className="rounded-full object-cover border-2 border-blue-200 w-24 h-24 shrink-0"
+              className="w-24 h-24 rounded-full object-cover ring-4 ring-white/30 shadow-xl"
             />
           ) : (
-            <span className="w-24 h-24 rounded-full bg-blue-600 text-white text-3xl font-bold flex items-center justify-center shrink-0">
+            <span className="w-24 h-24 rounded-full bg-white/20 text-white text-3xl font-bold flex items-center justify-center ring-4 ring-white/30 shadow-xl">
               {initials}
             </span>
           )}
+        </div>
 
-          {/* Info */}
-          <div className="flex-1 text-center sm:text-left">
-            <h1 className="text-2xl font-bold text-gray-900">{displayName}</h1>
-            {profile.username && (
-              <p className="text-gray-400 text-sm">@{profile.username}</p>
-            )}
-            {memberSince && (
-              <p className="text-gray-400 text-sm mt-1">Member since {memberSince}</p>
-            )}
+        <h1 className="text-2xl font-bold">{displayName}</h1>
+        {profile.username && (
+          <p className="text-blue-200 text-sm mt-0.5">@{profile.username}</p>
+        )}
+        {memberSince && (
+          <p className="text-blue-200 text-xs mt-1">Member since {memberSince}</p>
+        )}
 
-            {/* Rating summary */}
-            {avgRating !== null ? (
-              <div className="mt-3 flex flex-col sm:flex-row items-center sm:items-start gap-2">
-                <StarRating value={avgRating} />
-                <span className="text-gray-700 font-semibold">{avgRating.toFixed(1)}</span>
-                <span className="text-gray-400 text-sm">
-                  ({reviews.length} review{reviews.length !== 1 ? "s" : ""})
-                </span>
-              </div>
-            ) : (
-              <p className="text-gray-400 text-sm mt-3">No reviews yet</p>
-            )}
+        {avgRating !== null ? (
+          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-5 py-2 mt-4">
+            <StarRating value={avgRating} />
+            <span className="font-bold text-sm">{avgRating.toFixed(1)}</span>
+            <span className="text-blue-200 text-xs">
+              · {reviews.length} review{reviews.length !== 1 ? "s" : ""}
+            </span>
           </div>
+        ) : (
+          <p className="text-blue-200 text-xs mt-3">No reviews yet</p>
+        )}
 
-          {isOwner && (
+        {isOwner && (
+          <div className="mt-5">
             <Link
               href="/settings"
-              className="text-sm text-blue-600 hover:underline shrink-0"
+              className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition rounded-full px-5 py-2 text-sm font-medium"
             >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                />
+              </svg>
               Edit Profile
             </Link>
-          )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Content ─────────────────────────────────────────────────────── */}
+      <div className="max-w-4xl mx-auto px-4 -mt-10 space-y-6 pb-16">
+
+        {/* Stat chips */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
+            <p className="text-2xl font-bold text-gray-900">{parts.length}</p>
+            <p className="text-xs text-gray-400 mt-0.5 uppercase tracking-wide">Listings</p>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
+            <p className="text-2xl font-bold text-gray-900">{reviews.length}</p>
+            <p className="text-xs text-gray-400 mt-0.5 uppercase tracking-wide">Reviews</p>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center col-span-2 sm:col-span-1">
+            <p className="text-2xl font-bold text-gray-900">
+              {avgRating !== null ? avgRating.toFixed(1) : "—"}
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5 uppercase tracking-wide">Avg Rating</p>
+          </div>
         </div>
 
         {/* ── Listings ── */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">Listings</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">Listings</h2>
           {parts.length === 0 ? (
-            <p className="text-gray-400">No listings yet.</p>
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center text-gray-400 text-sm">
+              No listings yet.
+            </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {parts.map((part) => (
                 <Link
                   key={part.id}
                   href={`/parts/${part.id}`}
-                  className="block bg-white border rounded-xl p-4 hover:shadow-sm transition-shadow"
+                  className="block bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-md hover:border-blue-100 transition-all"
                 >
-                  <p className="font-medium text-gray-800">{part.title}</p>
+                  <p className="font-medium text-gray-800 text-sm">{part.title}</p>
                   {part.price != null && (
-                    <p className="text-green-600 font-semibold mt-1">
-                      ${part.price}
-                    </p>
+                    <p className="text-green-600 font-bold mt-1 text-sm">${part.price}</p>
                   )}
                 </Link>
               ))}
@@ -293,7 +331,7 @@ export default function UserProfile() {
 
         {/* ── Reviews ── */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">
             Reviews
             {reviews.length > 0 && (
               <span className="ml-2 text-sm font-normal text-gray-400">
@@ -303,24 +341,19 @@ export default function UserProfile() {
           </h2>
 
           {reviews.length === 0 ? (
-            <p className="text-gray-400">No reviews yet.</p>
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center text-gray-400 text-sm">
+              No reviews yet.
+            </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {reviews.map((review) => {
                 const rName =
-                  review.reviewer?.full_name ||
-                  review.reviewer?.username ||
-                  "Anonymous";
-                const rInitials = rName
-                  .split(" ")
-                  .map((w) => w[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2);
+                  review.reviewer?.full_name || review.reviewer?.username || "Anonymous";
+                const rInitials = avatarInitials(rName);
                 return (
                   <div
                     key={review.id}
-                    className="bg-white border rounded-xl p-4 flex gap-4"
+                    className="bg-white border border-gray-100 rounded-2xl p-5 flex gap-4"
                   >
                     {review.reviewer?.avatar_url ? (
                       <Image
@@ -331,17 +364,17 @@ export default function UserProfile() {
                         className="rounded-full object-cover w-10 h-10 shrink-0"
                       />
                     ) : (
-                      <span className="w-10 h-10 rounded-full bg-gray-200 text-gray-600 text-sm font-semibold flex items-center justify-center shrink-0">
+                      <span className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 text-sm font-bold flex items-center justify-center shrink-0">
                         {rInitials}
                       </span>
                     )}
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between flex-wrap gap-1">
-                        <span className="font-medium text-gray-800 text-sm">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between flex-wrap gap-1 mb-1">
+                        <span className="font-semibold text-gray-800 text-sm">
                           {review.reviewer?.id ? (
                             <Link
                               href={`/user/${review.reviewer.id}`}
-                              className="hover:text-blue-600"
+                              className="hover:text-blue-600 transition-colors"
                             >
                               {rName}
                             </Link>
@@ -350,12 +383,16 @@ export default function UserProfile() {
                           )}
                         </span>
                         <span className="text-xs text-gray-400">
-                          {new Date(review.created_at).toLocaleDateString()}
+                          {new Date(review.created_at).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                         </span>
                       </div>
-                      <StarRating value={review.rating} />
+                      <StarRating value={review.rating} size="sm" />
                       {review.comment && (
-                        <p className="text-gray-600 text-sm mt-1">
+                        <p className="text-gray-500 text-sm mt-1.5 leading-relaxed">
                           {review.comment}
                         </p>
                       )}
@@ -369,47 +406,46 @@ export default function UserProfile() {
 
         {/* ── Leave a review ── */}
         {canReview && (
-          <section className="bg-white border rounded-2xl p-6">
-            <h2 className="text-xl font-semibold mb-4">Leave a Review</h2>
+          <section className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Leave a Review</h2>
 
             {reviewSuccess && (
-              <div className="mb-4 p-3 rounded-lg bg-green-50 text-green-700 text-sm border border-green-200">
-                Thanks for your review!
+              <div className="mb-4 p-3 rounded-xl bg-green-50 text-green-700 text-sm border border-green-200">
+                Thanks for your review! 🎉
               </div>
             )}
 
             <form onSubmit={handleReviewSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Rating
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  Your Rating
                 </label>
-                <InteractiveStars
-                  value={reviewRating}
-                  onChange={setReviewRating}
-                />
+                <InteractiveStars value={reviewRating} onChange={setReviewRating} />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Comment <span className="text-gray-400">(optional)</span>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  Comment <span className="text-gray-300 normal-case font-normal">(optional)</span>
                 </label>
                 <textarea
-                  className="border w-full p-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   rows={3}
-                  placeholder="Share your experience…"
+                  placeholder="Share your experience with this seller…"
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
                 />
               </div>
 
               {reviewError && (
-                <p className="text-red-500 text-sm">{reviewError}</p>
+                <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
+                  {reviewError}
+                </div>
               )}
 
               <button
                 type="submit"
                 disabled={reviewLoading}
-                className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-500 disabled:opacity-50 font-medium text-sm"
+                className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition disabled:opacity-50 shadow-sm shadow-blue-200 text-sm"
               >
                 {reviewLoading ? "Submitting…" : "Submit Review"}
               </button>
@@ -417,10 +453,9 @@ export default function UserProfile() {
           </section>
         )}
 
-        {/* Prompt non-logged-in visitors to log in before reviewing */}
         {!viewerId && (
-          <p className="text-sm text-gray-400 text-center">
-            <Link href="/login" className="text-blue-600 hover:underline">
+          <p className="text-sm text-gray-400 text-center pb-4">
+            <Link href="/login" className="text-blue-600 font-medium hover:underline">
               Log in
             </Link>{" "}
             to leave a review.
@@ -430,4 +465,3 @@ export default function UserProfile() {
     </div>
   );
 }
-

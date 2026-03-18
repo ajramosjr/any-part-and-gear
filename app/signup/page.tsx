@@ -6,6 +6,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
+const INPUT_CLS =
+  "w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+
 export default function SignupPage() {
   const router = useRouter();
 
@@ -21,32 +24,30 @@ export default function SignupPage() {
 
   const previewUrlRef = useRef<string | null>(null);
 
-  // Revoke the object URL on unmount to avoid memory leaks
   useEffect(() => {
     return () => {
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current);
-      }
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     };
   }, []);
 
-  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  const ALLOWED_TYPES: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/gif": "gif",
+    "image/webp": "webp",
+  };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
-
-    if (file && !ALLOWED_TYPES.includes(file.type)) {
+    if (file && !ALLOWED_TYPES[file.type]) {
       setError("Please upload a valid image (JPEG, PNG, GIF, or WebP).");
       e.target.value = "";
       return;
     }
-
-    // Revoke previous preview URL before creating a new one
     if (previewUrlRef.current) {
       URL.revokeObjectURL(previewUrlRef.current);
       previewUrlRef.current = null;
     }
-
     setAvatarFile(file);
     if (file) {
       const url = URL.createObjectURL(file);
@@ -62,18 +63,11 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    // 1. Create auth user – pass metadata so the DB trigger seeds the profile row
-    const { data: signUpData, error: signUpError } =
-      await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName || null,
-            username: username || null,
-          },
-        },
-      });
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName || null, username: username || null } },
+    });
 
     if (signUpError || !signUpData.user) {
       setError(signUpError?.message ?? "Sign-up failed. Please try again.");
@@ -84,24 +78,18 @@ export default function SignupPage() {
     const userId = signUpData.user.id;
     let avatarUrl: string | null = null;
 
-    // 2. Upload avatar if provided
     if (avatarFile) {
-      const ext = avatarFile.name.split(".").pop();
+      const ext = ALLOWED_TYPES[avatarFile.type] ?? "jpg";
       const path = `${userId}/avatar.${ext}`;
-
       const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(path, avatarFile, { upsert: true });
-
       if (!uploadError) {
-        const { data: urlData } = supabase.storage
-          .from("avatars")
-          .getPublicUrl(path);
+        const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
         avatarUrl = urlData.publicUrl;
       }
     }
 
-    // 3. Upsert profile row with all collected info
     await supabase.from("profiles").upsert({
       id: userId,
       full_name: fullName || null,
@@ -114,127 +102,140 @@ export default function SignupPage() {
   };
 
   const initials = fullName
-    ? fullName
-        .split(" ")
-        .map((w) => w[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
+    ? fullName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
     : "?";
 
   return (
-    <main className="max-w-md mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-2">Create Account</h1>
-      <p className="text-gray-500 mb-6 text-sm">
-        Set up your profile so buyers and sellers can trust you.
-      </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        {/* Card */}
+        <div className="bg-white rounded-3xl shadow-xl shadow-gray-100/60 border border-gray-100 overflow-hidden">
+          {/* Header stripe */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-8 pt-10 pb-14 text-center">
+            <h1 className="text-2xl font-bold text-white">Create your account</h1>
+            <p className="text-blue-100 text-sm mt-1">
+              Set up your profile so buyers and sellers can trust you
+            </p>
+          </div>
 
-      <form onSubmit={handleSignup} className="space-y-4">
-        {/* Avatar picker */}
-        <div className="flex flex-col items-center gap-3">
-          <label htmlFor="avatar-upload" className="cursor-pointer group">
-            {avatarPreview ? (
-              <Image
-                src={avatarPreview}
-                alt="Avatar preview"
-                width={96}
-                height={96}
-                className="rounded-full object-cover border-2 border-blue-500 w-24 h-24"
-              />
-            ) : (
-              <span className="w-24 h-24 rounded-full bg-blue-100 text-blue-600 text-3xl font-bold flex items-center justify-center border-2 border-dashed border-blue-300 group-hover:border-blue-500 transition-colors">
-                {initials}
+          {/* Avatar — overlapping the header */}
+          <div className="flex justify-center -mt-10 mb-2">
+            <label htmlFor="avatar-upload" className="cursor-pointer group relative">
+              <div className="w-20 h-20 rounded-full ring-4 ring-white shadow-lg overflow-hidden bg-blue-600 flex items-center justify-center">
+                {avatarPreview ? (
+                  <Image
+                    src={avatarPreview}
+                    alt="Avatar preview"
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-white text-2xl font-bold">{initials}</span>
+                )}
+              </div>
+              {/* Camera badge */}
+              <span className="absolute bottom-0 right-0 w-6 h-6 bg-white border-2 border-white rounded-full shadow flex items-center justify-center bg-blue-500">
+                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586A1 1 0 0113 4.586l-.707-.707A1 1 0 0011.586 3H8.414a1 1 0 00-.707.293L7 4.586A1 1 0 016.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </span>
+            </label>
+            <input
+              id="avatar-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+          </div>
+          <p className="text-center text-xs text-gray-400 mb-6">Tap to add a profile photo</p>
+
+          {/* Form */}
+          <form onSubmit={handleSignup} className="px-8 pb-8 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  className={INPUT_CLS}
+                  type="text"
+                  placeholder="Jane Doe"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                  Username
+                </label>
+                <input
+                  className={INPUT_CLS}
+                  type="text"
+                  placeholder="janedoe"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                Email
+              </label>
+              <input
+                className={INPUT_CLS}
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                Password
+              </label>
+              <input
+                className={INPUT_CLS}
+                type="password"
+                placeholder="Min. 6 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
+                {error}
+              </div>
             )}
-          </label>
-          <input
-            id="avatar-upload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarChange}
-          />
-          <p className="text-xs text-gray-400">
-            Click above to upload a profile photo (optional)
-          </p>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 shadow-sm shadow-blue-200"
+            >
+              {loading ? "Creating account…" : "Create Account"}
+            </button>
+
+            <p className="text-center text-sm text-gray-500 pt-1">
+              Already have an account?{" "}
+              <Link href="/login" className="text-blue-600 font-medium hover:underline">
+                Log in
+              </Link>
+            </p>
+          </form>
         </div>
-
-        {/* Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Full Name
-          </label>
-          <input
-            className="border w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="text"
-            placeholder="Jane Doe"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-          />
-        </div>
-
-        {/* Username */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Username
-          </label>
-          <input
-            className="border w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="text"
-            placeholder="janedoe"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </div>
-
-        {/* Email */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
-          <input
-            className="border w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-
-        {/* Password */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
-          <input
-            className="border w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="password"
-            placeholder="Min. 6 characters"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-          />
-        </div>
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <button
-          type="submit"
-          className="bg-blue-600 text-white w-full p-3 rounded-lg hover:bg-blue-500 disabled:opacity-50 font-medium"
-          disabled={loading}
-        >
-          {loading ? "Creating account…" : "Create Account"}
-        </button>
-      </form>
-
-      <p className="mt-4 text-center text-sm text-gray-500">
-        Already have an account?{" "}
-        <Link href="/login" className="text-blue-600 hover:underline">
-          Log in
-        </Link>
-      </p>
-    </main>
+      </div>
+    </div>
   );
 }

@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function LoginPage() {
+const INPUT_CLS =
+  "w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
+export default function LoginPage() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -15,107 +17,96 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Redirect if already logged in
   useEffect(() => {
-
     const checkUser = async () => {
-
       const { data } = await supabase.auth.getSession();
-
-      if (data.session) {
-        router.push("/");
-      }
-
+      if (data.session) router.push("/");
     };
-
     checkUser();
-
   }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
-
     e.preventDefault();
-
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
-
-      email,
-      password
-
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     setLoading(false);
 
     if (error) {
-
       setError(error.message);
-
     } else {
-
       router.push("/");
-
     }
-
   };
 
   return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        {/* Card */}
+        <div className="bg-white rounded-3xl shadow-xl shadow-gray-100/60 border border-gray-100 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-8 py-10 text-center">
+            <h1 className="text-2xl font-bold text-white">Welcome back</h1>
+            <p className="text-blue-100 text-sm mt-1">
+              Log in to your Any Part &amp; Gear account
+            </p>
+          </div>
 
-    <main className="max-w-md mx-auto p-6">
+          {/* Form */}
+          <form onSubmit={handleLogin} className="px-8 py-8 space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                Email
+              </label>
+              <input
+                className={INPUT_CLS}
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-      <h1 className="text-3xl font-bold mb-6">
-        Login
-      </h1>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                Password
+              </label>
+              <input
+                className={INPUT_CLS}
+                type="password"
+                placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
 
-      <form
-        onSubmit={handleLogin}
-        className="space-y-4"
-      >
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
+                {error}
+              </div>
+            )}
 
-        <input
-          className="border w-full p-3 rounded"
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 shadow-sm shadow-blue-200"
+            >
+              {loading ? "Logging in…" : "Log In"}
+            </button>
 
-        <input
-          className="border w-full p-3 rounded"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        {error && (
-          <p className="text-red-500">
-            {error}
-          </p>
-        )}
-
-        <button
-          className="bg-blue-600 text-white w-full p-3 rounded"
-          disabled={loading}
-        >
-
-          {loading ? "Logging in..." : "Login"}
-
-        </button>
-
-      </form>
-
-      <p className="mt-4 text-center text-sm text-gray-500">
-        Don&apos;t have an account?{" "}
-        <Link href="/signup" className="text-blue-600 hover:underline">
-          Sign up
-        </Link>
-      </p>
-
-    </main>
-
+            <p className="text-center text-sm text-gray-500 pt-1">
+              Don&apos;t have an account?{" "}
+              <Link href="/signup" className="text-blue-600 font-medium hover:underline">
+                Sign up
+              </Link>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 }

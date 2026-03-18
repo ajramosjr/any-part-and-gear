@@ -65,12 +65,17 @@ export default function SettingsPage() {
     loadProfile();
   }, [router]);
 
-  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  const ALLOWED_TYPES: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/gif": "gif",
+    "image/webp": "webp",
+  };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
 
-    if (file && !ALLOWED_TYPES.includes(file.type)) {
+    if (file && !ALLOWED_TYPES[file.type]) {
       setMessage({ type: "error", text: "Please upload a valid image (JPEG, PNG, GIF, or WebP)." });
       e.target.value = "";
       return;
@@ -103,7 +108,7 @@ export default function SettingsPage() {
 
     // Upload new avatar file if selected
     if (avatarFile) {
-      const ext = avatarFile.name.split(".").pop();
+      const ext = ALLOWED_TYPES[avatarFile.type] ?? "jpg";
       const path = `${userId}/avatar.${ext}`;
 
       const { error: uploadError } = await supabase.storage
@@ -153,98 +158,117 @@ export default function SettingsPage() {
     .slice(0, 2);
 
   return (
-    <main className="max-w-lg mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Profile Settings</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 py-12 px-4">
+      <div className="max-w-lg mx-auto">
+        <div className="bg-white rounded-3xl shadow-xl shadow-gray-100/60 border border-gray-100 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-8 pt-10 pb-16 text-center">
+            <h1 className="text-2xl font-bold text-white">Profile Settings</h1>
+            <p className="text-blue-100 text-sm mt-1">Update your public profile</p>
+          </div>
 
-      {message && (
-        <div
-          className={`mb-4 p-3 rounded-lg text-sm ${
-            message.type === "success"
-              ? "bg-green-50 text-green-700 border border-green-200"
-              : "bg-red-50 text-red-700 border border-red-200"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
-
-      <form onSubmit={handleSave} className="flex flex-col gap-4">
-        {/* Avatar upload */}
-        <div className="flex flex-col items-center gap-3">
-          <label htmlFor="avatar-upload" className="cursor-pointer group">
-            {displayPreview ? (
-              <Image
-                src={displayPreview}
-                alt="Avatar preview"
-                width={96}
-                height={96}
-                className="rounded-full object-cover border-2 border-blue-300 w-24 h-24 group-hover:opacity-80 transition-opacity"
-              />
-            ) : (
-              <span className="w-24 h-24 rounded-full bg-blue-100 text-blue-600 text-3xl font-bold flex items-center justify-center border-2 border-dashed border-blue-300 group-hover:border-blue-500 transition-colors">
-                {initials}
+          {/* Avatar — overlapping */}
+          <div className="flex justify-center -mt-10 mb-1">
+            <label htmlFor="avatar-upload" className="cursor-pointer group relative">
+              <div className="w-20 h-20 rounded-full ring-4 ring-white shadow-lg overflow-hidden bg-blue-600 flex items-center justify-center">
+                {displayPreview ? (
+                  <Image
+                    src={displayPreview}
+                    alt="Avatar"
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-white text-2xl font-bold">{initials}</span>
+                )}
+              </div>
+              <span className="absolute bottom-0 right-0 w-6 h-6 bg-blue-500 border-2 border-white rounded-full shadow flex items-center justify-center">
+                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586A1 1 0 0113 4.586l-.707-.707A1 1 0 0011.586 3H8.414a1 1 0 00-.707.293L7 4.586A1 1 0 016.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </span>
+            </label>
+            <input
+              id="avatar-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+          </div>
+          <p className="text-center text-xs text-gray-400 mb-6">Tap to change photo</p>
+
+          {/* Form */}
+          <form onSubmit={handleSave} className="px-8 pb-8 space-y-5">
+            {message && (
+              <div
+                className={`rounded-xl px-4 py-3 text-sm ${
+                  message.type === "success"
+                    ? "bg-green-50 border border-green-200 text-green-700"
+                    : "bg-red-50 border border-red-200 text-red-600"
+                }`}
+              >
+                {message.text}
+              </div>
             )}
-          </label>
-          <input
-            id="avatar-upload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarChange}
-          />
-          <p className="text-xs text-gray-400">
-            Click your photo to change it
-          </p>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Full Name
-          </label>
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="John Doe"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="John Doe"
+                  className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="johndoe"
+                  className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Username
-          </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="johndoe"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                Website
+              </label>
+              <input
+                type="url"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                placeholder="https://yoursite.com"
+                className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Website
-          </label>
-          <input
-            type="url"
-            value={website}
-            onChange={(e) => setWebsite(e.target.value)}
-            placeholder="https://yoursite.com"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+            <div className="border-t border-gray-100" />
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-500 disabled:opacity-50 font-medium"
-        >
-          {saving ? "Saving…" : "Save Profile"}
-        </button>
-      </form>
-    </main>
+            <button
+              type="submit"
+              disabled={saving}
+              className="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 shadow-sm shadow-blue-200"
+            >
+              {saving ? "Saving…" : "Save Profile"}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 }
