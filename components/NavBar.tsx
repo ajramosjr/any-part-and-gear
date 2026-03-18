@@ -10,6 +10,7 @@ import type { User } from "@supabase/supabase-js";
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     // Fetch initial session
@@ -81,8 +82,8 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* Links */}
-        <div className="flex items-center gap-6">
+        {/* Desktop Links */}
+        <div className="hidden md:flex items-center gap-6">
           <Link href="/browse" className="hover:text-blue-600">
             Browse
           </Link>
@@ -114,7 +115,6 @@ export default function Navbar() {
           {/* User profile area or Login */}
           {user ? (
             <div className="flex items-center gap-3">
-              {/* Avatar + Name → links to profile page */}
               <Link
                 href={`/user/${user.id}`}
                 className="flex items-center gap-2 hover:opacity-80"
@@ -137,7 +137,6 @@ export default function Navbar() {
                 </span>
               </Link>
 
-              {/* Settings link */}
               <Link href="/settings" className="text-sm hover:text-blue-600 text-gray-500">
                 Settings
               </Link>
@@ -158,7 +157,97 @@ export default function Navbar() {
             </Link>
           )}
         </div>
+
+        {/* Mobile hamburger button */}
+        <button
+          className="md:hidden flex flex-col gap-1.5 p-2"
+          onClick={() => setMenuOpen((prev) => !prev)}
+          aria-label="Toggle menu"
+        >
+          <span className={`block w-6 h-0.5 bg-gray-800 transition-transform duration-200 motion-reduce:transition-none motion-reduce:transform-none ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
+          <span className={`block w-6 h-0.5 bg-gray-800 transition-opacity duration-200 motion-reduce:transition-none ${menuOpen ? "opacity-0" : ""}`} />
+          <span className={`block w-6 h-0.5 bg-gray-800 transition-transform duration-200 motion-reduce:transition-none motion-reduce:transform-none ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+        </button>
       </div>
+
+      {/* Mobile dropdown menu */}
+      {menuOpen && (
+        <div className="md:hidden border-t bg-white px-6 py-4 flex flex-col gap-4">
+          <Link href="/browse" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>
+            Browse
+          </Link>
+
+          <Link href="/sell" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>
+            Sell
+          </Link>
+
+          <Link href="/businesses" className="hover:text-blue-600 font-medium" onClick={() => setMenuOpen(false)}>
+            🔧 Businesses
+          </Link>
+
+          <Link href="/terms" className="hover:text-blue-600 text-sm text-gray-500" onClick={() => setMenuOpen(false)}>
+            Terms
+          </Link>
+
+          {user && (
+            <>
+              <Link href="/messages" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>
+                Messages
+              </Link>
+
+              <Link href="/notifications" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>
+                Notifications
+              </Link>
+            </>
+          )}
+
+          {user ? (
+            <>
+              <Link
+                href={`/user/${user.id}`}
+                className="flex items-center gap-2 hover:opacity-80"
+                onClick={() => setMenuOpen(false)}
+              >
+                {profile?.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={displayName}
+                    width={32}
+                    height={32}
+                    className="rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-semibold flex items-center justify-center">
+                    {initials}
+                  </span>
+                )}
+                <span className="text-sm font-medium text-gray-800">
+                  {displayName}
+                </span>
+              </Link>
+
+              <Link href="/settings" className="text-sm hover:text-blue-600 text-gray-500" onClick={() => setMenuOpen(false)}>
+                Settings
+              </Link>
+
+              <button
+                onClick={() => { setMenuOpen(false); handleLogout(); }}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 text-sm w-full text-left"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 text-center"
+              onClick={() => setMenuOpen(false)}
+            >
+              Login
+            </Link>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
