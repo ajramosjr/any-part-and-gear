@@ -91,6 +91,10 @@ export default function Navbar() {
             Sell
           </Link>
 
+          <Link href="/terms" className="hover:text-blue-600 text-sm text-gray-500">
+            Terms
+          </Link>
+
           {user && (
             <>
               <Link href="/messages" className="hover:text-blue-600">
