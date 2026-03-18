@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { Star, Pencil, Package, MessageSquare } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import type { Profile } from "@/lib/getProfile";
 
@@ -29,6 +30,7 @@ type Review = {
 function avatarInitials(name: string) {
   return name
     .split(" ")
+    .filter((w) => w.length > 0)
     .map((w) => w[0])
     .join("")
     .toUpperCase()
@@ -48,14 +50,11 @@ function StarRating({
   return (
     <span className="inline-flex gap-0.5">
       {Array.from({ length: max }).map((_, i) => (
-        <svg
+        <Star
           key={i}
-          className={`${cls} ${i < Math.round(value) ? "text-yellow-400" : "text-gray-200"}`}
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.286 3.957c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.286-3.957a1 1 0 00-.364-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
-        </svg>
+          className={`${cls} ${i < Math.round(value) ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200"}`}
+          strokeWidth={0}
+        />
       ))}
     </span>
   );
@@ -78,18 +77,17 @@ function InteractiveStars({
           onClick={() => onChange(star)}
           onMouseEnter={() => setHovered(star)}
           onMouseLeave={() => setHovered(0)}
-          className="focus:outline-none transition-transform hover:scale-110"
+          className="focus:outline-none transition-transform hover:scale-125"
           aria-label={`${star} star`}
         >
-          <svg
+          <Star
             className={`w-8 h-8 transition-colors ${
-              star <= (hovered || value) ? "text-yellow-400" : "text-gray-200"
+              star <= (hovered || value)
+                ? "text-yellow-400 fill-yellow-400"
+                : "text-gray-200 fill-gray-200"
             }`}
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.286 3.957c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.286-3.957a1 1 0 00-.364-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
-          </svg>
+            strokeWidth={0}
+          />
         </button>
       ))}
     </span>
@@ -269,14 +267,7 @@ export default function UserProfile() {
               href="/settings"
               className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition rounded-full px-5 py-2 text-sm font-medium"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                />
-              </svg>
+              <Pencil className="w-4 h-4" strokeWidth={2} />
               Edit Profile
             </Link>
           </div>
@@ -289,14 +280,23 @@ export default function UserProfile() {
         {/* Stat chips */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
+            <div className="flex justify-center mb-1">
+              <Package className="w-5 h-5 text-blue-400" strokeWidth={1.75} />
+            </div>
             <p className="text-2xl font-bold text-gray-900">{parts.length}</p>
             <p className="text-xs text-gray-400 mt-0.5 uppercase tracking-wide">Listings</p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
+            <div className="flex justify-center mb-1">
+              <MessageSquare className="w-5 h-5 text-blue-400" strokeWidth={1.75} />
+            </div>
             <p className="text-2xl font-bold text-gray-900">{reviews.length}</p>
             <p className="text-xs text-gray-400 mt-0.5 uppercase tracking-wide">Reviews</p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center col-span-2 sm:col-span-1">
+            <div className="flex justify-center mb-1">
+              <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" strokeWidth={0} />
+            </div>
             <p className="text-2xl font-bold text-gray-900">
               {avgRating !== null ? avgRating.toFixed(1) : "—"}
             </p>
@@ -306,7 +306,10 @@ export default function UserProfile() {
 
         {/* ── Listings ── */}
         <section>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">Listings</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <Package className="w-5 h-5 text-blue-500" strokeWidth={1.75} />
+            Listings
+          </h2>
           {parts.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center text-gray-400 text-sm">
               No listings yet.
@@ -331,10 +334,11 @@ export default function UserProfile() {
 
         {/* ── Reviews ── */}
         <section>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">
+          <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" strokeWidth={0} />
             Reviews
             {reviews.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-gray-400">
+              <span className="text-sm font-normal text-gray-400">
                 ({reviews.length})
               </span>
             )}
@@ -407,7 +411,10 @@ export default function UserProfile() {
         {/* ── Leave a review ── */}
         {canReview && (
           <section className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Leave a Review</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" strokeWidth={0} />
+              Leave a Review
+            </h2>
 
             {reviewSuccess && (
               <div className="mb-4 p-3 rounded-xl bg-green-50 text-green-700 text-sm border border-green-200">

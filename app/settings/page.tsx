@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Camera } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import type { Profile } from "@/lib/getProfile";
 
@@ -152,6 +153,7 @@ export default function SettingsPage() {
   const displayPreview = avatarPreview || avatarUrl || null;
   const initials = (fullName || username || "?")
     .split(" ")
+    .filter((w) => w.length > 0)
     .map((w) => w[0])
     .join("")
     .toUpperCase()
@@ -184,13 +186,7 @@ export default function SettingsPage() {
                 )}
               </div>
               <span className="absolute bottom-0 right-0 w-6 h-6 bg-blue-500 border-2 border-white rounded-full shadow flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586A1 1 0 0113 4.586l-.707-.707A1 1 0 0011.586 3H8.414a1 1 0 00-.707.293L7 4.586A1 1 0 016.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <Camera className="w-3 h-3 text-white" strokeWidth={2.5} />
               </span>
             </label>
             <input
