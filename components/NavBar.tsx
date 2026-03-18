@@ -91,6 +91,10 @@ export default function Navbar() {
             Sell
           </Link>
 
+          <Link href="/business-hub" className="hover:text-blue-600 font-medium">
+            🔧 Business Hub
+          </Link>
+
           <Link href="/terms" className="hover:text-blue-600 text-sm text-gray-500">
             Terms
           </Link>
