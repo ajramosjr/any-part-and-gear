@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-export default function BrowsePage() {
+function BrowseContent() {
 
 const searchParams = useSearchParams();
 const search = searchParams.get("search");
@@ -37,12 +37,6 @@ loadParts();
 
 return (
 
-<main className="max-w-6xl mx-auto p-6">
-
-<h1 className="text-3xl font-bold mb-8">
-Browse Marketplace
-</h1>
-
 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
 {parts.map((part) => (
@@ -57,6 +51,7 @@ className="border rounded-xl p-4 hover:shadow-lg transition bg-white"
 <img
 src={part.image_url}
 className="w-full h-40 object-cover rounded mb-3"
+alt={part.title}
 />
 )}
 
@@ -75,6 +70,24 @@ ${part.price}
 ))}
 
 </div>
+
+);
+
+}
+
+export default function BrowsePage() {
+
+return (
+
+<main className="max-w-6xl mx-auto p-6">
+
+<h1 className="text-3xl font-bold mb-8">
+Browse Marketplace
+</h1>
+
+<Suspense fallback={<div className="text-gray-500">Loading…</div>}>
+<BrowseContent />
+</Suspense>
 
 </main>
 
