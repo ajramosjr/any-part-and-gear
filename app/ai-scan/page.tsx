@@ -149,7 +149,7 @@ export default function AIScanPage() {
               ref={cameraInputRef}
               type="file"
               accept="image/*"
-              capture={"environment" as "environment"}
+              capture="environment"
               className="hidden"
               onChange={handleFileChange}
             />

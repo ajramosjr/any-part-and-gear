@@ -262,9 +262,18 @@ CREATE POLICY "Conversation parties"    ON conversations FOR SELECT
   USING (auth.uid() = buyer_id OR auth.uid() = seller_id);
 CREATE POLICY "Create conversation"     ON conversations FOR INSERT WITH CHECK (auth.uid() = buyer_id);
 
--- Messages: participants only
-CREATE POLICY "Message participants"    ON messages FOR SELECT
-  USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+-- Messages: participants only (direct messages OR conversation participants)
+DROP POLICY IF EXISTS "Message participants" ON messages;
+CREATE POLICY "Message participants" ON messages FOR SELECT
+  USING (
+    auth.uid() = sender_id
+    OR auth.uid() = receiver_id
+    OR EXISTS (
+      SELECT 1 FROM conversations c
+      WHERE c.id = messages.conversation_id
+        AND (c.buyer_id = auth.uid() OR c.seller_id = auth.uid())
+    )
+  );
 CREATE POLICY "Send message"            ON messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
 
 -- Trade requests
