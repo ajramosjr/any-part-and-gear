@@ -10,12 +10,15 @@ import { supabase } from "@/lib/supabaseClient";
 
 type Subcategory = {
   slug: string;
+  /** Display label shown in the UI and stored as `subcategory` in the DB */
   label: string;
+  /** Legacy specialties array values kept for backward-compat filtering */
   specialties: string[];
 };
 
 type Group = {
   slug: string;
+  /** Display label shown in the UI and stored as `category` in the DB */
   label: string;
   Icon: React.ElementType;
   color: string; // Tailwind active bg color
@@ -29,12 +32,12 @@ const GROUPS: Group[] = [
     Icon: Car,
     color: "bg-blue-600",
     subcategories: [
-      { slug: "mechanics",    label: "Mechanics",          specialties: ["Engine & Drivetrain","General Auto","Transmission","Suspension & Brakes","Electrical","Mechanic"] },
-      { slug: "body-shop",    label: "Collision & Body",   specialties: ["Body & Paint","Body Shop","Collision"] },
-      { slug: "detailing",    label: "Detailing",          specialties: ["Detailing","Car Detailing"] },
-      { slug: "performance",  label: "Performance & Tuning", specialties: ["Performance","Tuning","Performance / Tuning"] },
-      { slug: "tires",        label: "Tire Shops",         specialties: ["Tires & Wheels","Tires","Tire Shop"] },
-      { slug: "auto-parts",   label: "Auto Parts Stores",  specialties: ["Auto Parts","Parts Store"] },
+      { slug: "mechanics",     label: "Mechanics",            specialties: ["Engine & Drivetrain","General Auto","Transmission","Suspension & Brakes","Electrical","Mechanic"] },
+      { slug: "body-shop",     label: "Collision & Body",     specialties: ["Body & Paint","Body Shop","Collision"] },
+      { slug: "detailing",     label: "Car Wash / Detail",    specialties: ["Detailing","Car Detailing","Car Wash","Car Wash / Detail"] },
+      { slug: "performance",   label: "Performance & Tuning", specialties: ["Performance","Tuning","Performance / Tuning"] },
+      { slug: "tires",         label: "Tire Shops",           specialties: ["Tires & Wheels","Tires","Tire Shop"] },
+      { slug: "auto-parts",    label: "Auto Parts Stores",    specialties: ["Auto Parts","Parts Store"] },
     ],
   },
   {
@@ -43,21 +46,10 @@ const GROUPS: Group[] = [
     Icon: Ship,
     color: "bg-cyan-600",
     subcategories: [
-      { slug: "marine-repair", label: "Marine Services",     specialties: ["Marine / Boats","Marine","Boats","Marine Repair"] },
-      { slug: "boat-parts",    label: "Boat Parts",          specialties: ["Boat Parts","Marine Parts"] },
-      { slug: "atv",           label: "ATV / Dirt Bike",     specialties: ["ATV","Dirt Bike","Powersports","Jet Ski Services","ATV / Dirt Bike Shops"] },
-    ],
-  },
-  {
-    slug: "services",
-    label: "Services",
-    Icon: Wrench,
-    color: "bg-orange-600",
-    subcategories: [
-      { slug: "tools",       label: "Tool Shops",            specialties: ["Tool Shop","Tools"] },
-      { slug: "fabrication", label: "Fabrication & Welding", specialties: ["Fabrication","Welding","Fabrication Shops"] },
-      { slug: "small-engine",label: "Small Engine Repair",   specialties: ["Small Engine","Small Engine Repair"] },
-      { slug: "equipment",   label: "Equipment Rental",      specialties: ["Equipment Rental"] },
+      { slug: "marine-repair", label: "Marine Services",   specialties: ["Marine / Boats","Marine","Boats","Marine Repair"] },
+      { slug: "boat-parts",    label: "Boat Parts",        specialties: ["Boat Parts","Marine Parts"] },
+      { slug: "jet-ski",       label: "Jet Ski Services",  specialties: ["Jet Ski","Jet Ski Services"] },
+      { slug: "atv",           label: "ATV / Dirt Bike",   specialties: ["ATV","Dirt Bike","Powersports","ATV / Dirt Bike Shops"] },
     ],
   },
   {
@@ -70,13 +62,18 @@ const GROUPS: Group[] = [
     ],
   },
   {
-    slug: "local",
-    label: "Local",
-    Icon: MapPin,
-    color: "bg-green-600",
+    slug: "services",
+    label: "Services",
+    Icon: Wrench,
+    color: "bg-orange-600",
     subcategories: [
-      { slug: "bakeries", label: "Bakeries",     specialties: ["Bakery","Bakeries"] },
-      { slug: "retail",   label: "Retail Shops", specialties: ["Retail","Retail Shop"] },
+      { slug: "towing",        label: "Towing",               specialties: ["Towing","Tow Truck"] },
+      { slug: "mobile-repair", label: "Mobile Repair",        specialties: ["Mobile Repair","Mobile Mechanic"] },
+      { slug: "electrical",    label: "Electrical",           specialties: ["Electrical","Auto Electrical"] },
+      { slug: "fabrication",   label: "Fabrication & Welding",specialties: ["Fabrication","Welding","Fabrication Shops"] },
+      { slug: "tools",         label: "Tool Shops",           specialties: ["Tool Shop","Tools"] },
+      { slug: "small-engine",  label: "Small Engine Repair",  specialties: ["Small Engine","Small Engine Repair"] },
+      { slug: "equipment",     label: "Equipment Rental",     specialties: ["Equipment Rental"] },
     ],
   },
 ];
@@ -93,6 +90,10 @@ type Business = {
   state: string | null;
   photo_url: string | null;
   specialties: string[];
+  /** Structured category field (new DB model) */
+  category: string | null;
+  /** Structured subcategory field (new DB model) */
+  subcategory: string | null;
   verified: boolean;
   avg_rating: number;
   review_count: number;
@@ -141,7 +142,7 @@ function BusinessesContent() {
       const { data, error } = await supabase
         .from("businesses")
         .select(
-          "id, name, description, city, state, photo_url, specialties, verified, created_at, business_reviews(rating)"
+          "id, name, description, city, state, photo_url, specialties, category, subcategory, verified, created_at, business_reviews(rating)"
         )
         .order("created_at", { ascending: false });
 
@@ -161,6 +162,8 @@ function BusinessesContent() {
             state: b.state,
             photo_url: b.photo_url,
             specialties: b.specialties ?? [],
+            category: b.category ?? null,
+            subcategory: b.subcategory ?? null,
             verified: b.verified,
             avg_rating,
             review_count: reviews.length,
@@ -186,15 +189,20 @@ function BusinessesContent() {
       (b.city ?? "").toLowerCase().includes(search.toLowerCase()) ||
       (b.state ?? "").toLowerCase().includes(search.toLowerCase());
 
-    // If a specific sub-category is selected, match its specialties
     if (activeSub) {
-      return matchesSearch && b.specialties.some((s) => activeSub.specialties.includes(s));
+      // Match structured DB fields (new) OR legacy specialties array
+      const matchesNew =
+        b.category === activeGroup!.label && b.subcategory === activeSub.label;
+      const matchesLegacy = b.specialties.some((s) => activeSub.specialties.includes(s));
+      return matchesSearch && (matchesNew || matchesLegacy);
     }
 
-    // If only a group is selected, match any specialty in any of its subcategories
     if (activeGroup) {
+      // Match structured DB category (new) OR any specialty in this group (legacy)
+      const matchesNew = b.category === activeGroup.label;
       const groupSpecialties = activeGroup.subcategories.flatMap((sc) => sc.specialties);
-      return matchesSearch && b.specialties.some((s) => groupSpecialties.includes(s));
+      const matchesLegacy = b.specialties.some((s) => groupSpecialties.includes(s));
+      return matchesSearch && (matchesNew || matchesLegacy);
     }
 
     return matchesSearch;
@@ -351,16 +359,36 @@ function BusinessesContent() {
       {loading ? (
         <p className="text-gray-500">Loading businesses…</p>
       ) : sorted.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <p className="text-5xl mb-4">🔍</p>
-          <p className="text-xl">No businesses found.</p>
-          <p className="mt-2">
-            Be the first to{" "}
-            <Link href="/business-hub/new" className="text-blue-600 hover:underline">
-              list yours
-            </Link>
-            !
+        <div className="text-center py-20 bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-2xl px-6">
+          <p className="text-6xl mb-4">🔧</p>
+          <h2 className="text-2xl font-bold text-blue-900 mb-2">
+            {activeGroup
+              ? `No ${activeGroup.label} shops listed yet`
+              : search
+              ? `No results for "${search}"`
+              : "Be the first shop in your area!"}
+          </h2>
+          <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+            {activeGroup
+              ? `Be the first ${activeSub ? activeSub.label : activeGroup.label} to get discovered by local customers.`
+              : "Thousands of car owners, boat lovers, and hobbyists are looking for trusted shops near them."}
           </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/business-hub/new"
+              className="bg-yellow-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition shadow"
+            >
+              🚀 List Your Business — It's Free
+            </Link>
+            {(activeGroup || search) && (
+              <button
+                onClick={() => router.push("/businesses")}
+                className="border border-gray-300 text-gray-600 px-6 py-3 rounded-lg font-semibold hover:border-gray-500 transition"
+              >
+                Browse All Businesses
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">

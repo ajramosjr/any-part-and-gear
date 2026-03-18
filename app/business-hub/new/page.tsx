@@ -4,18 +4,36 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-const SPECIALTIES = [
-  "Engine & Drivetrain",
-  "Body & Paint",
-  "Electrical",
-  "Suspension & Brakes",
-  "Tires & Wheels",
-  "Transmission",
-  "Marine / Boats",
-  "RC Vehicles",
-  "General Auto",
-  "Tools & Equipment",
-];
+// ─── Category / subcategory structure (mirrors businesses page) ───────────────
+
+const CATEGORY_MAP: Record<string, string[]> = {
+  Automotive: [
+    "Mechanics",
+    "Collision & Body",
+    "Car Wash / Detail",
+    "Performance & Tuning",
+    "Tire Shops",
+    "Auto Parts Stores",
+  ],
+  "Marine & Powersports": [
+    "Marine Services",
+    "Boat Parts",
+    "Jet Ski Services",
+    "ATV / Dirt Bike",
+  ],
+  "RC & Hobby": ["RC & Hobby Shops"],
+  Services: [
+    "Towing",
+    "Mobile Repair",
+    "Electrical",
+    "Fabrication & Welding",
+    "Tool Shops",
+    "Small Engine Repair",
+    "Equipment Rental",
+  ],
+};
+
+const CATEGORIES = Object.keys(CATEGORY_MAP);
 
 export default function NewBusinessPage() {
   const router = useRouter();
@@ -28,14 +46,14 @@ export default function NewBusinessPage() {
   const [phone, setPhone] = useState("");
   const [website, setWebsite] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
-  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
+  const [category, setCategory] = useState("");
+  const [subcategory, setSubcategory] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const toggleSpecialty = (s: string) => {
-    setSelectedSpecialties((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-    );
+  const handleCategoryChange = (cat: string) => {
+    setCategory(cat);
+    setSubcategory(""); // reset sub when category changes
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,6 +62,10 @@ export default function NewBusinessPage() {
 
     if (!name.trim()) {
       setError("Business name is required.");
+      return;
+    }
+    if (!category) {
+      setError("Please select a category.");
       return;
     }
 
@@ -70,7 +92,10 @@ export default function NewBusinessPage() {
         phone: phone.trim() || null,
         website: website.trim() || null,
         photo_url: photoUrl.trim() || null,
-        specialties: selectedSpecialties,
+        category,
+        subcategory: subcategory || null,
+        // Legacy specialties array — keep backward compat
+        specialties: subcategory ? [subcategory] : [category],
       })
       .select("id")
       .single();
@@ -113,6 +138,55 @@ export default function NewBusinessPage() {
             placeholder="e.g. Mike's Auto Repair"
           />
         </div>
+
+        {/* Category */}
+        <div>
+          <label className="block text-sm font-semibold mb-2">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => handleCategoryChange(cat)}
+                className={`px-4 py-2 rounded-full border text-sm font-medium transition ${
+                  category === cat
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-600 border-gray-300 hover:border-blue-400 hover:text-blue-600"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Subcategory — shown once a category is selected */}
+        {category && CATEGORY_MAP[category].length > 0 && (
+          <div>
+            <label className="block text-sm font-semibold mb-2">
+              Subcategory{" "}
+              <span className="font-normal text-gray-400">(optional but recommended)</span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORY_MAP[category].map((sub) => (
+                <button
+                  key={sub}
+                  type="button"
+                  onClick={() => setSubcategory(subcategory === sub ? "" : sub)}
+                  className={`px-3 py-1.5 rounded-full border text-xs font-medium transition ${
+                    subcategory === sub
+                      ? "bg-gray-800 text-white border-gray-800"
+                      : "bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Description */}
         <div>
@@ -204,33 +278,6 @@ export default function NewBusinessPage() {
               onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
             />
           )}
-        </div>
-
-        {/* Specialties */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            Specialties{" "}
-            <span className="font-normal text-gray-400">(select all that apply)</span>
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {SPECIALTIES.map((s) => {
-              const active = selectedSpecialties.includes(s);
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => toggleSpecialty(s)}
-                  className={`px-3 py-1.5 rounded-full text-sm border transition ${
-                    active
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"
-                  }`}
-                >
-                  {s}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         <button
