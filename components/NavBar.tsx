@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { Wrench } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import type { Profile } from "@/lib/getProfile";
 import type { User } from "@supabase/supabase-js";
@@ -71,14 +72,15 @@ export default function Navbar() {
 
   return (
     <nav className="border-b bg-white shadow-sm">
-      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
             src="/logo.png"
             alt="A.P.G Logo"
-            width={48}
-            height={48}
+            width={80}
+            height={80}
+            className="w-20 h-20 object-contain"
           />
         </Link>
 
@@ -92,8 +94,9 @@ export default function Navbar() {
             Sell
           </Link>
 
-          <Link href="/businesses" className="hover:text-blue-600 font-medium">
-            🔧 Businesses
+          <Link href="/businesses" className="hover:text-blue-600 font-medium flex items-center gap-1.5">
+            <Wrench className="w-4 h-4" strokeWidth={2} />
+            Businesses
           </Link>
 
           <Link href="/terms" className="hover:text-blue-600 text-sm text-gray-500">
@@ -181,8 +184,9 @@ export default function Navbar() {
             Sell
           </Link>
 
-          <Link href="/businesses" className="hover:text-blue-600 font-medium" onClick={() => setMenuOpen(false)}>
-            🔧 Businesses
+          <Link href="/businesses" className="hover:text-blue-600 font-medium flex items-center gap-1.5" onClick={() => setMenuOpen(false)}>
+            <Wrench className="w-4 h-4" strokeWidth={2} />
+            Businesses
           </Link>
 
           <Link href="/terms" className="hover:text-blue-600 text-sm text-gray-500" onClick={() => setMenuOpen(false)}>

@@ -2,6 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  turbopack: {
+    root: process.cwd(),
+  },
+
   images: {
     remotePatterns: [
       {
