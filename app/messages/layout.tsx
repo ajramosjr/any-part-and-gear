@@ -1,19 +1,27 @@
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-export default async function MessagesLayout({
+export default function MessagesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const router = useRouter();
 
-  // 🔐 Protect all /messages routes
-  if (!user) {
-    redirect("/login");
-  }
+  useEffect(() => {
+    const checkAuth = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+      }
+    };
+    checkAuth();
+  }, [router]);
 
   return (
     <div
@@ -48,3 +56,4 @@ export default async function MessagesLayout({
     </div>
   );
 }
+
