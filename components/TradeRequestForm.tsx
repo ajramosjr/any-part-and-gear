@@ -4,7 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface TradeRequestFormProps {
-  partId: number;
+  partId: string | number;
   receiverId: string;
 }
 

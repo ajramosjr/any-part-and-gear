@@ -1,29 +1,35 @@
 import "server-only";
 import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+export async function analyzeVehicle(imageData: string) {
+  const client = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY!,
+  });
 
-export async function analyzeVehicle(imageUrl: string) {
-  const response = await client.responses.create({
-  model: "gpt-4.1-mini",
-  input: [
-    {
-      role: "user",
-      content: [
-        {
-          type: "input_text",
-          text: "Identify the vehicle and any visible parts."
-        },
-        {
-          type: "input_image",
-          image_url: imageUrl,
-          detail: "high"
-        }
-      ]
-    }
-  ]
-});
-  return response.output_text;
+  // Accept either a URL or base64 data; convert base64 to data URL if needed
+  const imageUrl = imageData.startsWith("http")
+    ? imageData
+    : `data:image/jpeg;base64,${imageData}`;
+
+  const response = await client.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "Identify the vehicle and any visible parts. Return a JSON object with keys: vehicle, part, condition, confidence (0-1).",
+          },
+          {
+            type: "image_url",
+            image_url: { url: imageUrl, detail: "high" },
+          },
+        ],
+      },
+    ],
+    max_tokens: 300,
+  });
+
+  return response.choices[0]?.message?.content ?? "";
 }

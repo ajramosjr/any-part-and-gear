@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-export default function BrowsePage() {
+function BrowseContent() {
 
 const searchParams = useSearchParams();
 const search = searchParams.get("search");
@@ -80,4 +80,12 @@ ${part.price}
 
 );
 
+}
+
+export default function BrowsePage() {
+  return (
+    <Suspense fallback={<p className="p-6">Loading marketplace…</p>}>
+      <BrowseContent />
+    </Suspense>
+  );
 }
