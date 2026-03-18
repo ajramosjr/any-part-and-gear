@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import RequireAuth from "@/components/RequireAuth";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function SellPage() {
-
+function SellForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
@@ -25,6 +25,16 @@ export default function SellPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const [loading, setLoading] = useState(false);
+
+  // Pre-fill from AI scan query params after mount to avoid hydration mismatch
+  useEffect(() => {
+    const aiTitle = searchParams.get("title");
+    const aiVehicle = searchParams.get("vehicle");
+    const aiCondition = searchParams.get("condition");
+    if (aiTitle) setTitle(aiTitle);
+    if (aiVehicle) setVehicle(aiVehicle);
+    if (aiCondition) setCondition(aiCondition);
+  }, [searchParams]);
 
   const submitListing = async (e: React.FormEvent) => {
 
@@ -256,5 +266,13 @@ export default function SellPage() {
       </main>
 
     </RequireAuth>
+  );
+}
+
+export default function SellPage() {
+  return (
+    <Suspense fallback={<p className="p-6">Loading…</p>}>
+      <SellForm />
+    </Suspense>
   );
 }

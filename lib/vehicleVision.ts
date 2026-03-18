@@ -1,7 +1,42 @@
 import "server-only";
 import OpenAI from "openai";
 
-export async function analyzeVehicle(imageData: string) {
+export type ScanResult = {
+  vehicle: string;
+  part: string;
+  condition: string;
+  confidence: number;
+};
+
+/** Parse AI text response to a structured object. The model may wrap JSON in
+ *  markdown code fences (```json ... ```) so we strip those first. */
+function parseAiResponse(text: string): ScanResult {
+  // Strip markdown code fences if present
+  const stripped = text
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```\s*$/, "")
+    .trim();
+
+  try {
+    const parsed = JSON.parse(stripped);
+    return {
+      vehicle: String(parsed.vehicle ?? "Unknown vehicle"),
+      part: String(parsed.part ?? "Unknown part"),
+      condition: String(parsed.condition ?? "Unknown"),
+      confidence: Math.min(1, Math.max(0, Number(parsed.confidence ?? 0))),
+    };
+  } catch {
+    // If parsing fails, return a best-effort result with the raw text
+    return {
+      vehicle: "Unable to identify",
+      part: "Unable to identify",
+      condition: "Unknown",
+      confidence: 0,
+    };
+  }
+}
+
+export async function analyzeVehicle(imageData: string): Promise<ScanResult> {
   const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY!,
   });
@@ -19,7 +54,7 @@ export async function analyzeVehicle(imageData: string) {
         content: [
           {
             type: "text",
-            text: "Identify the vehicle and any visible parts. Return a JSON object with keys: vehicle, part, condition, confidence (0-1).",
+            text: 'Identify the vehicle and any visible parts. Respond ONLY with a JSON object (no markdown, no explanation) with these exact keys: "vehicle" (string, e.g. "2018 Ford F-150"), "part" (string, e.g. "Front bumper"), "condition" (string: new/like-new/used/for-parts), "confidence" (number 0-1).',
           },
           {
             type: "image_url",
@@ -28,8 +63,9 @@ export async function analyzeVehicle(imageData: string) {
         ],
       },
     ],
-    max_tokens: 300,
+    max_tokens: 200,
   });
 
-  return response.choices[0]?.message?.content ?? "";
+  const rawText = response.choices[0]?.message?.content ?? "";
+  return parseAiResponse(rawText);
 }
