@@ -81,44 +81,30 @@ Search
 
 {/* CATEGORIES */}
 
-<h2 className="text-2xl font-semibold mb-4">
+<h2 className="text-2xl font-bold mb-6 text-gray-800">
 Browse Categories
 </h2>
 
-<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-
-<Link href="/category/cars" className="border p-6 rounded-lg text-center hover:shadow">
-🚗 Cars
-</Link>
-
-<Link href="/category/boats" className="border p-6 rounded-lg text-center hover:shadow">
-🚤 Boats
-</Link>
-
-<Link href="/category/marine" className="border p-6 rounded-lg text-center hover:shadow">
-⚓ Marine
-</Link>
-
-<Link href="/category/tools" className="border p-6 rounded-lg text-center hover:shadow">
-🛠 Tools
-</Link>
-
-<Link href="/category/machinery" className="border p-6 rounded-lg text-center hover:shadow">
-🏗 Machinery
-</Link>
-
-<Link href="/category/rc" className="border p-6 rounded-lg text-center hover:shadow">
-🏎 RC Vehicles
-</Link>
-
-<Link href="/category/rv" className="border p-6 rounded-lg text-center hover:shadow">
-🚐 RV
-</Link>
-
-<Link href="/category/buses" className="border p-6 rounded-lg text-center hover:shadow">
-🚌 Buses
-</Link>
-
+<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-12">
+{[
+  { href: "/category/cars",      emoji: "🚗", label: "Cars",        bg: "bg-blue-50",   border: "border-blue-100",  text: "text-blue-800"  },
+  { href: "/category/boats",     emoji: "🚤", label: "Boats",       bg: "bg-cyan-50",   border: "border-cyan-100",  text: "text-cyan-800"  },
+  { href: "/category/marine",    emoji: "⚓", label: "Marine",      bg: "bg-teal-50",   border: "border-teal-100",  text: "text-teal-800"  },
+  { href: "/category/tools",     emoji: "🛠️", label: "Tools",       bg: "bg-orange-50", border: "border-orange-100", text: "text-orange-800" },
+  { href: "/category/machinery", emoji: "🏗️", label: "Machinery",   bg: "bg-yellow-50", border: "border-yellow-100", text: "text-yellow-800" },
+  { href: "/category/rc",        emoji: "🏎️", label: "RC Vehicles", bg: "bg-red-50",    border: "border-red-100",    text: "text-red-800"   },
+  { href: "/category/rv",        emoji: "🚐", label: "RV",          bg: "bg-purple-50", border: "border-purple-100", text: "text-purple-800" },
+  { href: "/category/buses",     emoji: "🚌", label: "Buses",       bg: "bg-green-50",  border: "border-green-100", text: "text-green-800" },
+].map(({ href, emoji, label, bg, border, text }) => (
+  <Link
+    key={href}
+    href={href}
+    className={`flex flex-col items-center justify-center gap-2 py-6 px-3 rounded-xl border ${bg} ${border} ${text} font-semibold text-sm hover:shadow-md hover:scale-105 transition-all duration-200`}
+  >
+    <span className="text-4xl leading-none">{emoji}</span>
+    <span>{label}</span>
+  </Link>
+))}
 </div>
 
 {/* RECENT LISTINGS */}
