@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Camera } from "lucide-react";
+import { Camera, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
-import type { Profile } from "@/lib/getProfile";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -18,19 +17,9 @@ export default function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [website, setWebsite] = useState("");
 
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  // Transient local preview shown only while the upload is in progress
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-
-  const previewUrlRef = useRef<string | null>(null);
-
-  // Revoke object URL on unmount
-  useEffect(() => {
-    return () => {
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current);
-      }
-    };
-  }, []);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -73,29 +62,61 @@ export default function SettingsPage() {
     "image/webp": "webp",
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  /** Auto-upload avatar as soon as the user picks a file. */
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
+    // Reset the input so the same file can be re-selected
+    e.target.value = "";
 
-    if (file && !ALLOWED_TYPES[file.type]) {
+    if (!file || !userId) return;
+
+    if (!ALLOWED_TYPES[file.type]) {
       setMessage({ type: "error", text: "Please upload a valid image (JPEG, PNG, GIF, or WebP)." });
-      e.target.value = "";
       return;
     }
 
-    // Revoke previous preview URL before creating a new one
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current);
-      previewUrlRef.current = null;
+    // Show a local preview immediately while uploading
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
+    setUploadingAvatar(true);
+    setMessage(null);
+
+    const ext = ALLOWED_TYPES[file.type] ?? "jpg";
+    const path = `${userId}/avatar.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true });
+
+    // Revoke the temporary object URL now that the upload has finished
+    URL.revokeObjectURL(previewUrl);
+    setAvatarPreview(null);
+    setUploadingAvatar(false);
+
+    if (uploadError) {
+      setMessage({ type: "error", text: `Avatar upload failed: ${uploadError.message}` });
+      return;
     }
 
-    setAvatarFile(file);
-    if (file) {
-      const url = URL.createObjectURL(file);
-      previewUrlRef.current = url;
-      setAvatarPreview(url);
-    } else {
-      setAvatarPreview(null);
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    // Append a timestamp so browsers don't serve a stale cached version
+    const newAvatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+    // Persist only the avatar_url column so other fields are untouched
+    const { error: dbError } = await supabase
+      .from("profiles")
+      .update({ avatar_url: newAvatarUrl })
+      .eq("id", userId);
+
+    if (dbError) {
+      setMessage({ type: "error", text: `Failed to save photo: ${dbError.message}` });
+      return;
     }
+
+    setAvatarUrl(newAvatarUrl);
+    // Let the NavBar (and anything else) know the profile changed
+    window.dispatchEvent(new Event("apg:profile-updated"));
+    setMessage({ type: "success", text: "Photo updated!" });
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -105,32 +126,11 @@ export default function SettingsPage() {
     setSaving(true);
     setMessage(null);
 
-    let finalAvatarUrl = avatarUrl;
-
-    // Upload new avatar file if selected
-    if (avatarFile) {
-      const ext = ALLOWED_TYPES[avatarFile.type] ?? "jpg";
-      const path = `${userId}/avatar.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(path, avatarFile, { upsert: true });
-
-      if (uploadError) {
-        setMessage({ type: "error", text: `Avatar upload failed: ${uploadError.message}` });
-        setSaving(false);
-        return;
-      }
-
-      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
-      finalAvatarUrl = urlData.publicUrl;
-    }
-
     const { error } = await supabase.from("profiles").upsert({
       id: userId,
       full_name: fullName || null,
       username: username || null,
-      avatar_url: finalAvatarUrl || null,
+      avatar_url: avatarUrl || null,
       website: website || null,
     });
 
@@ -139,9 +139,7 @@ export default function SettingsPage() {
     if (error) {
       setMessage({ type: "error", text: error.message });
     } else {
-      setAvatarUrl(finalAvatarUrl);
-      setAvatarFile(null);
-      setAvatarPreview(null);
+      window.dispatchEvent(new Event("apg:profile-updated"));
       setMessage({ type: "success", text: "Profile updated successfully!" });
     }
   };
@@ -171,9 +169,14 @@ export default function SettingsPage() {
 
           {/* Avatar — overlapping */}
           <div className="flex justify-center -mt-10 mb-1">
-            <label htmlFor="avatar-upload" className="cursor-pointer group relative">
+            <label
+              htmlFor="avatar-upload"
+              className={`cursor-pointer group relative ${uploadingAvatar ? "pointer-events-none" : ""}`}
+            >
               <div className="w-20 h-20 rounded-full ring-4 ring-white shadow-lg overflow-hidden bg-blue-600 flex items-center justify-center">
-                {displayPreview ? (
+                {uploadingAvatar ? (
+                  <Loader2 className="w-8 h-8 text-white animate-spin" strokeWidth={2} />
+                ) : displayPreview ? (
                   <Image
                     src={displayPreview}
                     alt="Avatar"
@@ -185,9 +188,11 @@ export default function SettingsPage() {
                   <span className="text-white text-2xl font-bold">{initials}</span>
                 )}
               </div>
-              <span className="absolute bottom-0 right-0 w-6 h-6 bg-blue-500 border-2 border-white rounded-full shadow flex items-center justify-center">
-                <Camera className="w-3 h-3 text-white" strokeWidth={2.5} />
-              </span>
+              {!uploadingAvatar && (
+                <span className="absolute bottom-0 right-0 w-6 h-6 bg-blue-500 border-2 border-white rounded-full shadow flex items-center justify-center">
+                  <Camera className="w-3 h-3 text-white" strokeWidth={2.5} />
+                </span>
+              )}
             </label>
             <input
               id="avatar-upload"
@@ -195,9 +200,12 @@ export default function SettingsPage() {
               accept="image/*"
               className="hidden"
               onChange={handleAvatarChange}
+              disabled={uploadingAvatar}
             />
           </div>
-          <p className="text-center text-xs text-gray-400 mb-6">Tap to change photo</p>
+          <p className="text-center text-xs text-gray-400 mb-6">
+            {uploadingAvatar ? "Uploading…" : "Tap to change photo"}
+          </p>
 
           {/* Form */}
           <form onSubmit={handleSave} className="px-8 pb-8 space-y-5">

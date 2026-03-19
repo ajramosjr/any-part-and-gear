@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Wrench } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import type { Profile } from "@/lib/getProfile";
@@ -13,18 +13,27 @@ export default function Navbar() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Keep a ref to the current user so the profile-updated event handler
+  // always has access to the latest user id (avoids stale closure).
+  const userRef = useRef<User | null>(null);
+
+  const fetchProfile = async (uid: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, username, full_name, avatar_url, website, created_at, updated_at")
+      .eq("id", uid)
+      .single();
+    setProfile(data ?? null);
+  };
+
   useEffect(() => {
     // Fetch initial session
     const loadUser = async () => {
       const { data } = await supabase.auth.getUser();
+      userRef.current = data.user;
       setUser(data.user);
       if (data.user) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("id, username, full_name, avatar_url, website, created_at, updated_at")
-          .eq("id", data.user.id)
-          .single();
-        setProfile(profileData ?? null);
+        await fetchProfile(data.user.id);
       }
     };
     loadUser();
@@ -33,21 +42,27 @@ export default function Navbar() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         const currentUser = session?.user ?? null;
+        userRef.current = currentUser;
         setUser(currentUser);
         if (currentUser) {
-          const { data: profileData } = await supabase
-            .from("profiles")
-            .select("id, username, full_name, avatar_url, website, created_at, updated_at")
-            .eq("id", currentUser.id)
-            .single();
-          setProfile(profileData ?? null);
+          await fetchProfile(currentUser.id);
         } else {
           setProfile(null);
         }
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Refresh the profile whenever the settings page (or any page) saves changes
+    const handleProfileUpdate = async () => {
+      const uid = userRef.current?.id;
+      if (uid) await fetchProfile(uid);
+    };
+    window.addEventListener("apg:profile-updated", handleProfileUpdate);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("apg:profile-updated", handleProfileUpdate);
+    };
   }, []);
 
   const handleLogout = async () => {
