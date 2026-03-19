@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Car, Ship, Anchor, Wrench, Cog, Gamepad2, Truck, Bus } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
@@ -87,21 +88,21 @@ Browse Categories
 
 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-12">
 {[
-  { href: "/category/cars",      emoji: "🚗", label: "Cars",        bg: "bg-blue-50",   border: "border-blue-100",  text: "text-blue-800"  },
-  { href: "/category/boats",     emoji: "🚤", label: "Boats",       bg: "bg-cyan-50",   border: "border-cyan-100",  text: "text-cyan-800"  },
-  { href: "/category/marine",    emoji: "⚓", label: "Marine",      bg: "bg-teal-50",   border: "border-teal-100",  text: "text-teal-800"  },
-  { href: "/category/tools",     emoji: "🛠️", label: "Tools",       bg: "bg-orange-50", border: "border-orange-100", text: "text-orange-800" },
-  { href: "/category/machinery", emoji: "🏗️", label: "Machinery",   bg: "bg-yellow-50", border: "border-yellow-100", text: "text-yellow-800" },
-  { href: "/category/rc",        emoji: "🏎️", label: "RC Vehicles", bg: "bg-red-50",    border: "border-red-100",    text: "text-red-800"   },
-  { href: "/category/rv",        emoji: "🚐", label: "RV",          bg: "bg-purple-50", border: "border-purple-100", text: "text-purple-800" },
-  { href: "/category/buses",     emoji: "🚌", label: "Buses",       bg: "bg-green-50",  border: "border-green-100", text: "text-green-800" },
-].map(({ href, emoji, label, bg, border, text }) => (
+  { href: "/category/cars",      Icon: Car,      label: "Cars",        bg: "bg-blue-50",   border: "border-blue-100",   text: "text-blue-700",   icon: "text-blue-500"  },
+  { href: "/category/boats",     Icon: Ship,     label: "Boats",       bg: "bg-cyan-50",   border: "border-cyan-100",   text: "text-cyan-700",   icon: "text-cyan-500"  },
+  { href: "/category/marine",    Icon: Anchor,   label: "Marine",      bg: "bg-teal-50",   border: "border-teal-100",   text: "text-teal-700",   icon: "text-teal-500"  },
+  { href: "/category/tools",     Icon: Wrench,   label: "Tools",       bg: "bg-orange-50", border: "border-orange-100", text: "text-orange-700", icon: "text-orange-500" },
+  { href: "/category/machinery", Icon: Cog,      label: "Machinery",   bg: "bg-yellow-50", border: "border-yellow-100", text: "text-yellow-700", icon: "text-yellow-500" },
+  { href: "/category/rc",        Icon: Gamepad2, label: "RC Vehicles", bg: "bg-red-50",    border: "border-red-100",    text: "text-red-700",    icon: "text-red-500"   },
+  { href: "/category/rv",        Icon: Truck,    label: "RV",          bg: "bg-purple-50", border: "border-purple-100", text: "text-purple-700", icon: "text-purple-500" },
+  { href: "/category/buses",     Icon: Bus,      label: "Buses",       bg: "bg-green-50",  border: "border-green-100",  text: "text-green-700",  icon: "text-green-500" },
+].map(({ href, Icon, label, bg, border, text, icon }) => (
   <Link
     key={href}
     href={href}
-    className={`flex flex-col items-center justify-center gap-2 py-6 px-3 rounded-xl border ${bg} ${border} ${text} font-semibold text-sm hover:shadow-md hover:scale-105 transition-all duration-200`}
+    className={`flex flex-col items-center justify-center gap-3 py-6 px-3 rounded-xl border ${bg} ${border} ${text} font-semibold text-sm hover:shadow-md hover:scale-105 transition-all duration-200`}
   >
-    <span className="text-4xl leading-none">{emoji}</span>
+    <Icon className={`w-9 h-9 ${icon}`} strokeWidth={1.75} />
     <span>{label}</span>
   </Link>
 ))}
